@@ -110,28 +110,42 @@ app.get('/api/users/profile', async (req, res) => {
   }
 });
 
-// Submit or update user application
-app.post('/api/users/application', async (req, res) => {
+// Submit or update user application (supports both /register and /application endpoints)
+const handleUserRegistration = async (req: express.Request, res: express.Response) => {
   try {
     const profileData = req.body;
-    const user = await saveUserApplicationToDb(profileData);
-    res.json({ success: true, user });
+    if (!profileData || (!profileData.email && !profileData.id)) {
+      res.status(400).json({ error: 'Valid profile data is required' });
+      return;
+    }
+    const result = await saveUserApplicationToDb(profileData);
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err?.message || 'Failed to save application' });
   }
-});
+};
 
-// Admin update user role / status
-app.patch('/api/users/:id/status', async (req, res) => {
+app.post('/api/users/register', handleUserRegistration);
+app.post('/api/users/application', handleUserRegistration);
+
+// Admin update user role / status (supports both PUT and PATCH)
+const handleUserStatusUpdate = async (req: express.Request, res: express.Response) => {
   try {
     const userId = req.params.id;
-    const { role, status, reviewedBy } = req.body;
-    const user = await updateUserRoleStatusInDb(userId, { role, status, reviewedBy });
-    res.json({ success: true, user });
+    const { role, status, rejectionReason, reviewedBy } = req.body;
+    const result = await updateUserRoleStatusInDb(userId, { role, status, rejectionReason, reviewedBy });
+    if (!result.success) {
+      res.status(404).json(result);
+      return;
+    }
+    res.json(result);
   } catch (err: any) {
     res.status(500).json({ error: err?.message || 'Failed to update user status' });
   }
-});
+};
+
+app.put('/api/users/:id/status', handleUserStatusUpdate);
+app.patch('/api/users/:id/status', handleUserStatusUpdate);
 
 // Delete user
 app.delete('/api/users/:id', async (req, res) => {
@@ -142,6 +156,11 @@ app.delete('/api/users/:id', async (req, res) => {
   } catch (err: any) {
     res.status(500).json({ error: err?.message || 'Failed to delete user' });
   }
+});
+
+// JSON fallback for any unhandled /api/* routes to avoid returning HTML DOCTYPE
+app.use((req, res) => {
+  res.status(404).json({ error: `API endpoint not found: ${req.method} ${req.originalUrl}` });
 });
 
 export default app;
