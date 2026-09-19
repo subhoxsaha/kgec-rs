@@ -784,7 +784,7 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       set({
         userNotification: {
           title: `Welcome, ${assignedRole.toUpperCase()}!`,
-          text: `Role-authenticated clearance for ${user.name}. ${assignedRole === 'admin' ? 'Full CMS Dashboard unlocked.' : 'Society member access enabled.'}`,
+          text: `Signed in as ${user.name}. ${assignedRole === 'admin' ? 'CMS Portal unlocked.' : 'Society clearance active.'}`,
           role: assignedRole,
           status: 'approved',
           userName: user.name,
@@ -794,8 +794,8 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
     } else {
       set({
         userNotification: {
-          title: 'Application Pending Review',
-          text: `Welcome ${user.name}. Please complete or verify your society application details.`,
+          title: 'Application Pending',
+          text: `Hi ${user.name}, your request is queued for review.`,
           role: assignedRole,
           status: assignedStatus,
           userName: user.name,

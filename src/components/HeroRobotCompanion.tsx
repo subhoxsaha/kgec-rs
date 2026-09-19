@@ -278,36 +278,27 @@ export const HeroRobotCompanion: React.FC<HeroRobotCompanionProps> = ({
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="w-full max-w-[320px] xs:max-w-[360px] sm:max-w-[400px] mb-2 p-3.5 rounded-2xl bg-[#0b150d]/95 backdrop-blur-2xl border border-emerald-500/50 shadow-2xl text-left ring-2 ring-emerald-500/30"
+              className="w-full max-w-[290px] xs:max-w-[320px] sm:max-w-[350px] mb-2 p-2.5 sm:p-3 rounded-2xl bg-[#0b150d]/95 backdrop-blur-2xl border border-emerald-500/40 shadow-xl text-left ring-1 ring-emerald-500/30"
             >
-              <div className="flex items-start justify-between gap-2 border-b border-emerald-500/20 pb-2 mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-400">
-                    <ShieldCheck className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="text-xs font-bold text-emerald-200">
-                        {userNotification.title}
-                      </span>
-                      {userNotification.role && (
-                        <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                            currentUserProfile?.status === 'pending'
-                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
-                              : `${ROLE_CONFIG[userNotification.role]?.bgColor || 'bg-slate-800'} ${ROLE_CONFIG[userNotification.role]?.textColor || 'text-slate-200'} ${ROLE_CONFIG[userNotification.role]?.borderColor || 'border-slate-700'}`
-                          }`}
-                        >
-                          {currentUserProfile?.status === 'pending'
-                            ? `⏳ Pending Approval (${ROLE_CONFIG[userNotification.role]?.label || userNotification.role})`
-                            : ROLE_CONFIG[userNotification.role]?.label || userNotification.role}
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-emerald-400/80">
-                      Clearance profile: {userNotification.userName}
+              <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-white/10">
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span className="text-xs font-bold text-emerald-200 truncate">
+                    {userNotification.title}
+                  </span>
+                  {userNotification.role && (
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full border shrink-0 ${
+                        currentUserProfile?.status === 'pending'
+                          ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                          : `${ROLE_CONFIG[userNotification.role]?.bgColor || 'bg-slate-800'} ${ROLE_CONFIG[userNotification.role]?.textColor || 'text-slate-200'} ${ROLE_CONFIG[userNotification.role]?.borderColor || 'border-slate-700'}`
+                      }`}
+                    >
+                      {currentUserProfile?.status === 'pending'
+                        ? 'Pending'
+                        : ROLE_CONFIG[userNotification.role]?.label || userNotification.role}
                     </span>
-                  </div>
+                  )}
                 </div>
                 <button
                   type="button"
@@ -315,20 +306,20 @@ export const HeroRobotCompanion: React.FC<HeroRobotCompanionProps> = ({
                     e.stopPropagation();
                     dismissUserNotification();
                   }}
-                  className="p-1 text-stone-400 hover:text-white rounded-md hover:bg-white/10"
+                  className="p-1 text-stone-400 hover:text-white rounded-md hover:bg-white/10 transition-colors cursor-pointer"
                   title="Dismiss notification"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
               </div>
 
-              <p className="text-xs text-stone-300 leading-relaxed font-normal">
+              <p className="text-[11px] sm:text-xs text-stone-300 mt-1.5 leading-snug">
                 {userNotification.text}
               </p>
 
-              <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-white/10 text-[11px]">
-                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
-                  <CheckCircle2 className="w-3 h-3" /> Clearance Active in Hero
+              <div className="flex items-center justify-between pt-2 mt-2 border-t border-white/10 text-[10px]">
+                <span className="inline-flex items-center gap-1 font-medium text-emerald-400">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Clearance Active
                 </span>
                 <div className="flex items-center gap-1.5">
                   {isAdminLoggedIn && (
@@ -339,9 +330,9 @@ export const HeroRobotCompanion: React.FC<HeroRobotCompanionProps> = ({
                         openEditor('users');
                         dismissUserNotification();
                       }}
-                      className="px-2 py-1 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px]"
+                      className="px-2 py-0.5 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px] cursor-pointer"
                     >
-                      CMS Roster
+                      Admin Portal
                     </button>
                   )}
                   <button
@@ -350,7 +341,7 @@ export const HeroRobotCompanion: React.FC<HeroRobotCompanionProps> = ({
                       e.stopPropagation();
                       dismissUserNotification();
                     }}
-                    className="px-2 py-1 rounded-md bg-emerald-700/30 hover:bg-emerald-700/50 text-emerald-200 border border-emerald-500/40 text-[10px] font-medium"
+                    className="px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/40 text-emerald-200 border border-emerald-500/30 text-[10px] cursor-pointer"
                   >
                     Got it
                   </button>
