@@ -7,25 +7,24 @@ import {
   Search,
   Filter,
   Trash2,
-  Edit3,
   Shield,
   GraduationCap,
   Briefcase,
-  Phone,
   Mail,
   ExternalLink,
-  ChevronDown,
   RefreshCw,
   Eye,
   Check,
   X,
   AlertTriangle,
   Download,
-  Building,
+  UserCheck,
+  UserX,
+  Sparkles,
 } from 'lucide-react';
 import { useReportDataStore } from '../store/useReportDataStore';
 import { UserRole, UserStatus, ROLE_CONFIG, UserApplicationProfile } from '../types';
-import { getUserAvatarUrl, getUserRoleDisplayLabel } from '../utils/avatarUtils';
+import { getUserAvatarUrl } from '../utils/avatarUtils';
 
 export const UserManagementTab: React.FC = () => {
   const {
@@ -41,10 +40,20 @@ export const UserManagementTab: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [selectedUser, setSelectedUser] = useState<UserApplicationProfile | null>(null);
-  const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
-  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
+
+  // Confirmation Modals State
+  const [approveTarget, setApproveTarget] = useState<UserApplicationProfile | null>(null);
+  const [approveSelectedRole, setApproveSelectedRole] = useState<UserRole>('member');
+
+  const [roleChangeTarget, setRoleChangeTarget] = useState<{
+    user: UserApplicationProfile;
+    newRole: UserRole;
+  } | null>(null);
+
+  const [rejectTarget, setRejectTarget] = useState<UserApplicationProfile | null>(null);
   const [rejectionReason, setRejectionReason] = useState('');
-  const [deleteTargetUser, setDeleteTargetUser] = useState<{ id: string; name: string; email: string } | null>(null);
+
+  const [deleteTargetUser, setDeleteTargetUser] = useState<UserApplicationProfile | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -59,66 +68,75 @@ export const UserManagementTab: React.FC = () => {
     showToast('User roster refreshed from database');
   };
 
-  const handleApprove = async (userId: string) => {
-    await updateUserRoleStatus(userId, {
+  // 1. Approve Handler with Confirmation
+  const handleOpenApproveModal = (user: UserApplicationProfile) => {
+    setApproveTarget(user);
+    setApproveSelectedRole(user.role || 'member');
+  };
+
+  const handleConfirmApprove = async () => {
+    if (!approveTarget) return;
+    await updateUserRoleStatus(approveTarget.id, {
       status: 'approved',
+      role: approveSelectedRole,
       reviewedBy: googleUser?.name || 'Administrator',
     });
-    showToast('User application approved successfully!');
-  };
-
-  const handleSetPending = async (userId: string) => {
-    await updateUserRoleStatus(userId, {
-      status: 'pending',
-      reviewedBy: googleUser?.name || 'Administrator',
-    });
-    showToast('Application reverted to Pending Review.');
-  };
-
-  const handleStatusChange = async (userId: string, newStatus: UserStatus) => {
-    if (newStatus === 'rejected') {
-      handleOpenReject(userId);
-    } else {
-      await updateUserRoleStatus(userId, {
-        status: newStatus,
-        reviewedBy: googleUser?.name || 'Administrator',
-      });
+    showToast(`Approved application for ${approveTarget.name} as ${ROLE_CONFIG[approveSelectedRole]?.label || approveSelectedRole}.`);
+    if (selectedUser?.id === approveTarget.id) {
+      setSelectedUser({ ...selectedUser, status: 'approved', role: approveSelectedRole });
     }
+    setApproveTarget(null);
   };
 
-  const handleOpenReject = (userId: string) => {
-    setRejectTargetId(userId);
-    setRejectionReason('');
-    setIsRejectModalOpen(true);
+  // 2. Role Change Handler with Confirmation
+  const handlePromptRoleChange = (user: UserApplicationProfile, newRole: UserRole) => {
+    if (user.role === newRole) return;
+    setRoleChangeTarget({ user, newRole });
   };
 
-  const handleConfirmReject = async () => {
-    if (!rejectTargetId) return;
-    await updateUserRoleStatus(rejectTargetId, {
-      status: 'rejected',
-      rejectionReason: rejectionReason || 'Application criteria not fulfilled for requested tier.',
-      reviewedBy: googleUser?.name || 'Administrator',
-    });
-    setIsRejectModalOpen(false);
-    setRejectTargetId(null);
-    showToast('Application marked as rejected.');
-  };
-
-  const handleRoleChange = async (userId: string, newRole: UserRole) => {
-    await updateUserRoleStatus(userId, {
+  const handleConfirmRoleChange = async () => {
+    if (!roleChangeTarget) return;
+    const { user, newRole } = roleChangeTarget;
+    await updateUserRoleStatus(user.id, {
       role: newRole,
       reviewedBy: googleUser?.name || 'Administrator',
     });
+    showToast(`Updated role for ${user.name} to ${ROLE_CONFIG[newRole]?.label || newRole}.`);
+    if (selectedUser?.id === user.id) {
+      setSelectedUser({ ...selectedUser, role: newRole });
+    }
+    setRoleChangeTarget(null);
   };
 
-  const handlePromptDelete = (userId: string, userName: string, userEmail: string) => {
-    setDeleteTargetUser({ id: userId || userEmail, name: userName, email: userEmail });
+  // 3. Reject Handler with Confirmation
+  const handleOpenRejectModal = (user: UserApplicationProfile) => {
+    setRejectTarget(user);
+    setRejectionReason('');
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectTarget) return;
+    await updateUserRoleStatus(rejectTarget.id, {
+      status: 'rejected',
+      rejectionReason: rejectionReason || 'Application criteria not fulfilled.',
+      reviewedBy: googleUser?.name || 'Administrator',
+    });
+    showToast(`Application for ${rejectTarget.name} rejected.`);
+    if (selectedUser?.id === rejectTarget.id) {
+      setSelectedUser({ ...selectedUser, status: 'rejected' });
+    }
+    setRejectTarget(null);
+  };
+
+  // 4. Delete Handler with Confirmation
+  const handlePromptDelete = (user: UserApplicationProfile) => {
+    setDeleteTargetUser(user);
   };
 
   const handleConfirmDelete = async () => {
     if (!deleteTargetUser) return;
     setIsDeleting(true);
-    const targetId = deleteTargetUser.id;
+    const targetId = deleteTargetUser.id || deleteTargetUser.email;
     await deleteUser(targetId);
     if (selectedUser?.id === targetId || selectedUser?.email === deleteTargetUser.email) {
       setSelectedUser(null);
@@ -162,15 +180,19 @@ export const UserManagementTab: React.FC = () => {
 
   return (
     <div id="user-management-tab" className="space-y-6 animate-fade-in text-slate-200">
-      {/* Top Banner & Stats */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/90 border border-slate-800">
-        <div>
-          <h2 className="text-xl font-bold text-white flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-400" />
-            Society User Management & Clearance Roster
-          </h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Review student registrations, assign society roles (Intern, Member, Lead, Student Body, Teacher Body), and enforce admin permissions.
+      {/* Top Banner & Title */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+              <Users className="w-5 h-5" />
+            </div>
+            <h2 className="text-lg font-bold text-white tracking-wide">
+              User Roster & Security Clearance
+            </h2>
+          </div>
+          <p className="text-xs text-slate-400 pl-11">
+            Manage society registrations, verify member clearance tiers, and update executive roles.
           </p>
         </div>
 
@@ -179,15 +201,15 @@ export const UserManagementTab: React.FC = () => {
             id="refresh-users-btn"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium flex items-center gap-1.5 border border-slate-700 transition-colors"
+            className="px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-slate-300 text-xs font-medium flex items-center gap-1.5 border border-slate-700/80 transition-colors cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-            Refresh
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
+            Refresh Roster
           </button>
           <button
             id="export-users-btn"
             onClick={handleExportRoster}
-            className="px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-medium flex items-center gap-1.5 transition-colors"
+            className="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             Export JSON
@@ -197,44 +219,44 @@ export const UserManagementTab: React.FC = () => {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between">
+        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between shadow-lg">
           <span className="text-[11px] font-medium text-slate-400">Total Registered</span>
           <div className="text-2xl font-black text-white mt-1">{totalUsers}</div>
         </div>
-        <div className="p-3.5 rounded-xl bg-emerald-950/20 border border-emerald-800/40 flex flex-col justify-between">
+        <div className="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-800/40 flex flex-col justify-between shadow-lg">
           <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Approved
+            <CheckCircle2 className="w-3.5 h-3.5" /> Approved
           </span>
           <div className="text-2xl font-black text-emerald-300 mt-1">{approvedCount}</div>
         </div>
-        <div className="p-3.5 rounded-xl bg-amber-950/20 border border-amber-800/40 flex flex-col justify-between">
+        <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-800/40 flex flex-col justify-between shadow-lg">
           <span className="text-[11px] font-medium text-amber-400 flex items-center gap-1">
-            <Clock className="w-3 h-3" /> Pending Review
+            <Clock className="w-3.5 h-3.5" /> Pending Review
           </span>
           <div className="text-2xl font-black text-amber-300 mt-1">{pendingCount}</div>
         </div>
-        <div className="p-3.5 rounded-xl bg-purple-950/20 border border-purple-800/40 flex flex-col justify-between">
+        <div className="p-3.5 rounded-2xl bg-purple-950/20 border border-purple-800/40 flex flex-col justify-between shadow-lg">
           <span className="text-[11px] font-medium text-purple-400 flex items-center gap-1">
-            <Briefcase className="w-3 h-3" /> Faculty Body
+            <Briefcase className="w-3.5 h-3.5" /> Faculty Advisor
           </span>
           <div className="text-2xl font-black text-purple-300 mt-1">{teacherCount}</div>
         </div>
-        <div className="p-3.5 rounded-xl bg-blue-950/20 border border-blue-800/40 flex flex-col justify-between">
+        <div className="p-3.5 rounded-2xl bg-blue-950/20 border border-blue-800/40 flex flex-col justify-between shadow-lg">
           <span className="text-[11px] font-medium text-blue-400 flex items-center gap-1">
-            <Shield className="w-3 h-3" /> Wing Leads
+            <Shield className="w-3.5 h-3.5" /> Wing Leads
           </span>
           <div className="text-2xl font-black text-blue-300 mt-1">{leadCount}</div>
         </div>
-        <div className="p-3.5 rounded-xl bg-teal-950/20 border border-teal-800/40 flex flex-col justify-between">
+        <div className="p-3.5 rounded-2xl bg-teal-950/20 border border-teal-800/40 flex flex-col justify-between shadow-lg">
           <span className="text-[11px] font-medium text-teal-400 flex items-center gap-1">
-            <GraduationCap className="w-3 h-3" /> Interns
+            <GraduationCap className="w-3.5 h-3.5" /> Interns
           </span>
           <div className="text-2xl font-black text-teal-300 mt-1">{internCount}</div>
         </div>
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
@@ -242,23 +264,23 @@ export const UserManagementTab: React.FC = () => {
             id="user-search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name, email, roll number, department, or wing..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-800/80 border border-slate-700/80 rounded-lg text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+            placeholder="Search applicant name, email, roll number, department, or wing..."
+            className="w-full pl-10 pr-4 py-2 bg-slate-800/80 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/80 transition-colors"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700/80 rounded-lg px-2.5 py-1.5">
+          <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5">
             <Filter className="w-3.5 h-3.5 text-slate-400" />
             <select
               id="user-role-filter"
               value={roleFilter || 'all'}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="bg-transparent text-xs text-slate-300 focus:outline-none"
+              className="bg-transparent text-xs text-slate-300 focus:outline-none cursor-pointer"
             >
               <option value="all" className="bg-slate-900">All Roles</option>
               <option value="admin" className="bg-slate-900">Admin</option>
-              <option value="teacherBody" className="bg-slate-900">Teacher Body</option>
+              <option value="teacherBody" className="bg-slate-900">Faculty Advisor</option>
               <option value="lead" className="bg-slate-900">Lead</option>
               <option value="member" className="bg-slate-900">Member</option>
               <option value="intern" className="bg-slate-900">Intern</option>
@@ -266,12 +288,12 @@ export const UserManagementTab: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700/80 rounded-lg px-2.5 py-1.5">
+          <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5">
             <select
               id="user-status-filter"
               value={statusFilter || 'all'}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-transparent text-xs text-slate-300 focus:outline-none"
+              className="bg-transparent text-xs text-slate-300 focus:outline-none cursor-pointer"
             >
               <option value="all" className="bg-slate-900">All Status</option>
               <option value="approved" className="bg-slate-900">Approved</option>
@@ -282,23 +304,23 @@ export const UserManagementTab: React.FC = () => {
         </div>
       </div>
 
-      {/* Users Table / Grid */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/80 overflow-hidden">
+      {/* Users Table */}
+      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-2xl">
         {filteredUsers.length === 0 ? (
           <div className="p-12 text-center text-slate-500 text-sm">
-            No registered users match your search criteria.
+            No registered users match your search or filter criteria.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-800/60 text-slate-400 font-semibold border-b border-slate-800">
                 <tr>
-                  <th className="py-3 px-4">Applicant / Member</th>
-                  <th className="py-3 px-3">Category & Department</th>
-                  <th className="py-3 px-3">Assigned Role</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-3">Applied Date</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  <th className="py-3.5 px-4">Member / Applicant</th>
+                  <th className="py-3.5 px-3">Department & ID</th>
+                  <th className="py-3.5 px-3">Assigned Role</th>
+                  <th className="py-3.5 px-3">Clearance Status</th>
+                  <th className="py-3.5 px-3">Applied Date</th>
+                  <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -311,19 +333,19 @@ export const UserManagementTab: React.FC = () => {
                   return (
                     <tr key={user.id || user.email} className="hover:bg-slate-800/40 transition-colors">
                       {/* Name & Avatar */}
-                      <td className="py-3 px-4">
+                      <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <img
                             src={getUserAvatarUrl(user)}
                             alt={user.name}
-                            className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0"
+                            className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0 shadow-md"
                             referrerPolicy="no-referrer"
                           />
                           <div className="min-w-0">
                             <div className="font-semibold text-white truncate flex items-center gap-1.5">
                               {user.name}
                               {user.role === 'admin' && (
-                                <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold border border-amber-500/30">
                                   ADMIN
                                 </span>
                               )}
@@ -337,7 +359,7 @@ export const UserManagementTab: React.FC = () => {
                       </td>
 
                       {/* Dept & Roll */}
-                      <td className="py-3 px-3">
+                      <td className="py-3.5 px-3">
                         <div className="text-slate-300 font-medium truncate max-w-[200px]">
                           {user.department || 'KGEC Engineering'}
                         </div>
@@ -347,15 +369,15 @@ export const UserManagementTab: React.FC = () => {
                         </div>
                       </td>
 
-                      {/* Role Selector */}
-                      <td className="py-3 px-3">
+                      {/* Role Selector (Triggers Confirmation) */}
+                      <td className="py-3.5 px-3">
                         <select
                           value={user.role || 'studentBody'}
-                          onChange={(e) => handleRoleChange(user.id, e.target.value as UserRole)}
-                          className={`text-xs font-semibold px-2 py-1 rounded-lg border focus:outline-none cursor-pointer ${roleCfg.bgColor} ${roleCfg.borderColor} ${roleCfg.textColor}`}
+                          onChange={(e) => handlePromptRoleChange(user, e.target.value as UserRole)}
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-xl border focus:outline-none cursor-pointer transition-colors ${roleCfg.bgColor} ${roleCfg.borderColor} ${roleCfg.textColor}`}
                         >
                           <option value="admin" className="bg-slate-900 text-amber-300">Admin</option>
-                          <option value="teacherBody" className="bg-slate-900 text-purple-300">Teacher Body</option>
+                          <option value="teacherBody" className="bg-slate-900 text-purple-300">Faculty Advisor</option>
                           <option value="lead" className="bg-slate-900 text-blue-300">Lead</option>
                           <option value="member" className="bg-slate-900 text-cyan-300">Member</option>
                           <option value="intern" className="bg-slate-900 text-teal-300">Intern</option>
@@ -363,82 +385,77 @@ export const UserManagementTab: React.FC = () => {
                         </select>
                       </td>
 
-                      {/* Status Selector & Badge */}
-                      <td className="py-3 px-3">
-                        <div className="flex items-center gap-1.5">
-                          <select
-                            value={user.status || 'pending'}
-                            onChange={(e) => handleStatusChange(user.id, e.target.value as UserStatus)}
-                            className={`text-xs font-semibold px-2 py-0.5 rounded-full border focus:outline-none cursor-pointer ${
-                              isApproved
-                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
-                                : isPending
-                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
-                                : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
-                            }`}
-                          >
-                            <option value="approved" className="bg-slate-900 text-emerald-300">✓ Approved</option>
-                            <option value="pending" className="bg-slate-900 text-amber-300">⏳ Pending Review</option>
-                            <option value="rejected" className="bg-slate-900 text-rose-300">✕ Rejected</option>
-                          </select>
-                        </div>
+                      {/* Status Column */}
+                      <td className="py-3.5 px-3">
+                        {isApproved ? (
+                          /* Approved Users: Clean Locked Active Badge (No status selector) */
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                            Active Member
+                          </span>
+                        ) : isPending ? (
+                          /* Pending Applications: Amber Badge */
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                            <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                            Pending Review
+                          </span>
+                        ) : (
+                          /* Rejected Applications: Rose Badge */
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
+                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                            Rejected
+                          </span>
+                        )}
                       </td>
 
                       {/* Applied Date */}
-                      <td className="py-3 px-3 text-slate-400 text-[11px]">
+                      <td className="py-3.5 px-3 text-slate-400 text-[11px]">
                         {user.appliedAt ? new Date(user.appliedAt).toLocaleDateString() : 'Active Member'}
                       </td>
 
-                      {/* Actions */}
-                      <td className="py-3 px-4 text-right">
+                      {/* Actions Column */}
+                      <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          {/* Inspect Modal */}
+                          {/* Inspect Details Button */}
                           <button
+                            type="button"
                             onClick={() => setSelectedUser(user)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                            title="Inspect Full Application Details"
+                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer border border-slate-700/60"
+                            title="Inspect Profile & Statement"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
 
-                          {/* Quick Approve */}
+                          {/* For Non-Approved Users: Approve Button */}
                           {!isApproved && (
                             <button
-                              onClick={() => handleApprove(user.id)}
-                              className="p-1.5 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition-colors"
-                              title="Approve Role Clearance"
+                              type="button"
+                              onClick={() => handleOpenApproveModal(user)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                              title="Approve Application"
                             >
-                              <Check className="w-4 h-4" />
+                              <UserCheck className="w-3.5 h-3.5" /> Approve
                             </button>
                           )}
 
-                          {/* Quick Set Pending / Unaccept */}
-                          {!isPending && (
+                          {/* For Pending Users: Reject Button */}
+                          {isPending && (
                             <button
-                              onClick={() => handleSetPending(user.id)}
-                              className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-colors"
-                              title="Unaccept / Revert to Pending Review"
-                            >
-                              <Clock className="w-4 h-4" />
-                            </button>
-                          )}
-
-                          {/* Quick Reject */}
-                          {!isRejected && (
-                            <button
-                              onClick={() => handleOpenReject(user.id)}
-                              className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-colors"
+                              type="button"
+                              onClick={() => handleOpenRejectModal(user)}
+                              className="px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                               title="Reject Application"
                             >
-                              <X className="w-4 h-4" />
+                              <UserX className="w-3.5 h-3.5" /> Reject
                             </button>
                           )}
 
-                          {/* Delete */}
+                          {/* Delete User Button (Available for all) */}
                           <button
-                            onClick={() => handlePromptDelete(user.id || user.email, user.name, user.email)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                            title="Delete Record"
+                            type="button"
+                            onClick={() => handlePromptDelete(user)}
+                            className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-700/60 hover:border-rose-500/40 transition-colors cursor-pointer"
+                            title="Delete User Record"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -453,11 +470,226 @@ export const UserManagementTab: React.FC = () => {
         )}
       </div>
 
+      {/* MODAL 1: Confirm Application Approval */}
+      {approveTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+              <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <UserCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Approve Society Application?</h3>
+                <p className="text-xs text-slate-400">Grant member clearance and platform permissions.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-1.5">
+              <div className="font-semibold text-white flex items-center justify-between">
+                <span>{approveTarget.name}</span>
+                <span className="text-[11px] text-slate-400">{approveTarget.email}</span>
+              </div>
+              <div className="text-slate-400 text-[11px]">
+                {approveTarget.department || 'KGEC Engineering'} • {approveTarget.rollOrId || 'Student'}
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">
+                Confirm Assigned Society Role:
+              </label>
+              <select
+                value={approveSelectedRole}
+                onChange={(e) => setApproveSelectedRole(e.target.value as UserRole)}
+                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white font-medium focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="intern" className="bg-slate-900">Intern</option>
+                <option value="member" className="bg-slate-900">Member</option>
+                <option value="lead" className="bg-slate-900">Wing Lead</option>
+                <option value="teacherBody" className="bg-slate-900">Faculty Advisor</option>
+                <option value="admin" className="bg-slate-900">Administrator</option>
+              </select>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setApproveTarget(null)}
+                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmApprove}
+                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-950/40 cursor-pointer"
+              >
+                <Check className="w-4 h-4" /> Confirm Approval
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 2: Confirm Role Change */}
+      {roleChangeTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md bg-slate-900 border border-amber-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                <Shield className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Update User Role?</h3>
+                <p className="text-xs text-slate-400">Modify permissions for this user record.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-2">
+              <div className="font-semibold text-white">{roleChangeTarget.user.name}</div>
+              <div className="flex items-center gap-2 text-[11px]">
+                <span className="text-slate-400">Current Role:</span>
+                <span className="px-2 py-0.5 rounded bg-slate-700 text-slate-200 font-semibold">
+                  {ROLE_CONFIG[roleChangeTarget.user.role]?.label || roleChangeTarget.user.role}
+                </span>
+                <span className="text-slate-500">→</span>
+                <span className="text-amber-400 font-bold">
+                  {ROLE_CONFIG[roleChangeTarget.newRole]?.label || roleChangeTarget.newRole}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Are you sure you want to change the assigned clearance role for{' '}
+              <span className="font-semibold text-white">{roleChangeTarget.user.name}</span> to{' '}
+              <span className="font-semibold text-amber-300">
+                {ROLE_CONFIG[roleChangeTarget.newRole]?.label || roleChangeTarget.newRole}
+              </span>?
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setRoleChangeTarget(null)}
+                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmRoleChange}
+                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-950/40 cursor-pointer"
+              >
+                Confirm Role Update
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 3: Confirm Application Rejection */}
+      {rejectTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+              <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Reject Application?</h3>
+                <p className="text-xs text-slate-400">Provide optional feedback for the applicant.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 text-xs">
+              <div className="font-semibold text-white">{rejectTarget.name}</div>
+              <div className="text-slate-400 text-[11px]">{rejectTarget.email}</div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-slate-300">
+                Rejection Reason / Remarks:
+              </label>
+              <textarea
+                rows={3}
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                placeholder="e.g. Please register using your official @kgec.edu.in email address."
+                className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-xs resize-none focus:outline-none focus:border-rose-500"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setRejectTarget(null)}
+                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmReject}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                Confirm Rejection
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 4: Confirm User Deletion */}
+      {deleteTargetUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
+          <div className="relative w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+              <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white">Permanently Delete User?</h3>
+                <p className="text-xs text-slate-400">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-1">
+              <div className="font-semibold text-white">{deleteTargetUser.name}</div>
+              <div className="text-slate-400 text-[11px]">{deleteTargetUser.email}</div>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Are you sure you want to remove <span className="font-semibold text-rose-300">{deleteTargetUser.name}</span> from the society roster and database?
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+              <button
+                type="button"
+                onClick={() => setDeleteTargetUser(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-rose-950/40 cursor-pointer disabled:opacity-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                {isDeleting ? 'Deleting...' : 'Delete User'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Profile Detail Drawer / Modal */}
       {selectedUser && (
         <div
           id="user-detail-modal"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in"
         >
           <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-4">
@@ -465,17 +697,23 @@ export const UserManagementTab: React.FC = () => {
                 <img
                   src={getUserAvatarUrl(selectedUser)}
                   alt={selectedUser.name}
-                  className="w-12 h-12 rounded-xl object-cover border border-slate-700"
+                  className="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-md"
                   referrerPolicy="no-referrer"
                 />
                 <div>
-                  <h3 className="text-base font-bold text-white">{selectedUser.name}</h3>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    {selectedUser.name}
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${ROLE_CONFIG[selectedUser.role]?.bgColor || 'bg-slate-800'} ${ROLE_CONFIG[selectedUser.role]?.textColor || 'text-slate-200'} ${ROLE_CONFIG[selectedUser.role]?.borderColor || 'border-slate-700'}`}>
+                      {ROLE_CONFIG[selectedUser.role]?.label || selectedUser.role}
+                    </span>
+                  </h3>
                   <p className="text-xs text-slate-400">{selectedUser.email}</p>
                 </div>
               </div>
               <button
+                type="button"
                 onClick={() => setSelectedUser(null)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -562,101 +800,21 @@ export const UserManagementTab: React.FC = () => {
             <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
               {selectedUser.status !== 'approved' && (
                 <button
+                  type="button"
                   onClick={() => {
-                    handleApprove(selectedUser.id);
-                    setSelectedUser({ ...selectedUser, status: 'approved' });
+                    handleOpenApproveModal(selectedUser);
                   }}
-                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Check className="w-3.5 h-3.5" /> Approve Role
+                  <Check className="w-3.5 h-3.5" /> Approve Clearance
                 </button>
               )}
               <button
+                type="button"
                 onClick={() => setSelectedUser(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs"
+                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
               >
                 Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Reject Modal */}
-      {isRejectModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-          <div className="relative w-full max-w-md bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl space-y-4">
-            <h3 className="text-base font-bold text-rose-300 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-rose-400" />
-              Reject Application / Feedback
-            </h3>
-            <p className="text-xs text-slate-400">
-              Specify a reason or feedback for rejecting this society application.
-            </p>
-            <textarea
-              rows={3}
-              value={rejectionReason}
-              onChange={(e) => setRejectionReason(e.target.value)}
-              placeholder="e.g. Please register with your official @kgec.edu.in email or provide valid semester details."
-              className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 text-xs resize-none"
-            />
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                onClick={() => setIsRejectModalOpen(false)}
-                className="px-3.5 py-1.5 rounded-xl text-slate-400 hover:text-white text-xs"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmReject}
-                className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs"
-              >
-                Confirm Rejection
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Delete Confirmation Modal */}
-      {deleteTargetUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-              <div className="p-2 rounded-xl bg-rose-500/20 text-rose-400">
-                <Trash2 className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-white">Permanently Delete User?</h3>
-                <p className="text-xs text-slate-400">This action cannot be undone.</p>
-              </div>
-            </div>
-
-            <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-1">
-              <div className="font-semibold text-white">{deleteTargetUser.name}</div>
-              <div className="text-slate-400 text-[11px]">{deleteTargetUser.email}</div>
-            </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Are you sure you want to remove <span className="font-semibold text-rose-300">{deleteTargetUser.name}</span> from the society roster and database? Their application and permissions will be deleted.
-            </p>
-
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => setDeleteTargetUser(null)}
-                disabled={isDeleting}
-                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                disabled={isDeleting}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-rose-950/40 cursor-pointer disabled:opacity-50"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                {isDeleting ? 'Deleting...' : 'Delete User'}
               </button>
             </div>
           </div>
