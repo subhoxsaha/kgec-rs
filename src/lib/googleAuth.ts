@@ -1,6 +1,7 @@
 import { GoogleUserProfile } from '../types';
 
 export const GOOGLE_OAUTH_CLIENT_ID =
+  import.meta.env.VITE_GOOGLE_OAUTH_CLIENT_ID ||
   '86237358756-0m791v0vtcs84obtl5g09rdo3cltq37u.apps.googleusercontent.com';
 
 declare global {
