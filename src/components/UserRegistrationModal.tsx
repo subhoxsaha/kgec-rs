@@ -186,9 +186,6 @@ export const UserRegistrationModal: React.FC = () => {
                 <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-wide">
                   KGEC Robotics Clearance
                 </h2>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
-                  Roster Form
-                </span>
               </div>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                 {googleUser ? (
