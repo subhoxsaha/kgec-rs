@@ -313,6 +313,25 @@ const getInitialStoredState = () => {
   const isAdmin = Boolean(initialUser && isUserAdmin(initialUser.email));
   const isStudent = Boolean(initialUser && !isUserAdmin(initialUser.email));
 
+  const firstName = initialUser?.name ? initialUser.name.split(' ')[0] : 'User';
+  const initialNotification = initialUser
+    ? {
+        title: `Welcome back, ${firstName}!`,
+        text: `Signed in as ${initialUser.name}. ${isAdmin ? 'CMS Portal ready.' : 'Society clearance active.'}`,
+        role: (initialUser.role as UserRole) || (isAdmin ? 'admin' : 'member'),
+        status: (initialUser.status as UserStatus) || 'approved',
+        userName: initialUser.name || 'User',
+        timestamp: Date.now(),
+      }
+    : {
+        title: 'Welcome to KGEC Robotics!',
+        text: 'Greetings Guest! Explore our autonomous bots and wings, or sign in for member clearance.',
+        role: 'member' as UserRole,
+        status: 'approved' as UserStatus,
+        userName: 'Guest',
+        timestamp: Date.now(),
+      };
+
   return {
     metadata: initialMeta,
     sectionTexts: initialTexts,
@@ -324,6 +343,7 @@ const getInitialStoredState = () => {
     hackathonPhotos: initialHackathon,
     teamMembers: initialTeam,
     googleUser: initialUser,
+    userNotification: initialNotification,
     isAdminLoggedIn: isAdmin,
     isStudentLoggedIn: isStudent,
     isLoggedIn: Boolean(initialUser),
@@ -823,7 +843,14 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
     set({
       googleUser: null,
       currentUserProfile: null,
-      userNotification: null,
+      userNotification: {
+        title: 'Welcome to KGEC Robotics!',
+        text: 'Greetings Guest! Explore our autonomous bots and wings, or sign in for member clearance.',
+        role: 'member',
+        status: 'approved',
+        userName: 'Guest',
+        timestamp: Date.now(),
+      },
       isAdminLoggedIn: false,
       isStudentLoggedIn: false,
       isLoggedIn: false,
