@@ -339,7 +339,7 @@ export const UserRegistrationModal: React.FC = () => {
                   Requested Role
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {(['intern', 'member', 'lead', 'studentBody'] as UserRole[]).map((r) => {
+                  {(['studentBody', 'lead', 'member', 'intern'] as UserRole[]).map((r) => {
                     const cfg = ROLE_CONFIG[r];
                     const isSelected = role === r;
                     return (

@@ -175,8 +175,9 @@ export const UserManagementTab: React.FC = () => {
   const approvedCount = users.filter((u) => u.status === 'approved').length;
   const pendingCount = users.filter((u) => u.status === 'pending').length;
   const teacherCount = users.filter((u) => u.role === 'teacherBody' || u.userType === 'teacher').length;
+  const studentBodyExecCount = users.filter((u) => u.role === 'studentBody').length;
   const leadCount = users.filter((u) => u.role === 'lead').length;
-  const internCount = users.filter((u) => u.role === 'intern').length;
+  const memberCount = users.filter((u) => u.role === 'member').length;
 
   return (
     <div id="user-management-tab" className="space-y-6 animate-fade-in text-slate-200">
@@ -237,21 +238,21 @@ export const UserManagementTab: React.FC = () => {
         </div>
         <div className="p-3.5 rounded-2xl bg-purple-950/20 border border-purple-800/40 flex flex-col justify-between shadow-lg">
           <span className="text-[11px] font-medium text-purple-400 flex items-center gap-1">
-            <Briefcase className="w-3.5 h-3.5" /> Faculty Advisor
+            <Briefcase className="w-3.5 h-3.5" /> Faculty Mentor
           </span>
           <div className="text-2xl font-black text-purple-300 mt-1">{teacherCount}</div>
+        </div>
+        <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-800/40 flex flex-col justify-between shadow-lg">
+          <span className="text-[11px] font-medium text-amber-400 flex items-center gap-1">
+            <Sparkles className="w-3.5 h-3.5" /> Student Body Exec
+          </span>
+          <div className="text-2xl font-black text-amber-300 mt-1">{studentBodyExecCount}</div>
         </div>
         <div className="p-3.5 rounded-2xl bg-blue-950/20 border border-blue-800/40 flex flex-col justify-between shadow-lg">
           <span className="text-[11px] font-medium text-blue-400 flex items-center gap-1">
             <Shield className="w-3.5 h-3.5" /> Wing Leads
           </span>
           <div className="text-2xl font-black text-blue-300 mt-1">{leadCount}</div>
-        </div>
-        <div className="p-3.5 rounded-2xl bg-teal-950/20 border border-teal-800/40 flex flex-col justify-between shadow-lg">
-          <span className="text-[11px] font-medium text-teal-400 flex items-center gap-1">
-            <GraduationCap className="w-3.5 h-3.5" /> Interns
-          </span>
-          <div className="text-2xl font-black text-teal-300 mt-1">{internCount}</div>
         </div>
       </div>
 
@@ -281,10 +282,10 @@ export const UserManagementTab: React.FC = () => {
               <option value="all" className="bg-slate-900">All Roles</option>
               <option value="admin" className="bg-slate-900">Admin</option>
               <option value="teacherBody" className="bg-slate-900">Faculty Advisor</option>
-              <option value="lead" className="bg-slate-900">Lead</option>
-              <option value="member" className="bg-slate-900">Member</option>
+              <option value="studentBody" className="bg-slate-900">Student Body Exec</option>
+              <option value="lead" className="bg-slate-900">Wing Lead</option>
+              <option value="member" className="bg-slate-900">Core Member</option>
               <option value="intern" className="bg-slate-900">Intern</option>
-              <option value="studentBody" className="bg-slate-900">Student Body</option>
             </select>
           </div>
 
@@ -378,10 +379,10 @@ export const UserManagementTab: React.FC = () => {
                         >
                           <option value="admin" className="bg-slate-900 text-amber-300">Admin</option>
                           <option value="teacherBody" className="bg-slate-900 text-purple-300">Faculty Advisor</option>
-                          <option value="lead" className="bg-slate-900 text-blue-300">Lead</option>
-                          <option value="member" className="bg-slate-900 text-cyan-300">Member</option>
+                          <option value="studentBody" className="bg-slate-900 text-amber-300">Student Body Exec</option>
+                          <option value="lead" className="bg-slate-900 text-blue-300">Wing Lead</option>
+                          <option value="member" className="bg-slate-900 text-emerald-300">Core Member</option>
                           <option value="intern" className="bg-slate-900 text-teal-300">Intern</option>
-                          <option value="studentBody" className="bg-slate-900 text-slate-300">Student Body</option>
                         </select>
                       </td>
 
@@ -503,9 +504,10 @@ export const UserManagementTab: React.FC = () => {
                 onChange={(e) => setApproveSelectedRole(e.target.value as UserRole)}
                 className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white font-medium focus:outline-none focus:border-emerald-500 cursor-pointer"
               >
-                <option value="intern" className="bg-slate-900">Intern</option>
-                <option value="member" className="bg-slate-900">Member</option>
+                <option value="studentBody" className="bg-slate-900">Student Body Exec</option>
                 <option value="lead" className="bg-slate-900">Wing Lead</option>
+                <option value="member" className="bg-slate-900">Core Member</option>
+                <option value="intern" className="bg-slate-900">Intern</option>
                 <option value="teacherBody" className="bg-slate-900">Faculty Advisor</option>
                 <option value="admin" className="bg-slate-900">Administrator</option>
               </select>
