@@ -506,19 +506,29 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
   },
 
   deleteUser: async (userId: string) => {
+    if (!userId) return false;
+    const normalizedTarget = userId.toLowerCase().trim();
+    // Optimistically update local list
+    set((prev) => ({
+      users: prev.users.filter(
+        (u) => u.id !== userId && u.email?.toLowerCase().trim() !== normalizedTarget
+      ),
+    }));
+
     try {
       const res = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
         method: 'DELETE',
       });
       const data = await res.json();
       if (data.success) {
-        set((prev) => ({
-          users: prev.users.filter((u) => u.id !== userId),
-        }));
-        get().showToast('User record removed from database.');
+        get().showToast('User application record deleted permanently.');
         return true;
+      } else {
+        // Re-fetch if backend fails
+        await get().fetchUsersList();
       }
     } catch (err: any) {
+      await get().fetchUsersList();
       get().showToast(`Delete failed: ${err?.message || 'Network error'}`);
     }
     return false;

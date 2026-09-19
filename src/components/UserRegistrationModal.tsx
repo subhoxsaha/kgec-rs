@@ -146,46 +146,63 @@ export const UserRegistrationModal: React.FC = () => {
   return (
     <div
       id="user-registration-modal-overlay"
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 dark:bg-slate-950/85 backdrop-blur-md overflow-y-auto animate-fade-in"
     >
       <div
         id="user-registration-modal-container"
-        className="relative w-full max-w-2xl bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col"
+        className="relative w-full max-w-2xl bg-white dark:bg-[#0f1711] border border-slate-200 dark:border-emerald-500/30 rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col text-slate-800 dark:text-slate-200"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-slate-800/80 border-b border-slate-700">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-6 py-4 bg-slate-50 dark:bg-slate-900/90 border-b border-slate-200 dark:border-slate-800/80">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
-              <UserCheck className="w-5 h-5" />
-            </div>
+            {googleUser?.picture ? (
+              <img
+                src={googleUser.picture}
+                alt={googleUser.name}
+                referrerPolicy="no-referrer"
+                className="w-10 h-10 rounded-xl object-cover border border-emerald-500/40 shrink-0 shadow-xs"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                <UserCheck className="w-5 h-5" />
+              </div>
+            )}
             <div>
-              <h2 className="text-lg font-bold text-white tracking-wide flex items-center gap-2">
-                Society User Registration
-                <span className="text-xs px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                  Role-Based
+              <div className="flex items-center gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-wide">
+                  KGEC Robotics Clearance
+                </h2>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                  Society Roster
                 </span>
-              </h2>
-              <p className="text-xs text-slate-400">
-                Register your credentials and request formal clearance under KGEC Robotics Society.
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                {googleUser ? (
+                  <span>
+                    Logged in as <span className="text-emerald-600 dark:text-emerald-300 font-semibold">{googleUser.email}</span>
+                  </span>
+                ) : (
+                  'Complete student/faculty registration to request formal access permissions.'
+                )}
               </p>
             </div>
           </div>
           <button
             id="close-registration-modal-btn"
             onClick={closeApplicationForm}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 transition-colors"
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer"
             title="Close"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Scrollable Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5 text-sm">
-          {/* User Type Switcher */}
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
+          {/* Applicant Category Switcher */}
           <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Applicant Category
+            <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              Select Roster Category
             </label>
             <div className="grid grid-cols-2 gap-3">
               <button
@@ -195,13 +212,13 @@ export const UserRegistrationModal: React.FC = () => {
                   setUserType('student');
                   if (role === 'teacherBody') setRole('member');
                 }}
-                className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border text-sm font-medium transition-all ${
+                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   userType === 'student'
-                    ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-300 shadow-sm shadow-cyan-500/10'
-                    : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    ? 'bg-cyan-500/10 dark:bg-cyan-500/20 border-cyan-500 text-cyan-800 dark:text-cyan-200 shadow-sm ring-1 ring-cyan-500/40'
+                    : 'bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800/80'
                 }`}
               >
-                <GraduationCap className="w-4 h-4" />
+                <GraduationCap className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                 Student Body
               </button>
               <button
@@ -211,26 +228,30 @@ export const UserRegistrationModal: React.FC = () => {
                   setUserType('teacher');
                   setRole('teacherBody');
                 }}
-                className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border text-sm font-medium transition-all ${
+                className={`flex items-center justify-center gap-2 py-3 px-4 rounded-2xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   userType === 'teacher'
-                    ? 'bg-purple-500/15 border-purple-500/50 text-purple-300 shadow-sm shadow-purple-500/10'
-                    : 'bg-slate-800/40 border-slate-700/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    ? 'bg-purple-500/10 dark:bg-purple-500/20 border-purple-500 text-purple-800 dark:text-purple-200 shadow-sm ring-1 ring-purple-500/40'
+                    : 'bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800/80'
                 }`}
               >
-                <Briefcase className="w-4 h-4" />
+                <Briefcase className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                 Teacher / Faculty Body
               </button>
             </div>
           </div>
 
-          {/* Role Selection (If Student) */}
+          {/* Role Selection Grid for Students */}
           {userType === 'student' && (
             <div className="space-y-2">
-              <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                <span>Requested Society Role</span>
-                <span className="text-slate-500 text-[11px] font-normal">Requires Admin approval</span>
-              </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  Requested Tier Role
+                </label>
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                  Review & Clearance by Admin
+                </span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 {(['intern', 'member', 'lead', 'studentBody'] as UserRole[]).map((r) => {
                   const cfg = ROLE_CONFIG[r];
                   const isSelected = role === r;
@@ -240,16 +261,16 @@ export const UserRegistrationModal: React.FC = () => {
                       type="button"
                       id={`role-btn-${r}`}
                       onClick={() => setRole(r)}
-                      className={`p-2.5 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between cursor-pointer ${
                         isSelected
-                          ? `${cfg.bgColor} ${cfg.borderColor} ring-1 ring-amber-400/50`
-                          : 'bg-slate-800/40 border-slate-700/50 hover:bg-slate-800 text-slate-400'
+                          ? `${cfg.bgColor} ${cfg.borderColor} ring-2 ring-emerald-500/40 shadow-sm`
+                          : 'bg-slate-100/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 hover:bg-slate-200/80 dark:hover:bg-slate-800/60 text-slate-600 dark:text-slate-400'
                       }`}
                     >
-                      <span className={`text-xs font-bold uppercase tracking-wider ${isSelected ? cfg.textColor : 'text-slate-300'}`}>
+                      <span className={`text-xs font-bold uppercase tracking-wider ${isSelected ? cfg.textColor : 'text-slate-700 dark:text-slate-300'}`}>
                         {cfg.label}
                       </span>
-                      <span className="text-[10px] text-slate-400 mt-1 line-clamp-2">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 leading-tight">
                         {cfg.description}
                       </span>
                     </button>
@@ -259,24 +280,22 @@ export const UserRegistrationModal: React.FC = () => {
             </div>
           )}
 
-          {/* Teacher Role Info */}
+          {/* Teacher Info Box */}
           {userType === 'teacher' && (
-            <div className="p-3.5 rounded-xl bg-purple-950/30 border border-purple-800/40 flex items-start gap-3">
-              <Shield className="w-5 h-5 text-purple-400 shrink-0 mt-0.5" />
-              <div className="text-xs text-purple-200">
-                <p className="font-semibold text-purple-100">Teacher Body / Faculty Advisor Role</p>
-                <p className="text-purple-300/80 mt-0.5">
-                  Faculty credentials are automatically reviewed by the President/Admin. Enables research mentorship, grant endorsement, and society advisory badges.
-                </p>
+            <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-800/40 flex items-start gap-3">
+              <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+              <div className="text-xs text-purple-900 dark:text-purple-200">
+                <span className="font-bold text-purple-950 dark:text-purple-100">Faculty Advisor Clearance: </span>
+                Faculty profiles receive academic advisor badges upon President clearance for project grant endorsement and lab guidance.
               </div>
             </div>
           )}
 
-          {/* Personal & Academic Details */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Main Credentials Inputs */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                Full Official Name *
+              <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                Full Official Name <span className="text-rose-500 dark:text-rose-400">*</span>
               </label>
               <input
                 type="text"
@@ -284,24 +303,24 @@ export const UserRegistrationModal: React.FC = () => {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Subho Saha / Dr. D. De"
-                className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 text-xs sm:text-sm"
+                placeholder="e.g. Subho Saha"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 text-xs sm:text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                <Building className="w-3.5 h-3.5 text-slate-400" />
-                Department *
+              <label className="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                <Building className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                Department <span className="text-rose-500 dark:text-rose-400">*</span>
               </label>
               <select
                 id="reg-department-select"
-                value={department}
+                value={department || DEPARTMENTS[0]}
                 onChange={(e) => setDepartment(e.target.value)}
-                className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
               >
                 {DEPARTMENTS.map((dept) => (
-                  <option key={dept} value={dept}>
+                  <option key={dept} value={dept} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {dept}
                   </option>
                 ))}
@@ -309,9 +328,9 @@ export const UserRegistrationModal: React.FC = () => {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5 text-slate-400" />
-                {userType === 'teacher' ? 'Faculty ID / Employee Code *' : 'College Roll Number *'}
+              <label className="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                {userType === 'teacher' ? 'Faculty ID / Employee Code' : 'College Roll Number'} <span className="text-rose-500 dark:text-rose-400">*</span>
               </label>
               <input
                 type="text"
@@ -320,45 +339,45 @@ export const UserRegistrationModal: React.FC = () => {
                 value={rollOrId}
                 onChange={(e) => setRollOrId(e.target.value)}
                 placeholder={userType === 'teacher' ? 'e.g. KGEC/FAC/CSE/012' : 'e.g. ECE/2022/042'}
-                className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
               />
             </div>
 
             {userType === 'student' ? (
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-300 font-medium">Academic Year / Semester</label>
+                <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Academic Year / Semester</label>
                 <select
                   id="reg-year-select"
-                  value={yearOrSem}
+                  value={yearOrSem || '1st Year (1st/2nd Sem)'}
                   onChange={(e) => setYearOrSem(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 text-xs sm:text-sm"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                 >
-                  <option value="1st Year (1st/2nd Sem)">1st Year (1st/2nd Sem)</option>
-                  <option value="2nd Year (3rd/4th Sem)">2nd Year (3rd/4th Sem)</option>
-                  <option value="3rd Year (5th/6th Sem)">3rd Year (5th/6th Sem)</option>
-                  <option value="Final Year (7th/8th Sem)">Final Year (7th/8th Sem)</option>
-                  <option value="M.Tech / Postgraduate">M.Tech / Postgraduate</option>
-                  <option value="Alumni / Mentor">Alumni / Mentor</option>
+                  <option value="1st Year (1st/2nd Sem)" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">1st Year (1st/2nd Sem)</option>
+                  <option value="2nd Year (3rd/4th Sem)" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">2nd Year (3rd/4th Sem)</option>
+                  <option value="3rd Year (5th/6th Sem)" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">3rd Year (5th/6th Sem)</option>
+                  <option value="Final Year (7th/8th Sem)" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Final Year (7th/8th Sem)</option>
+                  <option value="M.Tech / Postgraduate" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">M.Tech / Postgraduate</option>
+                  <option value="Alumni / Mentor" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Alumni / Mentor</option>
                 </select>
               </div>
             ) : (
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-300 font-medium">Faculty Designation</label>
+                <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Faculty Designation</label>
                 <input
                   type="text"
                   id="reg-designation-input"
                   value={designation}
                   onChange={(e) => setDesignation(e.target.value)}
-                  placeholder="e.g. Associate Professor / HoD"
-                  className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 text-xs sm:text-sm"
+                  placeholder="e.g. Associate Professor / Head of Dept"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
                 />
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                <Phone className="w-3.5 h-3.5 text-slate-400" />
-                Contact Phone / WhatsApp
+              <label className="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                <Phone className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                Phone / WhatsApp Number
               </label>
               <input
                 type="tel"
@@ -366,23 +385,23 @@ export const UserRegistrationModal: React.FC = () => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+91 98765 43210"
-                className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
               />
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                <Cpu className="w-3.5 h-3.5 text-slate-400" />
+              <label className="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 Primary Technical Wing
               </label>
               <select
                 id="reg-wing-select"
-                value={technicalWing}
+                value={technicalWing || TECHNICAL_WINGS[0]}
                 onChange={(e) => setTechnicalWing(e.target.value)}
-                className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-cyan-500 text-xs sm:text-sm"
+                className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
               >
                 {TECHNICAL_WINGS.map((w) => (
-                  <option key={w} value={w}>
+                  <option key={w} value={w} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                     {w}
                   </option>
                 ))}
@@ -390,12 +409,14 @@ export const UserRegistrationModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Technical Skills & Specialization */}
+          {/* Technical Skills & Fields */}
           <div className="space-y-1.5">
-            <label className="text-xs text-slate-300 font-medium flex items-center justify-between">
-              <span>{userType === 'teacher' ? 'Research Fields & Specialization' : 'Key Technical Skills (Comma-separated)'}</span>
-              <span className="text-[11px] text-slate-500">e.g. ROS2, STM32, SolidWorks, PyTorch</span>
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                {userType === 'teacher' ? 'Research Fields & Core Expertise' : 'Key Technical Skills'}
+              </label>
+              <span className="text-[10px] text-slate-400 dark:text-slate-500">Comma-separated</span>
+            </div>
             <input
               type="text"
               id="reg-skills-input"
@@ -404,17 +425,17 @@ export const UserRegistrationModal: React.FC = () => {
               placeholder={
                 userType === 'teacher'
                   ? 'e.g. Embedded AI, Swarm Robotics, Power Systems'
-                  : 'e.g. Embedded C++, STM32, ROS2, SolidWorks, PCB Design'
+                  : 'e.g. C++, STM32, ROS2, SolidWorks, PyTorch, PCB Design'
               }
-              className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 text-xs sm:text-sm"
+              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs sm:text-sm"
             />
           </div>
 
-          {/* Social Links */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Social Profiles */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                <Linkedin className="w-3.5 h-3.5 text-blue-400" />
+              <label className="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                <Linkedin className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                 LinkedIn Profile URL
               </label>
               <input
@@ -423,14 +444,14 @@ export const UserRegistrationModal: React.FC = () => {
                 value={linkedinUrl}
                 onChange={(e) => setLinkedinUrl(e.target.value)}
                 placeholder="https://linkedin.com/in/..."
-                className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 text-xs"
+                className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 text-xs"
               />
             </div>
 
             {userType === 'teacher' ? (
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-purple-400" />
+                <label className="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                   Google Scholar / Research Profile
                 </label>
                 <input
@@ -439,14 +460,14 @@ export const UserRegistrationModal: React.FC = () => {
                   value={scholarUrl}
                   onChange={(e) => setScholarUrl(e.target.value)}
                   placeholder="https://scholar.google.com/..."
-                  className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 text-xs"
+                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-purple-500 text-xs"
                 />
               </div>
             ) : (
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <Github className="w-3.5 h-3.5 text-slate-300" />
-                  GitHub / Portfolio URL
+                <label className="text-xs text-slate-700 dark:text-slate-300 font-medium flex items-center gap-1.5">
+                  <Github className="w-3.5 h-3.5 text-slate-700 dark:text-slate-300" />
+                  GitHub / Portfolio Link
                 </label>
                 <input
                   type="url"
@@ -454,7 +475,7 @@ export const UserRegistrationModal: React.FC = () => {
                   value={githubUrl}
                   onChange={(e) => setGithubUrl(e.target.value)}
                   placeholder="https://github.com/..."
-                  className="w-full px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 text-xs"
+                  className="w-full px-3.5 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500 text-xs"
                 />
               </div>
             )}
@@ -462,26 +483,26 @@ export const UserRegistrationModal: React.FC = () => {
 
           {/* Statement of Purpose */}
           <div className="space-y-1.5">
-            <label className="text-xs text-slate-300 font-medium">
-              Statement of Purpose / Society Interest
+            <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+              Statement of Purpose / Project Goals
             </label>
             <textarea
               id="reg-sop-input"
               rows={2}
               value={statementOfPurpose}
               onChange={(e) => setStatementOfPurpose(e.target.value)}
-              placeholder="Briefly describe your goals with KGEC Robotics Society, relevant past projects, or why you want to join this wing..."
-              className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 text-xs resize-none"
+              placeholder="Briefly state your robotics goals, past project work, or motivation for joining this technical wing..."
+              className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs resize-none"
             />
           </div>
 
-          {/* Footer Action */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-slate-800">
+          {/* Submit Action */}
+          <div className="pt-3 flex items-center justify-end gap-3 border-t border-slate-200 dark:border-slate-800/80">
             <button
               type="button"
               id="cancel-registration-btn"
               onClick={closeApplicationForm}
-              className="px-4 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors text-xs font-medium"
+              className="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-xs font-medium cursor-pointer"
             >
               Cancel
             </button>
@@ -489,10 +510,10 @@ export const UserRegistrationModal: React.FC = () => {
               type="submit"
               id="submit-registration-btn"
               disabled={isSubmitting}
-              className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all text-xs disabled:opacity-50"
+              className="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 dark:bg-gradient-to-r dark:from-emerald-500 dark:to-teal-500 dark:hover:from-emerald-400 dark:hover:to-teal-400 text-white dark:text-slate-950 font-bold flex items-center gap-2 shadow-lg shadow-emerald-950/20 dark:shadow-emerald-950/40 transition-all text-xs cursor-pointer disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
-              {isSubmitting ? 'Submitting Application...' : 'Submit Society Registration'}
+              {isSubmitting ? 'Submitting Application...' : 'Submit Clearance Request'}
             </button>
           </div>
         </form>

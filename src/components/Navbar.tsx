@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useReportData } from '../context/ReportDataContext';
+import { getUserAvatarUrl, getUserRoleDisplayLabel } from '../utils/avatarUtils';
 import {
   DEFAULT_KGEC_LOGO,
   DEFAULT_KRS_LOGO,
@@ -325,53 +326,37 @@ export const Navbar: React.FC = () => {
                 {googleUser ? (
                   <div className="p-2 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-1.5">
                     <div className="flex items-center gap-2">
-                      {googleUser.picture ? (
-                        <img
-                          src={googleUser.picture}
-                          alt={googleUser.name}
-                          referrerPolicy="no-referrer"
-                          className={`w-7 h-7 rounded-full object-cover shrink-0 border ${
-                            isAdminLoggedIn ? 'border-amber-400' : 'border-emerald-500'
-                          }`}
-                        />
-                      ) : (
-                        <div className="w-7 h-7 rounded-full bg-emerald-800 text-white flex items-center justify-center font-semibold text-xs shrink-0">
-                          {googleUser.name?.charAt(0) || 'U'}
-                        </div>
-                      )}
+                      <img
+                        src={getUserAvatarUrl(googleUser)}
+                        alt={googleUser.name}
+                        referrerPolicy="no-referrer"
+                        className={`w-8 h-8 rounded-full object-cover shrink-0 border ${
+                          isAdminLoggedIn ? 'border-amber-400' : 'border-emerald-500'
+                        }`}
+                      />
 
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-xs font-semibold text-[#1F2B1D] dark:text-white truncate">
                             {googleUser.name}
                           </span>
-                          <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold shrink-0 ${
+                          <span className={`px-2 py-0.5 rounded text-[9px] font-bold shrink-0 ${
                             isAdminLoggedIn
                               ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30'
-                              : currentUserProfile?.role === 'lead'
-                              ? 'bg-blue-500/20 text-blue-800 dark:text-blue-300 border border-blue-500/30'
-                              : currentUserProfile?.role === 'teacherBody'
-                              ? 'bg-purple-500/20 text-purple-800 dark:text-purple-300 border border-purple-500/30'
-                              : currentUserProfile?.role === 'intern'
-                              ? 'bg-teal-500/20 text-teal-800 dark:text-teal-300 border border-teal-500/30'
+                              : currentUserProfile?.status === 'pending'
+                              ? 'bg-amber-500/25 text-amber-800 dark:text-amber-300 border border-amber-500/40 animate-pulse'
                               : 'bg-emerald-600/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30'
                           }`}>
                             {isAdminLoggedIn
-                              ? 'Admin'
-                              : currentUserProfile?.role === 'teacherBody'
-                              ? 'Faculty'
-                              : currentUserProfile?.role === 'lead'
-                              ? 'Lead'
-                              : currentUserProfile?.role === 'intern'
-                              ? 'Intern'
-                              : currentUserProfile?.role === 'studentBody'
-                              ? 'Student'
-                              : 'Member'}
+                              ? 'Executive Admin'
+                              : currentUserProfile?.status === 'pending'
+                              ? `⏳ Pending Approval (${currentUserProfile?.role || 'Member'})`
+                              : getUserRoleDisplayLabel(currentUserProfile?.role, currentUserProfile?.status)}
                           </span>
                         </div>
                         {currentUserProfile && (
-                          <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate">
-                            {currentUserProfile.department || currentUserProfile.rollOrId || 'KGEC RS'}
+                          <div className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                            {currentUserProfile.department || currentUserProfile.rollOrId || 'KGEC RS Member'}
                           </div>
                         )}
                       </div>

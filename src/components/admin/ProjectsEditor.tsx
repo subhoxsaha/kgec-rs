@@ -731,7 +731,7 @@ export const ProjectsEditor: React.FC = () => {
                         Status
                       </label>
                       <select
-                        value={project.status}
+                        value={project.status || 'Operational Fleet'}
                         onChange={(e) => updateBotProject(project.id, { status: e.target.value })}
                         className="w-full px-2 py-1 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
                       >

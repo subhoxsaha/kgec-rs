@@ -218,7 +218,17 @@ export const TeamEditor: React.FC = () => {
 
       {/* Header & Stats Strip */}
       <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/12 dark:border-white/10 shadow-2xs space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Independence Note Banner */}
+        <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between gap-2 text-xs text-emerald-900 dark:text-emerald-200">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+            <span>
+              <strong>Public Showcase Roster:</strong> Members created here appear on the website&apos;s public Leadership &amp; Team cards. This list is managed completely independently from website user account registrations in the <em>User Applications &amp; Roles</em> tab.
+            </span>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
           <div>
             <h4 className="text-sm font-bold text-[#1F2B1D] dark:text-[#F4EFE6] flex items-center gap-2">
               <Users className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
@@ -432,7 +442,7 @@ export const TeamEditor: React.FC = () => {
                 Category / Section *
               </label>
               <select
-                value={newMember.category}
+                value={newMember.category || 'student'}
                 onChange={(e) => setNewMember({ ...newMember, category: e.target.value as TeamCategory })}
                 className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-semibold text-[#1F2B1D] dark:text-[#F4EFE6]"
               >
@@ -588,6 +598,19 @@ export const TeamEditor: React.FC = () => {
                 >
                   <Upload className="w-3.5 h-3.5" />
                   <span>Upload</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const identifier = newMember.email || newMember.name || 'Member';
+                    const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(identifier)}&background=0D9488&color=ffffff&bold=true&size=256`;
+                    setNewMember({ ...newMember, avatarUrl: avatar });
+                  }}
+                  className="px-2.5 py-1.5 rounded-lg bg-teal-500/15 text-teal-800 dark:text-teal-300 hover:bg-teal-500/25 border border-teal-500/30 text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0"
+                  title="Generate avatar from email or name"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                  <span>Email PFP</span>
                 </button>
               </div>
             </div>
@@ -791,7 +814,7 @@ export const TeamEditor: React.FC = () => {
                           Category / Section
                         </label>
                         <select
-                          value={member.category}
+                          value={member.category || 'student'}
                           onChange={(e) =>
                             updateTeamMember(member.id, { category: e.target.value as TeamCategory })
                           }
@@ -909,6 +932,18 @@ export const TeamEditor: React.FC = () => {
                             title="Upload local photo"
                           >
                             <Upload className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const identifier = member.email || member.name || 'Member';
+                              const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(identifier)}&background=0D9488&color=ffffff&bold=true&size=256`;
+                              updateTeamMember(member.id, { avatarUrl: avatar });
+                            }}
+                            className="p-1 rounded bg-teal-500/20 text-teal-800 dark:text-teal-300 hover:bg-teal-500/30 border border-teal-500/30 cursor-pointer"
+                            title="Generate Email PFP Avatar"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>

@@ -185,7 +185,7 @@ const RobotMascotComponent: React.FC<RobotMascotProps> = ({
         }`}
       >
         <AnimatePresence>
-          {(showSpeech || Boolean(userNotification)) && (
+          {showSpeech && (
             <motion.div
               layout
               key="speech-bubble-container"
@@ -198,9 +198,7 @@ const RobotMascotComponent: React.FC<RobotMascotProps> = ({
                 scale: { duration: 0.18 },
               }}
               className={`relative rounded-2xl bg-white/95 dark:bg-[#131F12]/95 backdrop-blur-xl border border-emerald-500/35 dark:border-emerald-400/45 shadow-2xl shadow-emerald-950/20 ${
-                userNotification
-                  ? 'w-[310px] xs:w-[350px] sm:w-[400px] max-w-[calc(100vw-2rem)] p-4 text-left whitespace-normal ring-2 ring-emerald-500/40'
-                  : isThinking
+                isThinking
                   ? 'px-4 py-2.5 whitespace-nowrap'
                   : isLargePara
                   ? 'w-[290px] xs:w-[330px] sm:w-[380px] md:w-[420px] max-w-[calc(100vw-2rem)] px-4 sm:px-5 py-3 sm:py-3.5 text-center sm:text-left whitespace-normal'
@@ -208,87 +206,7 @@ const RobotMascotComponent: React.FC<RobotMascotProps> = ({
               }`}
             >
               <AnimatePresence mode="wait" initial={false}>
-                {userNotification ? (
-                  <motion.div
-                    key="user-notification-bubble"
-                    initial={{ opacity: 0, y: 4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    className="space-y-2.5"
-                  >
-                    <div className="flex items-start justify-between gap-2 border-b border-emerald-500/20 pb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
-                          <ShieldCheck className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-bold text-emerald-950 dark:text-emerald-100">
-                              {userNotification.title}
-                            </span>
-                            {userNotification.role && (
-                              <span
-                                className={`text-[10px] font-bold px-1.5 py-0.2 rounded-full border ${
-                                  ROLE_CONFIG[userNotification.role]?.bgColor || 'bg-slate-800'
-                                } ${ROLE_CONFIG[userNotification.role]?.textColor || 'text-slate-200'} ${
-                                  ROLE_CONFIG[userNotification.role]?.borderColor || 'border-slate-700'
-                                }`}
-                              >
-                                {ROLE_CONFIG[userNotification.role]?.label || userNotification.role}
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-emerald-700 dark:text-emerald-400/80">
-                            Authenticated as {userNotification.userName}
-                          </span>
-                        </div>
-                      </div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          dismissUserNotification();
-                        }}
-                        className="p-1 text-slate-400 hover:text-slate-200 rounded-md hover:bg-slate-800/40"
-                        title="Dismiss notification"
-                      >
-                        <X className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-normal">
-                      {userNotification.text}
-                    </p>
-
-                    <div className="flex items-center justify-between pt-1 text-[11px]">
-                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                        <CheckCircle2 className="w-3 h-3" /> Clearance Active
-                      </span>
-                      <div className="flex items-center gap-1.5">
-                        {isAdminLoggedIn && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openEditor('users');
-                              dismissUserNotification();
-                            }}
-                            className="px-2 py-1 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px]"
-                          >
-                            Open CMS Roster
-                          </button>
-                        )}
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            dismissUserNotification();
-                          }}
-                          className="px-2 py-1 rounded-md bg-emerald-700/20 hover:bg-emerald-700/30 text-emerald-800 dark:text-emerald-200 text-[10px] font-medium"
-                        >
-                          Dismiss
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                ) : isThinking ? (
+                {isThinking ? (
                   <motion.div
                     key="state-thinking"
                     initial={{ opacity: 0, y: 2 }}

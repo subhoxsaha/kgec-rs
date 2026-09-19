@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { RotateCw, Search, X, Bell } from 'lucide-react';
+import { RotateCw, Search, X, Bell, ShieldCheck, CheckCircle2, Clock } from 'lucide-react';
 import { BOT_QUICK_QUESTIONS, BotQuickQuestion, BotFollowUpOption } from '../data/robotQuestions';
 import { TypewriterText } from './TypewriterText';
+import { useReportDataStore } from '../store/useReportDataStore';
+import { ROLE_CONFIG } from '../types';
 
 const EVENT_NOTIFICATION_ITEM: BotQuickQuestion = {
   id: 'event-notification',
@@ -47,7 +49,16 @@ export const HeroRobotCompanion: React.FC<HeroRobotCompanionProps> = ({
   const alertOrbGlowId = `heroAlertOrbGlow_${uid}`;
   const coreGlowId = `heroCoreGlow_${uid}`;
 
-  // Completely isolated local state (ZERO sync with About section bot)
+  // Store user notification state for Hero section
+  const {
+    userNotification,
+    dismissUserNotification,
+    isAdminLoggedIn,
+    openEditor,
+    currentUserProfile,
+  } = useReportDataStore();
+
+  // Completely isolated local state
   const [selectedQuestion, setSelectedQuestion] = useState<BotQuickQuestion | null>(null);
   const [activeFollowUp, setActiveFollowUp] = useState<BotFollowUpOption | null>(null);
   const [isThinking, setIsThinking] = useState(false);
@@ -260,6 +271,94 @@ export const HeroRobotCompanion: React.FC<HeroRobotCompanionProps> = ({
     >
       {/* 1. LEFT CONTROLS (INPUT / SEARCH / PILLS / ACTIVE REPLY) ALIGNED TOWARDS ROBOT */}
       <div className="flex-1 min-w-0 flex flex-col items-end justify-end">
+        {/* User Clearance / Permit Notification Card in Hero Section */}
+        <AnimatePresence>
+          {userNotification && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              className="w-full max-w-[320px] xs:max-w-[360px] sm:max-w-[400px] mb-2 p-3.5 rounded-2xl bg-[#0b150d]/95 backdrop-blur-2xl border border-emerald-500/50 shadow-2xl text-left ring-2 ring-emerald-500/30"
+            >
+              <div className="flex items-start justify-between gap-2 border-b border-emerald-500/20 pb-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="p-1 rounded-lg bg-emerald-500/20 text-emerald-400">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-xs font-bold text-emerald-200">
+                        {userNotification.title}
+                      </span>
+                      {userNotification.role && (
+                        <span
+                          className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                            currentUserProfile?.status === 'pending'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 animate-pulse'
+                              : `${ROLE_CONFIG[userNotification.role]?.bgColor || 'bg-slate-800'} ${ROLE_CONFIG[userNotification.role]?.textColor || 'text-slate-200'} ${ROLE_CONFIG[userNotification.role]?.borderColor || 'border-slate-700'}`
+                          }`}
+                        >
+                          {currentUserProfile?.status === 'pending'
+                            ? `⏳ Pending Approval (${ROLE_CONFIG[userNotification.role]?.label || userNotification.role})`
+                            : ROLE_CONFIG[userNotification.role]?.label || userNotification.role}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-[10px] text-emerald-400/80">
+                      Clearance profile: {userNotification.userName}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dismissUserNotification();
+                  }}
+                  className="p-1 text-stone-400 hover:text-white rounded-md hover:bg-white/10"
+                  title="Dismiss notification"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-stone-300 leading-relaxed font-normal">
+                {userNotification.text}
+              </p>
+
+              <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-white/10 text-[11px]">
+                <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400">
+                  <CheckCircle2 className="w-3 h-3" /> Clearance Active in Hero
+                </span>
+                <div className="flex items-center gap-1.5">
+                  {isAdminLoggedIn && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEditor('users');
+                        dismissUserNotification();
+                      }}
+                      className="px-2 py-1 rounded-md bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-[10px]"
+                    >
+                      CMS Roster
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      dismissUserNotification();
+                    }}
+                    className="px-2 py-1 rounded-md bg-emerald-700/30 hover:bg-emerald-700/50 text-emerald-200 border border-emerald-500/40 text-[10px] font-medium"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* UNIFIED PRESENCE: PREVENTS OVERLAPPING AND VERTICAL JITTER */}
         <AnimatePresence mode="wait" initial={false}>
           {!selectedQuestion ? (

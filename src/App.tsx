@@ -16,6 +16,8 @@ import { TeamDirectorySection } from './components/TeamDirectorySection';
 import { RoadmapGratitudeSection } from './components/RoadmapGratitudeSection';
 import { BackdoorLoginModal } from './components/BackdoorLoginModal';
 import { ContentEditorDrawer } from './components/ContentEditorDrawer';
+import { UserRegistrationModal } from './components/UserRegistrationModal';
+import { AdminFloatingBar } from './components/AdminFloatingBar';
 import { TechtixZyroPage } from './components/TechtixZyroPage';
 
 function MainContent() {
@@ -77,6 +79,8 @@ function MainContent() {
         <TechtixZyroPage onBack={handleBackToHome} />
         <BackdoorLoginModal />
         <ContentEditorDrawer />
+        <UserRegistrationModal />
+        <AdminFloatingBar />
       </>
     );
   }
@@ -102,9 +106,11 @@ function MainContent() {
         <RoadmapGratitudeSection />
       </main>
 
-      {/* Backdoor Content Editor Suite & Modals (Triggered ONLY from the last section footer) */}
+      {/* Backdoor Content Editor Suite, Modals & Floating Dock */}
       <BackdoorLoginModal />
       <ContentEditorDrawer />
+      <UserRegistrationModal />
+      <AdminFloatingBar />
     </div>
   );
 }
