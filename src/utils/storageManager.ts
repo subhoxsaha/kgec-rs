@@ -31,7 +31,8 @@ export interface MongoDbStatus {
 export async function fetchMongoDbStatus(force = false): Promise<MongoDbStatus> {
   try {
     const res = await fetch(`/api/db/status${force ? '?force=true' : ''}`);
-    if (!res.ok) {
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('application/json')) {
       throw new Error(`HTTP ${res.status}`);
     }
     const data = await res.json();
@@ -57,7 +58,8 @@ export async function syncCmsToMongoDB(payload: unknown): Promise<{ success: boo
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    if (!res.ok) {
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('application/json')) {
       throw new Error(`Server returned HTTP ${res.status}`);
     }
     const result = await res.json();
@@ -73,7 +75,8 @@ export async function syncCmsToMongoDB(payload: unknown): Promise<{ success: boo
 export async function fetchCmsFromMongoDB(): Promise<any | null> {
   try {
     const res = await fetch('/api/cms/state');
-    if (!res.ok) return null;
+    const ct = res.headers.get('content-type') || '';
+    if (!res.ok || !ct.includes('application/json')) return null;
     const json = await res.json();
     if (json && json.state) {
       return json.state;

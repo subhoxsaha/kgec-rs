@@ -9,7 +9,7 @@ const VERIFIED_ATLAS_URI = 'mongodb+srv://subhoxsaha_db_user:subhoxsaha_db_user@
 
 function getRawUri(): string {
   const envUri = process.env.MONGODB_URI;
-  if (envUri && envUri.trim().length > 0 && !envUri.includes('username:password') && envUri.includes('subhoxsaha_db_user:subhoxsaha_db_user')) {
+  if (envUri && envUri.trim().length > 0 && !envUri.includes('username:password')) {
     return envUri.trim();
   }
   return VERIFIED_ATLAS_URI;
@@ -40,8 +40,10 @@ export interface DbStatus {
   storageMode: 'mongodb_cloud' | 'local_resilient_disk';
 }
 
-// Local filesystem fallback store
-const DATA_DIR = path.join(process.cwd(), '.data_store');
+// Local filesystem fallback store (uses writable /tmp directory on Vercel/serverless)
+const DATA_DIR = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
+  ? path.join('/tmp', '.data_store')
+  : path.join(process.cwd(), '.data_store');
 const CMS_BACKUP_FILE = path.join(DATA_DIR, 'cms_state.json');
 const MESSAGES_BACKUP_FILE = path.join(DATA_DIR, 'messages.json');
 const USERS_BACKUP_FILE = path.join(DATA_DIR, 'users.json');
