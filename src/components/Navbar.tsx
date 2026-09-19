@@ -385,7 +385,7 @@ export const Navbar: React.FC = () => {
                           className="flex-1 py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-[11px] transition-colors flex items-center justify-center gap-1 cursor-pointer"
                         >
                           <Cpu className="w-3 h-3 text-emerald-400" />
-                          <span>My Application</span>
+                          <span>{currentUserProfile?.status === 'approved' ? 'Member Card' : 'My Application'}</span>
                         </button>
                       )}
                       <button

@@ -67,6 +67,25 @@ export const UserManagementTab: React.FC = () => {
     showToast('User application approved successfully!');
   };
 
+  const handleSetPending = async (userId: string) => {
+    await updateUserRoleStatus(userId, {
+      status: 'pending',
+      reviewedBy: googleUser?.name || 'Administrator',
+    });
+    showToast('Application reverted to Pending Review.');
+  };
+
+  const handleStatusChange = async (userId: string, newStatus: UserStatus) => {
+    if (newStatus === 'rejected') {
+      handleOpenReject(userId);
+    } else {
+      await updateUserRoleStatus(userId, {
+        status: newStatus,
+        reviewedBy: googleUser?.name || 'Administrator',
+      });
+    }
+  };
+
   const handleOpenReject = (userId: string) => {
     setRejectTargetId(userId);
     setRejectionReason('');
@@ -344,23 +363,25 @@ export const UserManagementTab: React.FC = () => {
                         </select>
                       </td>
 
-                      {/* Status Badge */}
+                      {/* Status Selector & Badge */}
                       <td className="py-3 px-3">
-                        {isApproved && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                            <CheckCircle2 className="w-3 h-3" /> Approved
-                          </span>
-                        )}
-                        {isPending && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                            <Clock className="w-3 h-3" /> Pending Review
-                          </span>
-                        )}
-                        {isRejected && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                            <XCircle className="w-3 h-3" /> Rejected
-                          </span>
-                        )}
+                        <div className="flex items-center gap-1.5">
+                          <select
+                            value={user.status || 'pending'}
+                            onChange={(e) => handleStatusChange(user.id, e.target.value as UserStatus)}
+                            className={`text-xs font-semibold px-2 py-0.5 rounded-full border focus:outline-none cursor-pointer ${
+                              isApproved
+                                ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30'
+                                : isPending
+                                ? 'bg-amber-500/15 text-amber-300 border-amber-500/30'
+                                : 'bg-rose-500/15 text-rose-300 border-rose-500/30'
+                            }`}
+                          >
+                            <option value="approved" className="bg-slate-900 text-emerald-300">✓ Approved</option>
+                            <option value="pending" className="bg-slate-900 text-amber-300">⏳ Pending Review</option>
+                            <option value="rejected" className="bg-slate-900 text-rose-300">✕ Rejected</option>
+                          </select>
+                        </div>
                       </td>
 
                       {/* Applied Date */}
@@ -375,7 +396,7 @@ export const UserManagementTab: React.FC = () => {
                           <button
                             onClick={() => setSelectedUser(user)}
                             className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors"
-                            title="Inspect Profile"
+                            title="Inspect Full Application Details"
                           >
                             <Eye className="w-4 h-4" />
                           </button>
@@ -388,6 +409,17 @@ export const UserManagementTab: React.FC = () => {
                               title="Approve Role Clearance"
                             >
                               <Check className="w-4 h-4" />
+                            </button>
+                          )}
+
+                          {/* Quick Set Pending / Unaccept */}
+                          {!isPending && (
+                            <button
+                              onClick={() => handleSetPending(user.id)}
+                              className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-colors"
+                              title="Unaccept / Revert to Pending Review"
+                            >
+                              <Clock className="w-4 h-4" />
                             </button>
                           )}
 

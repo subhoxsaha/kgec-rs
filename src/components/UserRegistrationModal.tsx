@@ -15,6 +15,8 @@ import {
   Linkedin,
   FileText,
   Building,
+  Clock,
+  XCircle,
 } from 'lucide-react';
 import { useReportDataStore } from '../store/useReportDataStore';
 import { UserRole, ROLE_CONFIG, UserApplicationProfile } from '../types';
@@ -67,6 +69,7 @@ export const UserRegistrationModal: React.FC = () => {
   const [specialization, setSpecialization] = useState('');
   const [statementOfPurpose, setStatementOfPurpose] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   // Sync with current user or profile if existing
   useEffect(() => {
@@ -89,6 +92,10 @@ export const UserRegistrationModal: React.FC = () => {
       setDesignation(currentUserProfile.designation || '');
       setSpecialization(currentUserProfile.specialization || '');
       setStatementOfPurpose(currentUserProfile.statementOfPurpose || '');
+      
+      setIsEditingProfile(currentUserProfile.status !== 'approved');
+    } else {
+      setIsEditingProfile(true);
     }
   }, [googleUser, currentUserProfile, isApplicationFormOpen]);
 
@@ -96,6 +103,10 @@ export const UserRegistrationModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (currentUserProfile?.status === 'approved') {
+      showToast('Your application is already approved and locked. Role adjustments must be made via the Admin Portal.');
+      return;
+    }
     if (!name.trim()) {
       showToast('Please provide your full official name.');
       return;
@@ -142,6 +153,9 @@ export const UserRegistrationModal: React.FC = () => {
       closeApplicationForm();
     }
   };
+
+  // Once approved, application is locked from alteration or resubmission by the user
+  const isApprovedAndCard = currentUserProfile?.status === 'approved';
 
   return (
     <div
@@ -197,9 +211,94 @@ export const UserRegistrationModal: React.FC = () => {
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
-          {/* Applicant Category Switcher */}
+        {/* Body Content */}
+        {isApprovedAndCard && currentUserProfile ? (
+          <div className="p-6 space-y-5 overflow-y-auto">
+            {/* Active Status Badge Banner */}
+            <div className="p-4 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/15 border border-emerald-500/30 flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 shrink-0">
+                <Shield className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm sm:text-base font-bold text-emerald-800 dark:text-emerald-200">
+                    Society Role Clearance Verified & Active
+                  </h3>
+                  <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300">
+                    Approved
+                  </span>
+                </div>
+                <p className="text-xs text-emerald-700 dark:text-emerald-300/80 mt-1">
+                  Your application for <span className="font-semibold text-emerald-900 dark:text-emerald-100 uppercase">{currentUserProfile.role}</span> has been authenticated by the KGEC Robotics Executive Board.
+                </p>
+              </div>
+            </div>
+
+            {/* Detail Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <div>
+                <span className="text-slate-500 font-medium">Official Name</span>
+                <p className="font-bold text-slate-800 dark:text-white mt-0.5">{currentUserProfile.name}</p>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium">Assigned Role</span>
+                <p className="font-bold text-emerald-600 dark:text-emerald-400 mt-0.5 uppercase">{currentUserProfile.role}</p>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium">Department</span>
+                <p className="font-semibold text-slate-700 dark:text-slate-200 mt-0.5">{currentUserProfile.department || 'KGEC Engineering'}</p>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium">Roll / Faculty ID</span>
+                <p className="font-semibold text-slate-700 dark:text-slate-200 mt-0.5">{currentUserProfile.rollOrId}</p>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium">Technical Wing</span>
+                <p className="font-semibold text-cyan-600 dark:text-cyan-400 mt-0.5">{currentUserProfile.technicalWing || 'Open-Labs'}</p>
+              </div>
+              <div>
+                <span className="text-slate-500 font-medium">Contact Phone</span>
+                <p className="font-semibold text-slate-700 dark:text-slate-200 mt-0.5">{currentUserProfile.phone || 'N/A'}</p>
+              </div>
+            </div>
+
+            {/* Actions & Locked Notice */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs">
+                <Shield className="w-4 h-4 text-emerald-500 shrink-0" />
+                <span>Application Approved & Locked — Role managed by Admin Portal.</span>
+              </div>
+              <button
+                type="button"
+                onClick={closeApplicationForm}
+                className="w-full sm:w-auto px-6 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Close Member Card
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-5 text-xs sm:text-sm">
+            {/* Status Info Banners */}
+            {currentUserProfile?.status === 'pending' && (
+              <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 flex items-center gap-3">
+                <Clock className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+                <div className="text-xs text-amber-900 dark:text-amber-200">
+                  <span className="font-bold">Application Pending Review:</span> Your details are under evaluation by the society administrators. You may update your submitted details below if needed.
+                </div>
+              </div>
+            )}
+
+            {currentUserProfile?.status === 'rejected' && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800/40 flex items-start gap-3">
+                <XCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
+                <div className="text-xs text-rose-900 dark:text-rose-200">
+                  <span className="font-bold">Application Requires Revision:</span> {currentUserProfile.rejectionReason || 'Please review your details and resubmit for clearance.'}
+                </div>
+              </div>
+            )}
+
+            {/* Applicant Category Switcher */}
           <div className="space-y-2">
             <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
               Select Roster Category
@@ -517,7 +616,8 @@ export const UserRegistrationModal: React.FC = () => {
             </button>
           </div>
         </form>
-      </div>
+      )}
+    </div>
     </div>
   );
 };

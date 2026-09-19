@@ -410,7 +410,49 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data.users)) {
-          set({ users: data.users });
+          const nextUsers = data.users as UserApplicationProfile[];
+          set((prev) => {
+            let nextUserProfile = prev.currentUserProfile;
+            let nextGoogleUser = prev.googleUser;
+            let nextIsAdmin = prev.isAdminLoggedIn;
+            let nextIsStudent = prev.isStudentLoggedIn;
+            let nextUserRole = prev.userRole;
+
+            if (prev.googleUser) {
+              const matched = nextUsers.find(
+                (u) => u.email.toLowerCase() === prev.googleUser?.email.toLowerCase()
+              );
+              if (matched) {
+                const isDirectAdmin = isUserAdmin(matched.email);
+                const hasApprovedAdmin = isDirectAdmin || (matched.role === 'admin' && matched.status === 'approved');
+
+                nextUserProfile = matched;
+                nextGoogleUser = {
+                  ...prev.googleUser,
+                  role: matched.role,
+                  status: matched.status,
+                  profile: matched,
+                };
+                nextIsAdmin = hasApprovedAdmin;
+                nextIsStudent = !hasApprovedAdmin;
+                nextUserRole = matched.role;
+
+                try {
+                  localStorage.setItem(AUTH_STORAGE_KEY, hasApprovedAdmin ? 'true' : 'false');
+                  localStorage.setItem(GOOGLE_USER_STORAGE_KEY, JSON.stringify(nextGoogleUser));
+                } catch {}
+              }
+            }
+
+            return {
+              users: nextUsers,
+              currentUserProfile: nextUserProfile,
+              googleUser: nextGoogleUser,
+              isAdminLoggedIn: nextIsAdmin,
+              isStudentLoggedIn: nextIsStudent,
+              userRole: nextUserRole,
+            };
+          });
         }
       }
     } catch {
@@ -425,8 +467,36 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       if (res.ok) {
         const data = await res.json();
         if (data && data.user) {
-          set({ currentUserProfile: data.user });
-          return data.user;
+          const updated = data.user as UserApplicationProfile;
+          const isDirectAdmin = isUserAdmin(updated.email);
+          const hasApprovedAdmin = isDirectAdmin || (updated.role === 'admin' && updated.status === 'approved');
+
+          set((prev) => {
+            const nextGoogleUser = prev.googleUser
+              ? {
+                  ...prev.googleUser,
+                  role: updated.role,
+                  status: updated.status,
+                  profile: updated,
+                }
+              : null;
+
+            if (nextGoogleUser) {
+              try {
+                localStorage.setItem(AUTH_STORAGE_KEY, hasApprovedAdmin ? 'true' : 'false');
+                localStorage.setItem(GOOGLE_USER_STORAGE_KEY, JSON.stringify(nextGoogleUser));
+              } catch {}
+            }
+
+            return {
+              currentUserProfile: updated,
+              googleUser: nextGoogleUser,
+              isAdminLoggedIn: hasApprovedAdmin,
+              isStudentLoggedIn: !hasApprovedAdmin,
+              userRole: updated.role,
+            };
+          });
+          return updated;
         }
       }
     } catch {
@@ -515,18 +585,119 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       const data = await res.json();
       if (data.success && data.user) {
         const updated = data.user as UserApplicationProfile;
-        set((prev) => ({
-          users: prev.users.map((u) => (u.id === userId || u.email === updated.email ? updated : u)),
-          currentUserProfile:
-            prev.currentUserProfile?.id === userId || prev.currentUserProfile?.email === updated.email
+        set((prev) => {
+          const nextUsers = prev.users.map((u) => (u.id === userId || u.email.toLowerCase() === updated.email.toLowerCase() ? updated : u));
+          
+          const isCurrentActiveUser =
+            prev.googleUser &&
+            (prev.currentUserProfile?.id === userId ||
+             prev.currentUserProfile?.email.toLowerCase() === updated.email.toLowerCase() ||
+             prev.googleUser.email.toLowerCase() === updated.email.toLowerCase());
+
+          let nextGoogleUser = prev.googleUser;
+          let nextUserProfile =
+            prev.currentUserProfile?.id === userId || prev.currentUserProfile?.email.toLowerCase() === updated.email.toLowerCase()
               ? updated
-              : prev.currentUserProfile,
-        }));
+              : prev.currentUserProfile;
+          let nextIsAdmin = prev.isAdminLoggedIn;
+          let nextIsStudent = prev.isStudentLoggedIn;
+          let nextUserRole = prev.userRole;
+
+          if (isCurrentActiveUser && prev.googleUser) {
+            const isDirectAdmin = isUserAdmin(updated.email);
+            const hasApprovedAdmin = isDirectAdmin || (updated.role === 'admin' && updated.status === 'approved');
+
+            nextUserProfile = updated;
+            nextGoogleUser = {
+              ...prev.googleUser,
+              role: updated.role,
+              status: updated.status,
+              profile: updated,
+            };
+            nextIsAdmin = hasApprovedAdmin;
+            nextIsStudent = !hasApprovedAdmin;
+            nextUserRole = updated.role;
+
+            try {
+              localStorage.setItem(AUTH_STORAGE_KEY, hasApprovedAdmin ? 'true' : 'false');
+              localStorage.setItem(GOOGLE_USER_STORAGE_KEY, JSON.stringify(nextGoogleUser));
+            } catch {}
+          }
+
+          return {
+            users: nextUsers,
+            currentUserProfile: nextUserProfile,
+            googleUser: nextGoogleUser,
+            isAdminLoggedIn: nextIsAdmin,
+            isStudentLoggedIn: nextIsStudent,
+            userRole: nextUserRole,
+          };
+        });
+
         get().showToast(`User ${updated.name} updated: ${updated.role} (${updated.status})`);
         return true;
       }
     } catch (err: any) {
-      get().showToast(`Updated locally: ${err?.message || 'Network error'}`);
+      set((prev) => {
+        const target = prev.users.find((u) => u.id === userId || u.email.toLowerCase() === userId.toLowerCase());
+        if (!target) return {};
+        const updated: UserApplicationProfile = {
+          ...target,
+          role: updates.role || target.role,
+          status: updates.status || target.status,
+          rejectionReason: updates.rejectionReason !== undefined ? updates.rejectionReason : target.rejectionReason,
+          reviewedBy: updates.reviewedBy || target.reviewedBy,
+        };
+
+        const nextUsers = prev.users.map((u) => (u.id === userId || u.email.toLowerCase() === updated.email.toLowerCase() ? updated : u));
+        const isCurrentActiveUser =
+          prev.googleUser &&
+          (prev.currentUserProfile?.id === userId ||
+           prev.currentUserProfile?.email.toLowerCase() === updated.email.toLowerCase() ||
+           prev.googleUser.email.toLowerCase() === updated.email.toLowerCase());
+
+        let nextGoogleUser = prev.googleUser;
+        let nextUserProfile =
+          prev.currentUserProfile?.id === userId || prev.currentUserProfile?.email.toLowerCase() === updated.email.toLowerCase()
+            ? updated
+            : prev.currentUserProfile;
+        let nextIsAdmin = prev.isAdminLoggedIn;
+        let nextIsStudent = prev.isStudentLoggedIn;
+        let nextUserRole = prev.userRole;
+
+        if (isCurrentActiveUser && prev.googleUser) {
+          const isDirectAdmin = isUserAdmin(updated.email);
+          const hasApprovedAdmin = isDirectAdmin || (updated.role === 'admin' && updated.status === 'approved');
+
+          nextUserProfile = updated;
+          nextGoogleUser = {
+            ...prev.googleUser,
+            role: updated.role,
+            status: updated.status,
+            profile: updated,
+          };
+          nextIsAdmin = hasApprovedAdmin;
+          nextIsStudent = !hasApprovedAdmin;
+          nextUserRole = updated.role;
+
+          try {
+            localStorage.setItem(AUTH_STORAGE_KEY, hasApprovedAdmin ? 'true' : 'false');
+            localStorage.setItem(GOOGLE_USER_STORAGE_KEY, JSON.stringify(nextGoogleUser));
+          } catch {}
+        }
+
+        return {
+          users: nextUsers,
+          currentUserProfile: nextUserProfile,
+          googleUser: nextGoogleUser,
+          isAdminLoggedIn: nextIsAdmin,
+          isStudentLoggedIn: nextIsStudent,
+          userRole: nextUserRole,
+        };
+      });
+
+      get().showToast(`Updated locally: ${updates.status || updates.role}`);
+      return true;
     }
     return false;
   },
