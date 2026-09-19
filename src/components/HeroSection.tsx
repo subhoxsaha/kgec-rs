@@ -35,7 +35,7 @@ export const HeroSection: React.FC = () => {
     <section
       ref={containerRef}
       id="hero-section"
-      className="relative min-h-[100dvh] w-full flex flex-col justify-start items-center overflow-hidden px-4 sm:px-8 lg:px-12 text-center bg-[#0d140e] pt-24 xs:pt-28 sm:pt-32 md:pt-28 lg:pt-28 xl:pt-32 pb-12"
+      className="relative min-h-[100dvh] w-full flex flex-col justify-start items-center overflow-hidden px-4 sm:px-8 lg:px-12 text-center bg-[#0d140e] pt-36 xs:pt-40 sm:pt-32 md:pt-28 lg:pt-28 xl:pt-32 pb-12"
     >
       {/* Background Media with Dark Tech Tint */}
       <video
