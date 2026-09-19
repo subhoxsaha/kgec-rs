@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "title": "KGEC Robotics Society",
+    "tagline": "Innovate • Build • Compete",
+    "foundedYear": 2014
+  },
+  "teamMembers": [
+    {
+      "id": "lead-1",
+      "name": "Subho Saha",
+      "role": "President / System Architect",
+      "category": "lead"
+    }
+  ],
+  "botProjects": [
+    {
+      "id": "bot-1",
+      "name": "Valkyrie",
+      "weightCategory": "15kg Combat Bot",
+      "status": "Operational"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "KGEC Robotics Society (KRS) - Official Annual Report & Technical Portal",
+  "description": "Interactive technical showcase and annual report portal for KGEC Robotics Society (KRS), highlighting 48+ national podiums, 8 engineering wings, combat robot fleet, URC rover systems, precision hardware benchmarking, and STEM outreach.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
