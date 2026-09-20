@@ -155,7 +155,7 @@ const INITIAL_SEED_USERS = [
     email: 'ananya.das@kgec.edu.in',
     name: 'Ananya Das',
     picture: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=400&q=80',
-    role: 'studentBody',
+    role: 'intern',
     status: 'pending',
     userType: 'student',
     department: 'Computer Science & Engineering',

@@ -318,7 +318,7 @@ const getInitialStoredState = () => {
     ? {
         title: `Welcome back, ${firstName}!`,
         text: `Signed in as ${initialUser.name}. ${isAdmin ? 'CMS Portal ready.' : 'Society clearance active.'}`,
-        role: (initialUser.role as UserRole) || (isAdmin ? 'admin' : 'member'),
+        role: (initialUser.role as UserRole) || (isAdmin ? 'admin' : 'guest'),
         status: (initialUser.status as UserStatus) || 'approved',
         userName: initialUser.name || 'User',
         timestamp: Date.now(),
@@ -326,7 +326,7 @@ const getInitialStoredState = () => {
     : {
         title: 'Welcome to KGEC Robotics!',
         text: 'Greetings Guest! Explore our autonomous bots and wings, or sign in for member clearance.',
-        role: 'member' as UserRole,
+        role: 'guest' as UserRole,
         status: 'approved' as UserStatus,
         userName: 'Guest',
         timestamp: Date.now(),
@@ -766,7 +766,7 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       // Offline fallback
     }
 
-    const assignedRole: UserRole = isDirectAdmin ? 'admin' : (existingProfile?.role as UserRole) || 'studentBody';
+    const assignedRole: UserRole = isDirectAdmin ? 'admin' : (existingProfile?.role as UserRole) || 'guest';
     const assignedStatus: UserStatus = isDirectAdmin ? 'approved' : (existingProfile?.status as UserStatus) || 'pending';
 
     const enrichedUser: GoogleUserProfile = {
@@ -846,7 +846,7 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       userNotification: {
         title: 'Welcome to KGEC Robotics!',
         text: 'Greetings Guest! Explore our autonomous bots and wings, or sign in for member clearance.',
-        role: 'member',
+        role: 'guest',
         status: 'approved',
         userName: 'Guest',
         timestamp: Date.now(),

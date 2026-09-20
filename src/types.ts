@@ -195,10 +195,11 @@ export interface TeamMember {
 
 export type UserRole =
   | 'admin'
+  | 'guest'
+  | 'studentBody'
   | 'lead'
   | 'member'
   | 'intern'
-  | 'studentBody'
   | 'teacherBody';
 
 export type UserStatus = 'pending' | 'approved' | 'rejected';
@@ -280,6 +281,17 @@ export const ROLE_CONFIG: Record<
     track: UserTrack;
   }
 > = {
+  guest: {
+    label: 'Guest Visitor',
+    description: 'Unverified visitor or newly logged-in user awaiting application clearance',
+    badgeBg: 'bg-slate-500/20 dark:bg-slate-500/30',
+    badgeText: 'text-slate-700 dark:text-slate-300',
+    badgeBorder: 'border-slate-500/40',
+    bgColor: 'bg-slate-500/20 dark:bg-slate-500/30',
+    textColor: 'text-slate-700 dark:text-slate-300',
+    borderColor: 'border-slate-500/40',
+    track: 'student',
+  },
   admin: {
     label: 'Executive Admin',
     description: 'Full CMS access, user role approval, data sync & database controls',

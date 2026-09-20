@@ -17,8 +17,8 @@ export function getUserAvatarUrl(user?: { picture?: string; email?: string; name
  * If status is 'pending', appends or returns Pending Approval status.
  */
 export function getUserRoleDisplayLabel(role?: UserRole | string, status?: UserStatus | string): string {
-  const roleKey = (role || 'studentBody') as UserRole;
-  const cfg = ROLE_CONFIG[roleKey] || ROLE_CONFIG.studentBody;
+  const roleKey = (role || 'guest') as UserRole;
+  const cfg = ROLE_CONFIG[roleKey] || ROLE_CONFIG.guest;
   
   if (status === 'pending') {
     return `⏳ Pending (${cfg.label})`;

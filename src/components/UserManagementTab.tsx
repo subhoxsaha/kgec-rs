@@ -286,6 +286,7 @@ export const UserManagementTab: React.FC = () => {
               <option value="lead" className="bg-slate-900">Wing Lead</option>
               <option value="member" className="bg-slate-900">Core Member</option>
               <option value="intern" className="bg-slate-900">Intern</option>
+              <option value="guest" className="bg-slate-900">Guest Visitor</option>
             </select>
           </div>
 
@@ -326,7 +327,7 @@ export const UserManagementTab: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-800/60">
                 {filteredUsers.map((user) => {
-                  const roleCfg = ROLE_CONFIG[user.role || 'studentBody'] || ROLE_CONFIG.studentBody;
+                  const roleCfg = ROLE_CONFIG[user.role || 'member'] || ROLE_CONFIG.member;
                   const isApproved = user.status === 'approved';
                   const isPending = user.status === 'pending';
                   const isRejected = user.status === 'rejected';
@@ -373,7 +374,7 @@ export const UserManagementTab: React.FC = () => {
                       {/* Role Selector (Triggers Confirmation) */}
                       <td className="py-3.5 px-3">
                         <select
-                          value={user.role || 'studentBody'}
+                          value={user.role || 'member'}
                           onChange={(e) => handlePromptRoleChange(user, e.target.value as UserRole)}
                           className={`text-xs font-semibold px-2.5 py-1 rounded-xl border focus:outline-none cursor-pointer transition-colors ${roleCfg.bgColor} ${roleCfg.borderColor} ${roleCfg.textColor}`}
                         >
@@ -383,6 +384,7 @@ export const UserManagementTab: React.FC = () => {
                           <option value="lead" className="bg-slate-900 text-blue-300">Wing Lead</option>
                           <option value="member" className="bg-slate-900 text-emerald-300">Core Member</option>
                           <option value="intern" className="bg-slate-900 text-teal-300">Intern</option>
+                          <option value="guest" className="bg-slate-900 text-slate-300">Guest Visitor</option>
                         </select>
                       </td>
 
