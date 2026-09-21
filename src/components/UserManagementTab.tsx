@@ -91,6 +91,10 @@ export const UserManagementTab: React.FC = () => {
   // 2. Role Change Handler with Confirmation
   const handlePromptRoleChange = (user: UserApplicationProfile, newRole: UserRole) => {
     if (user.role === newRole) return;
+    if (user.status !== 'approved') {
+      showToast('Approve application first to assign or update user role.');
+      return;
+    }
     setRoleChangeTarget({ user, newRole });
   };
 
@@ -177,23 +181,22 @@ export const UserManagementTab: React.FC = () => {
   const teacherCount = users.filter((u) => u.role === 'teacherBody' || u.userType === 'teacher').length;
   const studentBodyExecCount = users.filter((u) => u.role === 'studentBody').length;
   const leadCount = users.filter((u) => u.role === 'lead').length;
-  const memberCount = users.filter((u) => u.role === 'member').length;
 
   return (
-    <div id="user-management-tab" className="space-y-6 animate-fade-in text-slate-200">
+    <div id="user-management-tab" className="space-y-5 text-[#243324] dark:text-[#F4EFE6]">
       {/* Top Banner & Title */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-br from-[#1B291A] via-[#142013] to-[#0D160C] text-white border border-emerald-500/30 shadow-xl">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+            <div className="p-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30">
               <Users className="w-5 h-5" />
             </div>
-            <h2 className="text-lg font-bold text-white tracking-wide">
-              User Roster & Security Clearance
+            <h2 className="text-lg font-bold text-white tracking-wide font-display">
+              User Roster &amp; Clearance Portal
             </h2>
           </div>
-          <p className="text-xs text-slate-400 pl-11">
-            Manage society registrations, verify member clearance tiers, and update executive roles.
+          <p className="text-xs text-stone-300 pl-11">
+            Review applicant profiles, approve member clearances, update executive roles, and manage society access.
           </p>
         </div>
 
@@ -202,15 +205,15 @@ export const UserManagementTab: React.FC = () => {
             id="refresh-users-btn"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="px-3 py-2 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-slate-300 text-xs font-medium flex items-center gap-1.5 border border-slate-700/80 transition-colors cursor-pointer"
+            className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-medium flex items-center gap-1.5 border border-white/20 transition-colors cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-amber-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-400' : ''}`} />
             Refresh Roster
           </button>
           <button
             id="export-users-btn"
             onClick={handleExportRoster}
-            className="px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-xs font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             Export JSON
@@ -220,112 +223,112 @@ export const UserManagementTab: React.FC = () => {
 
       {/* Metrics Row */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 flex flex-col justify-between shadow-lg">
-          <span className="text-[11px] font-medium text-slate-400">Total Registered</span>
-          <div className="text-2xl font-black text-white mt-1">{totalUsers}</div>
+        <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 flex flex-col justify-between shadow-2xs">
+          <span className="text-[11px] font-medium text-[#657351] dark:text-[#9DAE9A]">Total Registered</span>
+          <div className="text-2xl font-black text-[#1F2B1D] dark:text-[#F4EFE6] font-mono mt-1">{totalUsers}</div>
         </div>
-        <div className="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-800/40 flex flex-col justify-between shadow-lg">
-          <span className="text-[11px] font-medium text-emerald-400 flex items-center gap-1">
+        <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col justify-between shadow-2xs">
+          <span className="text-[11px] font-medium text-emerald-800 dark:text-emerald-300 flex items-center gap-1">
             <CheckCircle2 className="w-3.5 h-3.5" /> Approved
           </span>
-          <div className="text-2xl font-black text-emerald-300 mt-1">{approvedCount}</div>
+          <div className="text-2xl font-black text-emerald-900 dark:text-emerald-200 font-mono mt-1">{approvedCount}</div>
         </div>
-        <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-800/40 flex flex-col justify-between shadow-lg">
-          <span className="text-[11px] font-medium text-amber-400 flex items-center gap-1">
+        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col justify-between shadow-2xs">
+          <span className="text-[11px] font-medium text-amber-800 dark:text-amber-300 flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" /> Pending Review
           </span>
-          <div className="text-2xl font-black text-amber-300 mt-1">{pendingCount}</div>
+          <div className="text-2xl font-black text-amber-900 dark:text-amber-200 font-mono mt-1">{pendingCount}</div>
         </div>
-        <div className="p-3.5 rounded-2xl bg-purple-950/20 border border-purple-800/40 flex flex-col justify-between shadow-lg">
-          <span className="text-[11px] font-medium text-purple-400 flex items-center gap-1">
-            <Briefcase className="w-3.5 h-3.5" /> Faculty Mentor
+        <div className="p-3.5 rounded-2xl bg-purple-500/10 border border-purple-500/25 flex flex-col justify-between shadow-2xs">
+          <span className="text-[11px] font-medium text-purple-800 dark:text-purple-300 flex items-center gap-1">
+            <Briefcase className="w-3.5 h-3.5" /> Faculty Advisor
           </span>
-          <div className="text-2xl font-black text-purple-300 mt-1">{teacherCount}</div>
+          <div className="text-2xl font-black text-purple-900 dark:text-purple-200 font-mono mt-1">{teacherCount}</div>
         </div>
-        <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-800/40 flex flex-col justify-between shadow-lg">
-          <span className="text-[11px] font-medium text-amber-400 flex items-center gap-1">
+        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col justify-between shadow-2xs">
+          <span className="text-[11px] font-medium text-amber-800 dark:text-amber-300 flex items-center gap-1">
             <Sparkles className="w-3.5 h-3.5" /> Student Body Exec
           </span>
-          <div className="text-2xl font-black text-amber-300 mt-1">{studentBodyExecCount}</div>
+          <div className="text-2xl font-black text-amber-900 dark:text-amber-200 font-mono mt-1">{studentBodyExecCount}</div>
         </div>
-        <div className="p-3.5 rounded-2xl bg-blue-950/20 border border-blue-800/40 flex flex-col justify-between shadow-lg">
-          <span className="text-[11px] font-medium text-blue-400 flex items-center gap-1">
+        <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/25 flex flex-col justify-between shadow-2xs">
+          <span className="text-[11px] font-medium text-blue-800 dark:text-blue-300 flex items-center gap-1">
             <Shield className="w-3.5 h-3.5" /> Wing Leads
           </span>
-          <div className="text-2xl font-black text-blue-300 mt-1">{leadCount}</div>
+          <div className="text-2xl font-black text-blue-900 dark:text-blue-200 font-mono mt-1">{leadCount}</div>
         </div>
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/10 shadow-2xs">
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#657351] dark:text-[#8E9F89]" />
           <input
             type="text"
             id="user-search-input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search applicant name, email, roll number, department, or wing..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-800/80 border border-slate-700/80 rounded-xl text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-amber-500/80 transition-colors"
+            className="w-full pl-10 pr-4 py-2 bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 rounded-xl text-xs sm:text-sm text-[#1F2B1D] dark:text-[#F4EFE6] placeholder-[#8E9F89] focus:outline-none focus:border-emerald-500 transition-colors"
           />
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5">
-            <Filter className="w-3.5 h-3.5 text-slate-400" />
+          <div className="flex items-center gap-1.5 bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 rounded-xl px-3 py-1.5">
+            <Filter className="w-3.5 h-3.5 text-[#657351] dark:text-[#8E9F89]" />
             <select
               id="user-role-filter"
               value={roleFilter || 'all'}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="bg-transparent text-xs text-slate-300 focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs text-[#1F2B1D] dark:text-[#F4EFE6] focus:outline-none cursor-pointer"
             >
-              <option value="all" className="bg-slate-900">All Roles</option>
-              <option value="admin" className="bg-slate-900">Admin</option>
-              <option value="teacherBody" className="bg-slate-900">Faculty Advisor</option>
-              <option value="studentBody" className="bg-slate-900">Student Body Exec</option>
-              <option value="lead" className="bg-slate-900">Wing Lead</option>
-              <option value="member" className="bg-slate-900">Core Member</option>
-              <option value="intern" className="bg-slate-900">Intern</option>
-              <option value="guest" className="bg-slate-900">Guest Visitor</option>
+              <option value="all" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">All Roles</option>
+              <option value="admin" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Admin</option>
+              <option value="teacherBody" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Faculty Advisor</option>
+              <option value="studentBody" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Student Body Exec</option>
+              <option value="lead" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Wing Lead</option>
+              <option value="member" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Core Member</option>
+              <option value="intern" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Intern</option>
+              <option value="guest" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Guest Visitor</option>
             </select>
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5">
+          <div className="flex items-center gap-1.5 bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 rounded-xl px-3 py-1.5">
             <select
               id="user-status-filter"
               value={statusFilter || 'all'}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-transparent text-xs text-slate-300 focus:outline-none cursor-pointer"
+              className="bg-transparent text-xs text-[#1F2B1D] dark:text-[#F4EFE6] focus:outline-none cursor-pointer"
             >
-              <option value="all" className="bg-slate-900">All Status</option>
-              <option value="approved" className="bg-slate-900">Approved</option>
-              <option value="pending" className="bg-slate-900">Pending</option>
-              <option value="rejected" className="bg-slate-900">Rejected</option>
+              <option value="all" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">All Status</option>
+              <option value="approved" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Approved</option>
+              <option value="pending" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Pending</option>
+              <option value="rejected" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Rejected</option>
             </select>
           </div>
         </div>
       </div>
 
       {/* Users Table */}
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/90 overflow-hidden shadow-2xl">
+      <div className="rounded-2xl border border-[#243324]/15 dark:border-white/10 bg-white dark:bg-[#1A2619] overflow-hidden shadow-2xs">
         {filteredUsers.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-sm">
+          <div className="p-12 text-center text-[#657351] dark:text-[#8E9F89] text-sm">
             No registered users match your search or filter criteria.
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-800/60 text-slate-400 font-semibold border-b border-slate-800">
+              <thead className="bg-[#EFECE4] dark:bg-[#121C11] text-[#526340] dark:text-[#A3B59E] font-semibold border-b border-[#243324]/10 dark:border-white/10">
                 <tr>
                   <th className="py-3.5 px-4">Member / Applicant</th>
-                  <th className="py-3.5 px-3">Department & ID</th>
+                  <th className="py-3.5 px-3">Department &amp; ID</th>
                   <th className="py-3.5 px-3">Assigned Role</th>
                   <th className="py-3.5 px-3">Clearance Status</th>
                   <th className="py-3.5 px-3">Applied Date</th>
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-[#243324]/8 dark:divide-white/8">
                 {filteredUsers.map((user) => {
                   const roleCfg = ROLE_CONFIG[user.role || 'member'] || ROLE_CONFIG.member;
                   const isApproved = user.status === 'approved';
@@ -333,27 +336,27 @@ export const UserManagementTab: React.FC = () => {
                   const isRejected = user.status === 'rejected';
 
                   return (
-                    <tr key={user.id || user.email} className="hover:bg-slate-800/40 transition-colors">
+                    <tr key={user.id || user.email} className="hover:bg-[#243324]/5 dark:hover:bg-white/5 transition-colors">
                       {/* Name & Avatar */}
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
                           <img
                             src={getUserAvatarUrl(user)}
                             alt={user.name}
-                            className="w-9 h-9 rounded-full object-cover border border-slate-700 shrink-0 shadow-md"
+                            className="w-9 h-9 rounded-full object-cover border border-[#243324]/15 dark:border-white/15 shrink-0 shadow-2xs"
                             referrerPolicy="no-referrer"
                           />
                           <div className="min-w-0">
-                            <div className="font-semibold text-white truncate flex items-center gap-1.5">
+                            <div className="font-semibold text-[#1F2B1D] dark:text-[#F4EFE6] truncate flex items-center gap-1.5">
                               {user.name}
                               {user.role === 'admin' && (
-                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono font-bold border border-amber-500/30">
+                                <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 font-mono font-bold border border-amber-500/30">
                                   ADMIN
                                 </span>
                               )}
                             </div>
-                            <div className="text-[11px] text-slate-400 truncate flex items-center gap-1">
-                              <Mail className="w-3 h-3 text-slate-500 shrink-0" />
+                            <div className="text-[11px] text-[#657351] dark:text-[#9DAE9A] truncate flex items-center gap-1">
+                              <Mail className="w-3 h-3 text-[#8E9F89] shrink-0" />
                               {user.email}
                             </div>
                           </div>
@@ -362,57 +365,67 @@ export const UserManagementTab: React.FC = () => {
 
                       {/* Dept & Roll */}
                       <td className="py-3.5 px-3">
-                        <div className="text-slate-300 font-medium truncate max-w-[200px]">
+                        <div className="text-[#1F2B1D] dark:text-[#F4EFE6] font-medium truncate max-w-[200px]">
                           {user.department || 'KGEC Engineering'}
                         </div>
-                        <div className="text-[11px] text-slate-500">
+                        <div className="text-[11px] text-[#657351] dark:text-[#9DAE9A]">
                           {user.rollOrId || (user.userType === 'teacher' ? 'Faculty' : 'Student')}
                           {user.yearOrSem ? ` • ${user.yearOrSem}` : ''}
                         </div>
                       </td>
 
-                      {/* Role Selector (Triggers Confirmation) */}
+                      {/* Role Selector (Disabled if unapproved; triggers confirmation if approved) */}
                       <td className="py-3.5 px-3">
                         <select
-                          value={user.role || 'member'}
+                          disabled={!isApproved}
+                          value={user.role || 'guest'}
                           onChange={(e) => handlePromptRoleChange(user, e.target.value as UserRole)}
-                          className={`text-xs font-semibold px-2.5 py-1 rounded-xl border focus:outline-none cursor-pointer transition-colors ${roleCfg.bgColor} ${roleCfg.borderColor} ${roleCfg.textColor}`}
+                          title={
+                            isApproved
+                              ? 'Change assigned society role'
+                              : 'Approve application first to assign or update role'
+                          }
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-xl border focus:outline-none transition-colors ${
+                            !isApproved
+                              ? 'opacity-60 cursor-not-allowed bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border-neutral-300 dark:border-neutral-700'
+                              : `${roleCfg.bgColor} ${roleCfg.borderColor} ${roleCfg.textColor} cursor-pointer`
+                          }`}
                         >
-                          <option value="admin" className="bg-slate-900 text-amber-300">Admin</option>
-                          <option value="teacherBody" className="bg-slate-900 text-purple-300">Faculty Advisor</option>
-                          <option value="studentBody" className="bg-slate-900 text-amber-300">Student Body Exec</option>
-                          <option value="lead" className="bg-slate-900 text-blue-300">Wing Lead</option>
-                          <option value="member" className="bg-slate-900 text-emerald-300">Core Member</option>
-                          <option value="intern" className="bg-slate-900 text-teal-300">Intern</option>
-                          <option value="guest" className="bg-slate-900 text-slate-300">Guest Visitor</option>
+                          <option value="admin" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Admin</option>
+                          <option value="teacherBody" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Faculty Advisor</option>
+                          <option value="studentBody" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Student Body Exec</option>
+                          <option value="lead" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Wing Lead</option>
+                          <option value="member" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Core Member</option>
+                          <option value="intern" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Intern</option>
+                          <option value="guest" className="bg-white dark:bg-[#1A2619] text-[#1F2B1D] dark:text-[#F4EFE6]">Guest Visitor</option>
                         </select>
                       </td>
 
                       {/* Status Column */}
                       <td className="py-3.5 px-3">
                         {isApproved ? (
-                          /* Approved Users: Clean Locked Active Badge (No status selector) */
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                          /* Approved Users: Clean Active Badge */
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                             Active Member
                           </span>
                         ) : isPending ? (
                           /* Pending Applications: Amber Badge */
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                            <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/15 text-amber-800 dark:text-amber-300 border border-amber-500/30">
+                            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 animate-pulse" />
                             Pending Review
                           </span>
                         ) : (
                           /* Rejected Applications: Rose Badge */
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30">
-                            <XCircle className="w-3.5 h-3.5 text-rose-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/15 text-rose-800 dark:text-rose-300 border border-rose-500/30">
+                            <XCircle className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
                             Rejected
                           </span>
                         )}
                       </td>
 
                       {/* Applied Date */}
-                      <td className="py-3.5 px-3 text-slate-400 text-[11px]">
+                      <td className="py-3.5 px-3 text-[#657351] dark:text-[#9DAE9A] text-[11px]">
                         {user.appliedAt ? new Date(user.appliedAt).toLocaleDateString() : 'Active Member'}
                       </td>
 
@@ -423,7 +436,7 @@ export const UserManagementTab: React.FC = () => {
                           <button
                             type="button"
                             onClick={() => setSelectedUser(user)}
-                            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer border border-slate-700/60"
+                            className="p-1.5 rounded-lg border border-[#243324]/15 dark:border-white/15 text-[#4A5D44] dark:text-[#A3B59E] hover:bg-[#243324]/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
                             title="Inspect Profile & Statement"
                           >
                             <Eye className="w-4 h-4" />
@@ -434,7 +447,7 @@ export const UserManagementTab: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleOpenApproveModal(user)}
-                              className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-900 dark:text-emerald-300 border border-emerald-500/40 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                               title="Approve Application"
                             >
                               <UserCheck className="w-3.5 h-3.5" /> Approve
@@ -446,19 +459,19 @@ export const UserManagementTab: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => handleOpenRejectModal(user)}
-                              className="px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                              className="px-2.5 py-1 rounded-lg bg-rose-500/15 hover:bg-rose-500/25 text-rose-900 dark:text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                               title="Reject Application"
                             >
                               <UserX className="w-3.5 h-3.5" /> Reject
                             </button>
                           )}
 
-                          {/* Delete User Button (Available for all) */}
+                          {/* Delete User Button (Requires Confirmation) */}
                           <button
                             type="button"
                             onClick={() => handlePromptDelete(user)}
-                            className="p-1.5 rounded-lg bg-slate-800/80 hover:bg-rose-500/20 text-slate-400 hover:text-rose-300 border border-slate-700/60 hover:border-rose-500/40 transition-colors cursor-pointer"
-                            title="Delete User Record"
+                            className="p-1.5 rounded-lg border border-rose-500/30 text-rose-700 dark:text-rose-300 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                            title="Delete User Record (Requires Confirmation)"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -475,58 +488,58 @@ export const UserManagementTab: React.FC = () => {
 
       {/* MODAL 1: Confirm Application Approval */}
       {approveTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-              <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#1A2619] border border-emerald-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 border-b border-[#243324]/10 dark:border-white/10 pb-3">
+              <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
                 <UserCheck className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Approve Society Application?</h3>
-                <p className="text-xs text-slate-400">Grant member clearance and platform permissions.</p>
+                <h3 className="text-base font-bold text-[#1F2B1D] dark:text-[#F4EFE6] font-display">Approve Application?</h3>
+                <p className="text-xs text-[#657351] dark:text-[#9DAE9A]">Grant member clearance and platform permissions.</p>
               </div>
             </div>
 
-            <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-1.5">
-              <div className="font-semibold text-white flex items-center justify-between">
+            <div className="bg-[#FAF7F0] dark:bg-[#111910] p-3.5 rounded-xl border border-[#243324]/15 dark:border-white/15 text-xs space-y-1.5">
+              <div className="font-semibold text-[#1F2B1D] dark:text-[#F4EFE6] flex items-center justify-between">
                 <span>{approveTarget.name}</span>
-                <span className="text-[11px] text-slate-400">{approveTarget.email}</span>
+                <span className="text-[11px] text-[#657351] dark:text-[#9DAE9A]">{approveTarget.email}</span>
               </div>
-              <div className="text-slate-400 text-[11px]">
+              <div className="text-[#657351] dark:text-[#9DAE9A] text-[11px]">
                 {approveTarget.department || 'KGEC Engineering'} • {approveTarget.rollOrId || 'Student'}
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">
+              <label className="text-xs font-semibold text-[#1F2B1D] dark:text-[#F4EFE6]">
                 Confirm Assigned Society Role:
               </label>
               <select
                 value={approveSelectedRole}
                 onChange={(e) => setApproveSelectedRole(e.target.value as UserRole)}
-                className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs text-white font-medium focus:outline-none focus:border-emerald-500 cursor-pointer"
+                className="w-full px-3 py-2 bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 rounded-xl text-xs text-[#1F2B1D] dark:text-[#F4EFE6] font-medium focus:outline-none focus:border-emerald-500 cursor-pointer"
               >
-                <option value="studentBody" className="bg-slate-900">Student Body Exec</option>
-                <option value="lead" className="bg-slate-900">Wing Lead</option>
-                <option value="member" className="bg-slate-900">Core Member</option>
-                <option value="intern" className="bg-slate-900">Intern</option>
-                <option value="teacherBody" className="bg-slate-900">Faculty Advisor</option>
-                <option value="admin" className="bg-slate-900">Administrator</option>
+                <option value="studentBody" className="bg-white dark:bg-[#1A2619]">Student Body Exec</option>
+                <option value="lead" className="bg-white dark:bg-[#1A2619]">Wing Lead</option>
+                <option value="member" className="bg-white dark:bg-[#1A2619]">Core Member</option>
+                <option value="intern" className="bg-white dark:bg-[#1A2619]">Intern</option>
+                <option value="teacherBody" className="bg-white dark:bg-[#1A2619]">Faculty Advisor</option>
+                <option value="admin" className="bg-white dark:bg-[#1A2619]">Administrator</option>
               </select>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#243324]/10 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setApproveTarget(null)}
-                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
+                className="px-4 py-2 rounded-xl text-[#526340] dark:text-[#A3B59E] hover:bg-[#243324]/10 dark:hover:bg-white/10 text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmApprove}
-                className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-950/40 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-700/20 cursor-pointer"
               >
                 <Check className="w-4 h-4" /> Confirm Approval
               </button>
@@ -537,52 +550,52 @@ export const UserManagementTab: React.FC = () => {
 
       {/* MODAL 2: Confirm Role Change */}
       {roleChangeTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-slate-900 border border-amber-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#1A2619] border border-amber-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 border-b border-[#243324]/10 dark:border-white/10 pb-3">
+              <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Update User Role?</h3>
-                <p className="text-xs text-slate-400">Modify permissions for this user record.</p>
+                <h3 className="text-base font-bold text-[#1F2B1D] dark:text-[#F4EFE6] font-display">Update User Role?</h3>
+                <p className="text-xs text-[#657351] dark:text-[#9DAE9A]">Modify clearance permissions for this approved user.</p>
               </div>
             </div>
 
-            <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-2">
-              <div className="font-semibold text-white">{roleChangeTarget.user.name}</div>
+            <div className="bg-[#FAF7F0] dark:bg-[#111910] p-3.5 rounded-xl border border-[#243324]/15 dark:border-white/15 text-xs space-y-2">
+              <div className="font-semibold text-[#1F2B1D] dark:text-[#F4EFE6]">{roleChangeTarget.user.name}</div>
               <div className="flex items-center gap-2 text-[11px]">
-                <span className="text-slate-400">Current Role:</span>
-                <span className="px-2 py-0.5 rounded bg-slate-700 text-slate-200 font-semibold">
+                <span className="text-[#657351] dark:text-[#9DAE9A]">Current Role:</span>
+                <span className="px-2 py-0.5 rounded bg-[#EFECE4] dark:bg-[#243324] text-[#1F2B1D] dark:text-[#F4EFE6] font-semibold">
                   {ROLE_CONFIG[roleChangeTarget.user.role]?.label || roleChangeTarget.user.role}
                 </span>
-                <span className="text-slate-500">→</span>
-                <span className="text-amber-400 font-bold">
+                <span className="text-[#657351] dark:text-[#9DAE9A]">&rarr;</span>
+                <span className="text-amber-700 dark:text-amber-300 font-bold">
                   {ROLE_CONFIG[roleChangeTarget.newRole]?.label || roleChangeTarget.newRole}
                 </span>
               </div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Are you sure you want to change the assigned clearance role for{' '}
-              <span className="font-semibold text-white">{roleChangeTarget.user.name}</span> to{' '}
-              <span className="font-semibold text-amber-300">
+            <p className="text-xs text-[#3D4F3B] dark:text-[#CBD5C8] leading-relaxed">
+              Are you sure you want to update the clearance role for{' '}
+              <span className="font-semibold text-[#1F2B1D] dark:text-[#F4EFE6]">{roleChangeTarget.user.name}</span> to{' '}
+              <span className="font-semibold text-amber-800 dark:text-amber-300">
                 {ROLE_CONFIG[roleChangeTarget.newRole]?.label || roleChangeTarget.newRole}
               </span>?
             </p>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#243324]/10 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setRoleChangeTarget(null)}
-                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
+                className="px-4 py-2 rounded-xl text-[#526340] dark:text-[#A3B59E] hover:bg-[#243324]/10 dark:hover:bg-white/10 text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmRoleChange}
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-950/40 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-amber-600/20 cursor-pointer"
               >
                 Confirm Role Update
               </button>
@@ -593,25 +606,25 @@ export const UserManagementTab: React.FC = () => {
 
       {/* MODAL 3: Confirm Application Rejection */}
       {rejectTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-              <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#1A2619] border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 border-b border-[#243324]/10 dark:border-white/10 pb-3">
+              <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Reject Application?</h3>
-                <p className="text-xs text-slate-400">Provide optional feedback for the applicant.</p>
+                <h3 className="text-base font-bold text-[#1F2B1D] dark:text-[#F4EFE6] font-display">Reject Application?</h3>
+                <p className="text-xs text-[#657351] dark:text-[#9DAE9A]">Provide optional feedback for the applicant.</p>
               </div>
             </div>
 
-            <div className="bg-slate-800/60 p-3 rounded-xl border border-slate-700/60 text-xs">
-              <div className="font-semibold text-white">{rejectTarget.name}</div>
-              <div className="text-slate-400 text-[11px]">{rejectTarget.email}</div>
+            <div className="bg-[#FAF7F0] dark:bg-[#111910] p-3 rounded-xl border border-[#243324]/15 dark:border-white/15 text-xs">
+              <div className="font-semibold text-[#1F2B1D] dark:text-[#F4EFE6]">{rejectTarget.name}</div>
+              <div className="text-[#657351] dark:text-[#9DAE9A] text-[11px]">{rejectTarget.email}</div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-slate-300">
+              <label className="text-xs font-semibold text-[#1F2B1D] dark:text-[#F4EFE6]">
                 Rejection Reason / Remarks:
               </label>
               <textarea
@@ -619,22 +632,22 @@ export const UserManagementTab: React.FC = () => {
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 placeholder="e.g. Please register using your official @kgec.edu.in email address."
-                className="w-full px-3.5 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white placeholder-slate-500 text-xs resize-none focus:outline-none focus:border-rose-500"
+                className="w-full px-3.5 py-2 bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 rounded-xl text-[#1F2B1D] dark:text-[#F4EFE6] placeholder-[#8E9F89] text-xs resize-none focus:outline-none focus:border-rose-500"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#243324]/10 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setRejectTarget(null)}
-                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
+                className="px-4 py-2 rounded-xl text-[#526340] dark:text-[#A3B59E] hover:bg-[#243324]/10 dark:hover:bg-white/10 text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmReject}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-lg shadow-rose-600/20"
               >
                 Confirm Rejection
               </button>
@@ -645,33 +658,33 @@ export const UserManagementTab: React.FC = () => {
 
       {/* MODAL 4: Confirm User Deletion */}
       {deleteTargetUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-sm animate-fade-in">
-          <div className="relative w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-              <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#1A2619] border border-rose-500/40 rounded-2xl p-6 shadow-2xl space-y-4 text-left">
+            <div className="flex items-center gap-3 border-b border-[#243324]/10 dark:border-white/10 pb-3">
+              <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-base font-bold text-white">Permanently Delete User?</h3>
-                <p className="text-xs text-slate-400">This action cannot be undone.</p>
+                <h3 className="text-base font-bold text-[#1F2B1D] dark:text-[#F4EFE6] font-display">Permanently Delete User?</h3>
+                <p className="text-xs text-[#657351] dark:text-[#9DAE9A]">This action cannot be undone.</p>
               </div>
             </div>
 
-            <div className="bg-slate-800/60 p-3.5 rounded-xl border border-slate-700/60 text-xs space-y-1">
-              <div className="font-semibold text-white">{deleteTargetUser.name}</div>
-              <div className="text-slate-400 text-[11px]">{deleteTargetUser.email}</div>
+            <div className="bg-[#FAF7F0] dark:bg-[#111910] p-3.5 rounded-xl border border-[#243324]/15 dark:border-white/15 text-xs space-y-1">
+              <div className="font-semibold text-[#1F2B1D] dark:text-[#F4EFE6]">{deleteTargetUser.name}</div>
+              <div className="text-[#657351] dark:text-[#9DAE9A] text-[11px]">{deleteTargetUser.email}</div>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              Are you sure you want to remove <span className="font-semibold text-rose-300">{deleteTargetUser.name}</span> from the society roster and database?
+            <p className="text-xs text-[#3D4F3B] dark:text-[#CBD5C8] leading-relaxed">
+              Are you sure you want to remove <span className="font-semibold text-rose-700 dark:text-rose-300">{deleteTargetUser.name}</span> from the society roster and database?
             </p>
 
-            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-[#243324]/10 dark:border-white/10">
               <button
                 type="button"
                 onClick={() => setDeleteTargetUser(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 text-xs font-medium cursor-pointer"
+                className="px-4 py-2 rounded-xl text-[#526340] dark:text-[#A3B59E] hover:bg-[#243324]/10 dark:hover:bg-white/10 text-xs font-medium cursor-pointer"
               >
                 Cancel
               </button>
@@ -679,7 +692,7 @@ export const UserManagementTab: React.FC = () => {
                 type="button"
                 onClick={handleConfirmDelete}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-rose-950/40 cursor-pointer disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-rose-600/20 cursor-pointer disabled:opacity-50"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 {isDeleting ? 'Deleting...' : 'Delete User'}
@@ -689,68 +702,68 @@ export const UserManagementTab: React.FC = () => {
         </div>
       )}
 
-      {/* Profile Detail Drawer / Modal */}
+      {/* Profile Detail Modal */}
       {selectedUser && (
         <div
           id="user-detail-modal"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in"
         >
-          <div className="relative w-full max-w-lg bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+          <div className="relative w-full max-w-lg bg-white dark:bg-[#1A2619] border border-[#243324]/20 dark:border-white/20 rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-[#243324]/10 dark:border-white/10 pb-4">
               <div className="flex items-center gap-3">
                 <img
                   src={getUserAvatarUrl(selectedUser)}
                   alt={selectedUser.name}
-                  className="w-12 h-12 rounded-xl object-cover border border-slate-700 shadow-md"
+                  className="w-12 h-12 rounded-xl object-cover border border-[#243324]/15 dark:border-white/15 shadow-2xs"
                   referrerPolicy="no-referrer"
                 />
                 <div>
-                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                  <h3 className="text-base font-bold text-[#1F2B1D] dark:text-[#F4EFE6] flex items-center gap-2 font-display">
                     {selectedUser.name}
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${ROLE_CONFIG[selectedUser.role]?.bgColor || 'bg-slate-800'} ${ROLE_CONFIG[selectedUser.role]?.textColor || 'text-slate-200'} ${ROLE_CONFIG[selectedUser.role]?.borderColor || 'border-slate-700'}`}>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${ROLE_CONFIG[selectedUser.role]?.bgColor || 'bg-stone-200 dark:bg-stone-800'} ${ROLE_CONFIG[selectedUser.role]?.textColor || 'text-stone-800 dark:text-stone-200'} ${ROLE_CONFIG[selectedUser.role]?.borderColor || 'border-stone-300'}`}>
                       {ROLE_CONFIG[selectedUser.role]?.label || selectedUser.role}
                     </span>
                   </h3>
-                  <p className="text-xs text-slate-400">{selectedUser.email}</p>
+                  <p className="text-xs text-[#657351] dark:text-[#9DAE9A]">{selectedUser.email}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedUser(null)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 cursor-pointer transition-colors"
+                className="p-1.5 text-[#526340] dark:text-[#A3B59E] hover:text-[#1F2B1D] dark:hover:text-white rounded-lg hover:bg-[#243324]/10 dark:hover:bg-white/10 cursor-pointer transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-2 bg-slate-800/40 p-3 rounded-xl border border-slate-800">
+              <div className="grid grid-cols-2 gap-2 bg-[#FAF7F0] dark:bg-[#111910] p-3 rounded-xl border border-[#243324]/10 dark:border-white/10">
                 <div>
-                  <span className="text-slate-500 font-medium">Department</span>
-                  <p className="text-slate-200 font-semibold">{selectedUser.department || 'N/A'}</p>
+                  <span className="text-[#657351] dark:text-[#9DAE9A] font-medium">Department</span>
+                  <p className="text-[#1F2B1D] dark:text-[#F4EFE6] font-semibold">{selectedUser.department || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500 font-medium">Roll / Faculty ID</span>
-                  <p className="text-slate-200 font-semibold">{selectedUser.rollOrId || 'N/A'}</p>
+                  <span className="text-[#657351] dark:text-[#9DAE9A] font-medium">Roll / Faculty ID</span>
+                  <p className="text-[#1F2B1D] dark:text-[#F4EFE6] font-semibold">{selectedUser.rollOrId || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500 font-medium">Primary Technical Wing</span>
-                  <p className="text-cyan-400 font-semibold">{selectedUser.technicalWing || 'N/A'}</p>
+                  <span className="text-[#657351] dark:text-[#9DAE9A] font-medium">Primary Technical Wing</span>
+                  <p className="text-emerald-700 dark:text-emerald-400 font-semibold">{selectedUser.technicalWing || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="text-slate-500 font-medium">Phone / WhatsApp</span>
-                  <p className="text-slate-200">{selectedUser.phone || 'N/A'}</p>
+                  <span className="text-[#657351] dark:text-[#9DAE9A] font-medium">Phone / WhatsApp</span>
+                  <p className="text-[#1F2B1D] dark:text-[#F4EFE6]">{selectedUser.phone || 'N/A'}</p>
                 </div>
               </div>
 
               {selectedUser.skills && selectedUser.skills.length > 0 && (
                 <div>
-                  <span className="text-slate-400 font-medium">Technical Competencies</span>
+                  <span className="text-[#657351] dark:text-[#9DAE9A] font-medium">Technical Competencies</span>
                   <div className="flex flex-wrap gap-1.5 mt-1.5">
                     {selectedUser.skills.map((skill, idx) => (
                       <span
                         key={idx}
-                        className="px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-300 text-[11px]"
+                        className="px-2 py-0.5 rounded-md bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 text-[#1F2B1D] dark:text-[#F4EFE6] text-[11px]"
                       >
                         {skill}
                       </span>
@@ -760,9 +773,9 @@ export const UserManagementTab: React.FC = () => {
               )}
 
               {selectedUser.statementOfPurpose && (
-                <div className="bg-slate-800/20 p-3 rounded-xl border border-slate-800">
-                  <span className="text-slate-400 font-medium">Statement of Purpose / Vision</span>
-                  <p className="text-slate-300 mt-1 italic leading-relaxed">"{selectedUser.statementOfPurpose}"</p>
+                <div className="bg-[#FAF7F0] dark:bg-[#111910] p-3 rounded-xl border border-[#243324]/10 dark:border-white/10">
+                  <span className="text-[#657351] dark:text-[#9DAE9A] font-medium">Statement of Purpose / Vision</span>
+                  <p className="text-[#1F2B1D] dark:text-[#F4EFE6] mt-1 italic leading-relaxed">"{selectedUser.statementOfPurpose}"</p>
                 </div>
               )}
 
@@ -773,7 +786,7 @@ export const UserManagementTab: React.FC = () => {
                     href={selectedUser.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs border border-slate-700"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] text-[#1F2B1D] dark:text-[#F4EFE6] text-xs border border-[#243324]/15 dark:border-white/15 hover:border-emerald-500"
                   >
                     GitHub <ExternalLink className="w-3 h-3" />
                   </a>
@@ -783,7 +796,7 @@ export const UserManagementTab: React.FC = () => {
                     href={selectedUser.linkedinUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-900/30 hover:bg-blue-900/50 text-blue-300 text-xs border border-blue-800/40"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 text-blue-800 dark:text-blue-300 text-xs border border-blue-500/30 hover:border-blue-500"
                   >
                     LinkedIn <ExternalLink className="w-3 h-3" />
                   </a>
@@ -793,7 +806,7 @@ export const UserManagementTab: React.FC = () => {
                     href={selectedUser.scholarUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-900/30 hover:bg-purple-900/50 text-purple-300 text-xs border border-purple-800/40"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-500/10 text-purple-800 dark:text-purple-300 text-xs border border-purple-500/30 hover:border-purple-500"
                   >
                     Google Scholar <ExternalLink className="w-3 h-3" />
                   </a>
@@ -801,14 +814,14 @@ export const UserManagementTab: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-[#243324]/10 dark:border-white/10">
               {selectedUser.status !== 'approved' && (
                 <button
                   type="button"
                   onClick={() => {
                     handleOpenApproveModal(selectedUser);
                   }}
-                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer shadow-lg shadow-emerald-700/20"
                 >
                   <Check className="w-3.5 h-3.5" /> Approve Clearance
                 </button>
@@ -816,7 +829,7 @@ export const UserManagementTab: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedUser(null)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-[#FAF7F0] dark:bg-[#111910] text-[#1F2B1D] dark:text-[#F4EFE6] border border-[#243324]/15 dark:border-white/15 text-xs font-medium cursor-pointer"
               >
                 Close
               </button>
