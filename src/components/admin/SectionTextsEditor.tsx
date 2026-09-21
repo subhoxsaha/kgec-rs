@@ -96,7 +96,7 @@ export const SectionTextsEditor: React.FC = () => {
                   type="text"
                   value={sectionTexts.heroPill2Target || ''}
                   onChange={(e) => updateSectionTexts({ heroPill2Target: e.target.value })}
-                  placeholder="#wings-section"
+                  placeholder="#leadership-team-section"
                   className="w-full px-2 py-0.5 text-[10px] font-mono rounded bg-white dark:bg-black/40 border border-[#243324]/10 dark:border-white/10"
                 />
               </div>

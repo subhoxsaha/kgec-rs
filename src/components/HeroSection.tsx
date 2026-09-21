@@ -110,7 +110,7 @@ export const HeroSection: React.FC = () => {
             <button
               type="button"
               onClick={() => {
-                const target = sectionTexts.heroPill2Target || '#wings-section';
+                const target = sectionTexts.heroPill2Target || '#leadership-team-section';
                 if (target.startsWith('#')) {
                   const el = document.querySelector(target) || document.getElementById(target.replace('#', ''));
                   if (el) el.scrollIntoView({ behavior: 'smooth' });

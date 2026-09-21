@@ -28,7 +28,6 @@ import { LogoThemeEditor } from './admin/LogoThemeEditor';
 import { PhotosMediaEditor } from './admin/PhotosMediaEditor';
 import { MetricsEditor } from './admin/MetricsEditor';
 import { SectionTextsEditor } from './admin/SectionTextsEditor';
-import { WingsEditor } from './admin/WingsEditor';
 import { BotFaqEditor } from './admin/BotFaqEditor';
 import { FestEventsEditor } from './admin/FestEventsEditor';
 import { ToolsEditor } from './admin/ToolsEditor';
@@ -90,11 +89,6 @@ export const ContentEditorDrawer: React.FC = () => {
       id: 'metrics',
       label: 'Key Figures',
       icon: Sliders,
-    },
-    {
-      id: 'wings',
-      label: 'Tech Wings',
-      icon: Cpu,
     },
     {
       id: 'botfaq',
@@ -228,7 +222,6 @@ export const ContentEditorDrawer: React.FC = () => {
             {activeEditorTab === 'fests' && <FestEventsEditor />}
             {activeEditorTab === 'metrics' && <MetricsEditor />}
             {activeEditorTab === 'texts' && <SectionTextsEditor />}
-            {activeEditorTab === 'wings' && <WingsEditor />}
             {activeEditorTab === 'botfaq' && <BotFaqEditor />}
             {activeEditorTab === 'tools' && <ToolsEditor />}
           </div>

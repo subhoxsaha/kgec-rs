@@ -105,18 +105,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       color: 'from-purple-600/20 to-pink-600/10 border-purple-500/30 text-purple-400',
     },
     {
-      id: 'wings' as EditorTab,
-      name: 'Technical Wings',
-      tag: 'Section 5',
-      icon: Cpu,
-      count: `${wings?.length || 4} Divisions`,
-      description: 'Mechatronics & Combat, Autonomous Systems, Aerial/UAV, and Embedded IoT divisions.',
-      color: 'from-cyan-600/20 to-blue-600/10 border-cyan-500/30 text-cyan-400',
-    },
-    {
       id: 'fests' as EditorTab,
       name: 'TECHTIX & ZYRO Fest Arenas',
-      tag: 'Section 6',
+      tag: 'Section 5',
       icon: Trophy,
       count: `${festEvents?.length || 10} Events & Tracks`,
       description: 'Robowars, Autonomous AGVs, Bionics, UAV tracks, 36H Hackathon phases, and challenge passages.',
@@ -213,18 +204,6 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
           <div className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">
             Operational fleet
-          </div>
-        </div>
-
-        <div className="p-3 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs">
-          <div className="text-[10px] font-mono uppercase tracking-wider text-[#657351] dark:text-[#9DAE9A]">
-            Technical Wings
-          </div>
-          <div className="text-lg font-bold text-[#1F2B1D] dark:text-[#F4EFE6] font-mono mt-0.5">
-            {wings?.length || 4}
-          </div>
-          <div className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-            Core divisions
           </div>
         </div>
 

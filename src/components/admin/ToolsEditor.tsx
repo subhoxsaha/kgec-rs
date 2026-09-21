@@ -87,7 +87,7 @@ export const ToolsEditor: React.FC = () => {
           Export Configuration Snapshot
         </h3>
         <p className="text-xs text-[#657351] dark:text-[#9FB19A]">
-          Download or copy the full state (dual logos, photos, metrics, section texts, wings, TECHTIX &amp; ZYRO events) in JSON.
+          Download or copy the full state (dual logos, photos, metrics, section texts, TECHTIX &amp; ZYRO events) in JSON.
         </p>
         <div className="flex flex-wrap gap-2 pt-1">
           <button

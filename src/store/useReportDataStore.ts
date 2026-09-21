@@ -143,7 +143,7 @@ export const INITIAL_SECTION_TEXTS: SectionTexts = {
   heroPill1Text: '48+ National Podiums',
   heroPill1Target: '#overview-section',
   heroPill2Text: '180+ Active Engineers',
-  heroPill2Target: '#wings-section',
+  heroPill2Target: '#leadership-team-section',
   heroPill3Text: '26 Flagship Bot Builds',
   heroPill3Target: '#projects-section',
   overviewHeading: 'Engineering world-class autonomous bots, rovers, and national champions from Kalyani.',
