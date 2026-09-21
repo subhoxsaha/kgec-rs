@@ -17,6 +17,9 @@ import {
   Building,
   Clock,
   XCircle,
+  RotateCcw,
+  ShieldCheck,
+  AlertCircle,
 } from 'lucide-react';
 import { useReportDataStore } from '../store/useReportDataStore';
 import { UserRole, ROLE_CONFIG, UserApplicationProfile } from '../types';
@@ -56,9 +59,10 @@ export const UserRegistrationModal: React.FC = () => {
   const [userType, setUserType] = useState<'student' | 'teacher'>('student');
   const [role, setRole] = useState<UserRole>('member');
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [department, setDepartment] = useState(DEPARTMENTS[0]);
   const [rollOrId, setRollOrId] = useState('');
-  const [yearOrSem, setYearOrSem] = useState('2nd Year (4th Sem)');
+  const [yearOrSem, setYearOrSem] = useState('2nd Year (3rd/4th Sem)');
   const [phone, setPhone] = useState('');
   const [technicalWing, setTechnicalWing] = useState(TECHNICAL_WINGS[0]);
   const [skillsText, setSkillsText] = useState('');
@@ -71,18 +75,37 @@ export const UserRegistrationModal: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 
-  // Sync with current user or profile if existing
+  // Security Captcha Verification State
+  const [captchaCode, setCaptchaCode] = useState('');
+  const [captchaInput, setCaptchaInput] = useState('');
+  const [captchaError, setCaptchaError] = useState('');
+
+  const generateCaptcha = () => {
+    // Alphanumeric without confusing characters like 0/O, 1/I/l
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let res = '';
+    for (let i = 0; i < 5; i++) {
+      res += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    setCaptchaCode(res);
+    setCaptchaInput('');
+    setCaptchaError('');
+  };
+
+  // Sync with current user or profile if existing & generate captcha
   useEffect(() => {
     if (googleUser) {
       setName(googleUser.name || '');
+      setEmail(googleUser.email || '');
     }
     if (currentUserProfile) {
       setUserType(currentUserProfile.userType || 'student');
       setRole(currentUserProfile.role || (currentUserProfile.userType === 'teacher' ? 'teacherBody' : 'member'));
       setName(currentUserProfile.name || googleUser?.name || '');
+      setEmail(currentUserProfile.email || googleUser?.email || '');
       setDepartment(currentUserProfile.department || DEPARTMENTS[0]);
       setRollOrId(currentUserProfile.rollOrId || '');
-      setYearOrSem(currentUserProfile.yearOrSem || '2nd Year (4th Sem)');
+      setYearOrSem(currentUserProfile.yearOrSem || '2nd Year (3rd/4th Sem)');
       setPhone(currentUserProfile.phone || '');
       setTechnicalWing(currentUserProfile.technicalWing || TECHNICAL_WINGS[0]);
       setSkillsText(currentUserProfile.skills ? currentUserProfile.skills.join(', ') : '');
@@ -97,6 +120,7 @@ export const UserRegistrationModal: React.FC = () => {
     } else {
       setIsEditingProfile(true);
     }
+    generateCaptcha();
   }, [googleUser, currentUserProfile, isApplicationFormOpen]);
 
   if (!isApplicationFormOpen) return null;
@@ -111,8 +135,25 @@ export const UserRegistrationModal: React.FC = () => {
       showToast('Please provide your full official name.');
       return;
     }
+    if (!email.trim()) {
+      showToast('Please provide your official email address.');
+      return;
+    }
     if (!rollOrId.trim()) {
       showToast(userType === 'teacher' ? 'Please provide Employee ID / Faculty Code' : 'Please provide College Roll Number');
+      return;
+    }
+
+    // Captcha validation
+    if (!captchaInput.trim()) {
+      setCaptchaError('Please enter the captcha verification code.');
+      showToast('Please enter the security verification captcha code.');
+      return;
+    }
+    if (captchaInput.trim().toUpperCase() !== captchaCode.toUpperCase()) {
+      setCaptchaError('Incorrect captcha code. A new code has been generated.');
+      showToast('Incorrect captcha code. Please try again.');
+      generateCaptcha();
       return;
     }
 
@@ -127,7 +168,7 @@ export const UserRegistrationModal: React.FC = () => {
 
     const payload: Partial<UserApplicationProfile> = {
       id: currentUserProfile?.id,
-      email: googleUser?.email || currentUserProfile?.email || 'applicant@kgec.edu.in',
+      email: email.trim() || googleUser?.email || currentUserProfile?.email || 'applicant@kgec.edu.in',
       name: name.trim(),
       picture: googleUser?.picture || currentUserProfile?.picture,
       role: targetRole,
@@ -150,6 +191,7 @@ export const UserRegistrationModal: React.FC = () => {
     const success = await submitUserApplication(payload);
     setIsSubmitting(false);
     if (success) {
+      generateCaptcha();
       closeApplicationForm();
     }
   };
@@ -291,81 +333,55 @@ export const UserRegistrationModal: React.FC = () => {
               </div>
             )}
 
-            {/* Applicant Category Switcher */}
-            <div className="space-y-1.5">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                Category
-              </label>
-              <div className="grid grid-cols-2 gap-2.5">
-                <button
-                  type="button"
-                  id="select-type-student"
-                  onClick={() => {
-                    setUserType('student');
-                    if (role === 'teacherBody') setRole('member');
-                  }}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                    userType === 'student'
-                      ? 'bg-cyan-500/10 dark:bg-cyan-500/20 border-cyan-500 text-cyan-800 dark:text-cyan-200 ring-1 ring-cyan-500/40'
-                      : 'bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                  }`}
-                >
-                  <GraduationCap className="w-4 h-4 text-cyan-500" />
-                  Student
-                </button>
-                <button
-                  type="button"
-                  id="select-type-teacher"
-                  onClick={() => {
-                    setUserType('teacher');
-                    setRole('teacherBody');
-                  }}
-                  className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer ${
-                    userType === 'teacher'
-                      ? 'bg-purple-500/10 dark:bg-purple-500/20 border-purple-500 text-purple-800 dark:text-purple-200 ring-1 ring-purple-500/40'
-                      : 'bg-slate-100 dark:bg-slate-900/60 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                  }`}
-                >
-                  <Briefcase className="w-4 h-4 text-purple-500" />
-                  Faculty
-                </button>
-              </div>
-            </div>
-
-            {/* Role Selection Grid for Students */}
-            {userType === 'student' && (
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Requested Role
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {(['studentBody', 'lead', 'member', 'intern'] as UserRole[]).map((r) => {
-                    const cfg = ROLE_CONFIG[r];
-                    const isSelected = role === r;
-                    return (
-                      <button
-                        key={r}
-                        type="button"
-                        id={`role-btn-${r}`}
-                        onClick={() => setRole(r)}
-                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
-                          isSelected
-                            ? `${cfg.bgColor} ${cfg.borderColor} ring-2 ring-emerald-500/40 font-bold`
-                            : 'bg-slate-100/70 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400'
-                        }`}
-                      >
-                        <span className={`text-xs font-bold uppercase ${isSelected ? cfg.textColor : 'text-slate-700 dark:text-slate-300'}`}>
-                          {cfg.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Main Credentials Inputs */}
+            {/* Main Credentials Inputs Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Field 1: Category */}
+              <div className="space-y-1">
+                <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                  Category <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  id="reg-category-select"
+                  value={userType}
+                  onChange={(e) => {
+                    const val = e.target.value as 'student' | 'teacher';
+                    setUserType(val);
+                    if (val === 'teacher') setRole('teacherBody');
+                    else if (role === 'teacherBody') setRole('member');
+                  }}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
+                >
+                  <option value="student" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Student</option>
+                  <option value="teacher" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Faculty / Teacher</option>
+                </select>
+              </div>
+
+              {/* Field 2: Requested Role */}
+              <div className="space-y-1">
+                <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                  Requested Role <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  id="reg-role-select"
+                  value={userType === 'teacher' ? 'teacherBody' : role}
+                  disabled={userType === 'teacher'}
+                  onChange={(e) => setRole(e.target.value as UserRole)}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-base sm:text-xs disabled:opacity-60"
+                >
+                  {userType === 'teacher' ? (
+                    <option value="teacherBody" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Faculty Advisor</option>
+                  ) : (
+                    <>
+                      <option value="studentBody" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Student Body Exec</option>
+                      <option value="lead" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Wing Lead</option>
+                      <option value="member" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Core Member</option>
+                      <option value="intern" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Intern</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {/* Field 3: Full Name */}
               <div className="space-y-1">
                 <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
                   Full Name <span className="text-rose-500">*</span>
@@ -377,10 +393,27 @@ export const UserRegistrationModal: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Official full name"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
                 />
               </div>
 
+              {/* Field 4: Official Email */}
+              <div className="space-y-1">
+                <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
+                  Official Email <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  id="reg-email-input"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@kgec.edu.in"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
+                />
+              </div>
+
+              {/* Field 5: Department */}
               <div className="space-y-1">
                 <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
                   Department <span className="text-rose-500">*</span>
@@ -389,7 +422,7 @@ export const UserRegistrationModal: React.FC = () => {
                   id="reg-department-select"
                   value={department || DEPARTMENTS[0]}
                   onChange={(e) => setDepartment(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-xs"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
                 >
                   {DEPARTMENTS.map((dept) => (
                     <option key={dept} value={dept} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
@@ -399,6 +432,7 @@ export const UserRegistrationModal: React.FC = () => {
                 </select>
               </div>
 
+              {/* Field 6: Roll Number / Faculty ID */}
               <div className="space-y-1">
                 <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">
                   {userType === 'teacher' ? 'Faculty ID' : 'Roll Number'} <span className="text-rose-500">*</span>
@@ -410,10 +444,11 @@ export const UserRegistrationModal: React.FC = () => {
                   value={rollOrId}
                   onChange={(e) => setRollOrId(e.target.value)}
                   placeholder={userType === 'teacher' ? 'e.g. FAC/CSE/012' : 'e.g. ECE/2022/042'}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
                 />
               </div>
 
+              {/* Field 7: Semester / Year or Designation */}
               {userType === 'student' ? (
                 <div className="space-y-1">
                   <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Semester / Year</label>
@@ -421,13 +456,12 @@ export const UserRegistrationModal: React.FC = () => {
                     id="reg-year-select"
                     value={yearOrSem || '1st Year (1st/2nd Sem)'}
                     onChange={(e) => setYearOrSem(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-xs"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
                   >
                     <option value="1st Year (1st/2nd Sem)" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">1st Year (Sem 1-2)</option>
                     <option value="2nd Year (3rd/4th Sem)" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">2nd Year (Sem 3-4)</option>
                     <option value="3rd Year (5th/6th Sem)" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">3rd Year (Sem 5-6)</option>
                     <option value="Final Year (7th/8th Sem)" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">Final Year (Sem 7-8)</option>
-                    <option value="M.Tech / Postgraduate" className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">M.Tech / Postgrad</option>
                   </select>
                 </div>
               ) : (
@@ -439,11 +473,12 @@ export const UserRegistrationModal: React.FC = () => {
                     value={designation}
                     onChange={(e) => setDesignation(e.target.value)}
                     placeholder="e.g. Asst. Professor"
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
                   />
                 </div>
               )}
 
+              {/* Field 8: Phone */}
               <div className="space-y-1">
                 <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Phone</label>
                 <input
@@ -452,17 +487,18 @@ export const UserRegistrationModal: React.FC = () => {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+91 Phone"
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
                 />
               </div>
 
-              <div className="space-y-1">
+              {/* Field 9: Technical Wing */}
+              <div className="space-y-1 sm:col-span-2">
                 <label className="text-xs text-slate-700 dark:text-slate-300 font-medium">Technical Wing</label>
                 <select
                   id="reg-wing-select"
                   value={technicalWing || TECHNICAL_WINGS[0]}
                   onChange={(e) => setTechnicalWing(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-xs"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
                 >
                   {TECHNICAL_WINGS.map((w) => (
                     <option key={w} value={w} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
@@ -484,7 +520,7 @@ export const UserRegistrationModal: React.FC = () => {
                 value={userType === 'teacher' ? specialization : skillsText}
                 onChange={(e) => (userType === 'teacher' ? setSpecialization(e.target.value) : setSkillsText(e.target.value))}
                 placeholder={userType === 'teacher' ? 'e.g. Embedded AI, Power Systems' : 'e.g. C++, ROS2, SolidWorks, PyTorch'}
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-xs"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-base sm:text-xs"
               />
             </div>
 
@@ -498,7 +534,7 @@ export const UserRegistrationModal: React.FC = () => {
                   value={linkedinUrl}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
                   placeholder="LinkedIn URL"
-                  className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-xs"
+                  className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 text-base sm:text-xs"
                 />
               </div>
 
@@ -511,7 +547,7 @@ export const UserRegistrationModal: React.FC = () => {
                     value={scholarUrl}
                     onChange={(e) => setScholarUrl(e.target.value)}
                     placeholder="Scholar URL"
-                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 text-xs"
+                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-purple-500 text-base sm:text-xs"
                   />
                 </div>
               ) : (
@@ -523,7 +559,7 @@ export const UserRegistrationModal: React.FC = () => {
                     value={githubUrl}
                     onChange={(e) => setGithubUrl(e.target.value)}
                     placeholder="GitHub URL"
-                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 text-xs"
+                    className="w-full px-3 py-1.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-cyan-500 text-base sm:text-xs"
                   />
                 </div>
               )}
@@ -538,8 +574,82 @@ export const UserRegistrationModal: React.FC = () => {
                 value={statementOfPurpose}
                 onChange={(e) => setStatementOfPurpose(e.target.value)}
                 placeholder="Briefly state your robotics goals..."
-                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-xs resize-none"
+                className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 text-base sm:text-xs resize-none"
               />
+            </div>
+
+            {/* Anti-Spam Security Captcha */}
+            <div className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800 space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  Security Verification (CAPTCHA) <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[10px] text-slate-400">Anti-bot challenge</span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                {/* Visual Captcha Display Box */}
+                <div className="relative flex items-center justify-center px-4 py-2 bg-gradient-to-r from-emerald-500/15 via-teal-500/20 to-cyan-500/15 dark:from-emerald-950/60 dark:via-teal-950/70 dark:to-cyan-950/60 border border-emerald-500/30 rounded-xl select-none shrink-0 min-w-[150px] overflow-hidden shadow-2xs">
+                  {/* Decorative wavy lines simulating security noise */}
+                  <svg className="absolute inset-0 w-full h-full opacity-20 pointer-events-none stroke-emerald-700 dark:stroke-emerald-400" xmlns="http://www.w3.org/2000/svg">
+                    <line x1="0" y1="8" x2="160" y2="28" strokeWidth="1.5" />
+                    <line x1="0" y1="30" x2="160" y2="12" strokeWidth="1" />
+                    <circle cx="35" cy="18" r="14" fill="none" strokeWidth="0.5" />
+                    <circle cx="115" cy="16" r="18" fill="none" strokeWidth="0.5" />
+                  </svg>
+                  <span className="font-mono text-lg font-black tracking-widest text-slate-900 dark:text-white drop-shadow-xs z-10">
+                    {captchaCode.split('').map((char, index) => (
+                      <span
+                        key={index}
+                        className="inline-block transform"
+                        style={{
+                          transform: `rotate(${(index % 2 === 0 ? 1 : -1) * ((index * 3) % 8)}deg)`,
+                          margin: '0 2px',
+                        }}
+                      >
+                        {char}
+                      </span>
+                    ))}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={generateCaptcha}
+                    className="ml-3 p-1.5 rounded-lg text-slate-500 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-500/10 transition-colors cursor-pointer z-10"
+                    title="Generate new captcha code"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Input for Captcha */}
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    id="reg-captcha-input"
+                    value={captchaInput}
+                    onChange={(e) => {
+                      setCaptchaInput(e.target.value);
+                      if (captchaError) setCaptchaError('');
+                    }}
+                    placeholder="Enter the 5 characters above"
+                    maxLength={6}
+                    required
+                    className={`w-full px-3 py-2 bg-white dark:bg-slate-900 border rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none text-base sm:text-xs tracking-wider uppercase font-mono ${
+                      captchaError
+                        ? 'border-rose-500 focus:border-rose-500 ring-1 ring-rose-500/30'
+                        : 'border-slate-200 dark:border-slate-800 focus:border-emerald-500'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {captchaError && (
+                <p className="text-xs text-rose-500 dark:text-rose-400 flex items-center gap-1 mt-1">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                  {captchaError}
+                </p>
+              )}
             </div>
 
             {/* Submit Action */}

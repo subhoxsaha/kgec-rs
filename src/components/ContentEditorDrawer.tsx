@@ -149,10 +149,6 @@ export const ContentEditorDrawer: React.FC = () => {
                   <h3 className="text-sm font-bold tracking-tight text-[#1F2B1D] dark:text-[#F4EFE6] truncate">
                     {currentTab.label}
                   </h3>
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full text-[9px] font-semibold bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-500/25">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    Auto-Saving
-                  </span>
                 </div>
                 {googleUser && (
                   <p className="text-[10px] text-[#657351] dark:text-[#9DAE9A] font-mono truncate">
