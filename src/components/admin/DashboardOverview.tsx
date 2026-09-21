@@ -87,18 +87,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       color: 'from-blue-600/20 to-indigo-600/10 border-blue-500/30 text-blue-400',
     },
     {
-      id: 'metrics' as EditorTab,
-      name: 'Key Figures & Benchmarks',
-      tag: 'Section 2',
-      icon: Sliders,
-      count: `${metadata.nationalPodiums || 48} Podiums`,
-      description: 'IIT podium counts, active engineers (184+), STEM kits (1,250+), and leadership quotes.',
-      color: 'from-amber-600/20 to-yellow-600/10 border-amber-500/30 text-amber-400',
-    },
-    {
       id: 'photos' as EditorTab,
       name: 'Events & Media Gallery',
-      tag: 'Section 4',
+      tag: 'Section 2',
       icon: Camera,
       count: `${totalPhotos} Photos`,
       description: 'Techfest showcases, 36hr ZYRO Hackathons, and rural outreach photo archives.',
@@ -107,7 +98,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     {
       id: 'fests' as EditorTab,
       name: 'TECHTIX & ZYRO Fest Arenas',
-      tag: 'Section 5',
+      tag: 'Section 3',
       icon: Trophy,
       count: `${festEvents?.length || 10} Events & Tracks`,
       description: 'Robowars, Autonomous AGVs, Bionics, UAV tracks, 36H Hackathon phases, and challenge passages.',

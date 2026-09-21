@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   X,
-  Sliders,
   Type,
   Calendar,
   Download,
@@ -26,7 +25,6 @@ import { ProjectsEditor } from './admin/ProjectsEditor';
 import { TeamEditor } from './admin/TeamEditor';
 import { LogoThemeEditor } from './admin/LogoThemeEditor';
 import { PhotosMediaEditor } from './admin/PhotosMediaEditor';
-import { MetricsEditor } from './admin/MetricsEditor';
 import { SectionTextsEditor } from './admin/SectionTextsEditor';
 import { BotFaqEditor } from './admin/BotFaqEditor';
 import { FestEventsEditor } from './admin/FestEventsEditor';
@@ -84,11 +82,6 @@ export const ContentEditorDrawer: React.FC = () => {
       id: 'photos',
       label: 'Events & Arenas',
       icon: Camera,
-    },
-    {
-      id: 'metrics',
-      label: 'Key Figures',
-      icon: Sliders,
     },
     {
       id: 'botfaq',
@@ -220,7 +213,6 @@ export const ContentEditorDrawer: React.FC = () => {
             {activeEditorTab === 'logos' && <LogoThemeEditor />}
             {activeEditorTab === 'photos' && <PhotosMediaEditor />}
             {activeEditorTab === 'fests' && <FestEventsEditor />}
-            {activeEditorTab === 'metrics' && <MetricsEditor />}
             {activeEditorTab === 'texts' && <SectionTextsEditor />}
             {activeEditorTab === 'botfaq' && <BotFaqEditor />}
             {activeEditorTab === 'tools' && <ToolsEditor />}

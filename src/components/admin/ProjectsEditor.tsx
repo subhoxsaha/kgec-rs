@@ -56,6 +56,8 @@ export const ProjectsEditor: React.FC = () => {
     keyFeatures: ['Custom CNC-milled chassis', 'Sub-millisecond radio telemetry', 'Impact-absorbing armor'],
   });
 
+  const [newFeatureInput, setNewFeatureInput] = useState('');
+
   const handleCreateProject = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProject.name?.trim()) {
@@ -92,12 +94,10 @@ export const ProjectsEditor: React.FC = () => {
         dimensions: newProject.specs?.dimensions || '500 x 400 x 200 mm',
         speed: newProject.specs?.speed || '20 km/h',
       },
-      keyFeatures: [
-        'Custom modular architecture',
-        'Sub-millisecond low-latency telemetry',
-        'Reinforced high-impact structural frame',
-        'Fail-safe autonomous watchdog circuits',
-      ],
+      keyFeatures:
+        newProject.keyFeatures && newProject.keyFeatures.length > 0
+          ? newProject.keyFeatures
+          : ['Custom powertrain', 'Low-latency telemetry', 'Reinforced impact structure'],
     };
 
     addBotProject(fullProject);
@@ -129,6 +129,22 @@ export const ProjectsEditor: React.FC = () => {
       },
       keyFeatures: ['Custom CNC-milled chassis', 'Sub-millisecond radio telemetry', 'Impact-absorbing armor'],
     });
+  };
+
+  const handleAddFeatureToNew = () => {
+    if (!newFeatureInput.trim()) return;
+    setNewProject((prev) => ({
+      ...prev,
+      keyFeatures: [...(prev.keyFeatures || []), newFeatureInput.trim()],
+    }));
+    setNewFeatureInput('');
+  };
+
+  const handleRemoveFeatureFromNew = (idx: number) => {
+    setNewProject((prev) => ({
+      ...prev,
+      keyFeatures: (prev.keyFeatures || []).filter((_, i) => i !== idx),
+    }));
   };
 
   // Filtered list
@@ -534,6 +550,53 @@ export const ProjectsEditor: React.FC = () => {
                 onChange={(e) => setNewProject({ ...newProject, architectureSummary: e.target.value })}
                 className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 leading-relaxed text-xs"
               />
+            </div>
+          </div>
+
+          {/* Key Features Chips */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase text-[#526340] dark:text-[#A3B59E] mb-1">
+              Key Engineering Features (Bullet Points)
+            </label>
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {newProject.keyFeatures?.map((feat, fIdx) => (
+                <span
+                  key={fIdx}
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#243324]/10 dark:bg-white/10 text-[11px]"
+                >
+                  <span>{feat}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveFeatureFromNew(fIdx)}
+                    className="text-rose-500 hover:text-rose-700 cursor-pointer"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Add another feature point..."
+                value={newFeatureInput}
+                onChange={(e) => setNewFeatureInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddFeatureToNew();
+                  }
+                }}
+                className="flex-1 px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 text-xs"
+              />
+              <button
+                type="button"
+                onClick={handleAddFeatureToNew}
+                className="px-3 py-1.5 rounded-lg bg-[#243324]/10 dark:bg-white/10 hover:bg-[#243324]/20 text-xs font-medium cursor-pointer"
+              >
+                Add Feature
+              </button>
             </div>
           </div>
 
