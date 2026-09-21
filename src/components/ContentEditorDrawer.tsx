@@ -188,7 +188,7 @@ export const ContentEditorDrawer: React.FC = () => {
           </div>
 
           {/* Unified Section Navigation Bar */}
-          <div className="flex border-b border-[#243324]/10 dark:border-white/10 bg-[#EFECE4] dark:bg-[#182417] px-2 sm:px-3 overflow-x-auto no-scrollbar shrink-0">
+          <div className="flex border-b border-[#243324]/10 dark:border-white/10 bg-[#EFECE4] dark:bg-[#182417] px-1.5 sm:px-3 overflow-x-auto no-scrollbar shrink-0 touch-pan-x">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const isActive = activeEditorTab === tab.id;
@@ -197,13 +197,13 @@ export const ContentEditorDrawer: React.FC = () => {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveEditorTab(tab.id)}
-                  className={`flex items-center gap-1.5 py-2.5 px-3 text-xs font-medium whitespace-nowrap transition-all border-b-2 cursor-pointer ${
+                  className={`flex items-center gap-1.5 min-h-[44px] py-2.5 px-3 sm:px-3.5 text-xs font-medium whitespace-nowrap transition-all border-b-2 cursor-pointer shrink-0 ${
                     isActive
                       ? 'border-emerald-700 dark:border-emerald-400 text-emerald-950 dark:text-white font-semibold bg-white/70 dark:bg-white/10 shadow-2xs'
                       : 'border-transparent text-[#657351] dark:text-[#9DAE9A] hover:text-[#1F2B1D] dark:hover:text-white'
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
                   <span>{tab.label}</span>
                   {Boolean(tab.badge && tab.badge > 0) && (
                     <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-amber-500 text-slate-950">
@@ -216,7 +216,7 @@ export const ContentEditorDrawer: React.FC = () => {
           </div>
 
           {/* Drawer Body - Scrollable */}
-          <div className="flex-1 overflow-y-auto p-3.5 sm:p-5">
+          <div className="flex-1 overflow-y-auto p-3 sm:p-5">
             {activeEditorTab === 'overview' && (
               <DashboardOverview
                 onNavigateTab={setActiveEditorTab}
