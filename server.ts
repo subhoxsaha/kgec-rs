@@ -121,12 +121,16 @@ async function startServer() {
     }
   });
 
-  // Register / submit / update user application
+  // Register / submit / update user application (requires authenticated user identity)
   app.post('/api/users/register', async (req, res) => {
     try {
       const userData = req.body;
-      if (!userData || !userData.email) {
-        res.status(400).json({ error: 'Valid user data with email is required' });
+      if (!userData || !userData.email || typeof userData.email !== 'string' || !userData.email.trim()) {
+        res.status(400).json({ error: 'Authentication required: A valid authenticated user email is required to submit an application.' });
+        return;
+      }
+      if (!userData.name || typeof userData.name !== 'string' || !userData.name.trim()) {
+        res.status(400).json({ error: 'Applicant name is required.' });
         return;
       }
       const result = await saveUserApplicationToDb(userData);

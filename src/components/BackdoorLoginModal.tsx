@@ -14,6 +14,8 @@ export const BackdoorLoginModal: React.FC = () => {
     isAdminLoggedIn,
     isStudentLoggedIn,
     openEditor,
+    setIsApplicationFormOpen,
+    currentUserProfile,
   } = useReportData();
 
   const [error, setError] = useState<string | null>(null);
@@ -143,24 +145,36 @@ export const BackdoorLoginModal: React.FC = () => {
                     </p>
                   ) : (
                     <p className="text-neutral-600 dark:text-neutral-300">
-                      Student Access: You are signed in as a community member. Content editor is restricted to society administrators.
+                      Community Member Access: You are signed in. You can manage your society member card or submit an application below.
                     </p>
                   )}
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                {isAdminLoggedIn && (
+                {isAdminLoggedIn ? (
                   <button
                     type="button"
                     onClick={() => {
                       closeBackdoorModal();
-                      openEditor('metrics');
+                      openEditor('overview');
                     }}
                     className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-800 dark:bg-emerald-700 hover:bg-emerald-900 dark:hover:bg-emerald-600 text-white font-medium text-xs transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Sparkles className="w-4 h-4" />
                     <span>Open Content Editor</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      closeBackdoorModal();
+                      setIsApplicationFormOpen(true);
+                    }}
+                    className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Cpu className="w-4 h-4" />
+                    <span>{currentUserProfile?.status === 'approved' ? 'Open Society Member Card' : 'Open Registration / Application'}</span>
                   </button>
                 )}
                 <button

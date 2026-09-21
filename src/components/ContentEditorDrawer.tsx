@@ -17,6 +17,7 @@ import {
   CheckCircle2,
   Users,
   UserCheck,
+  Trophy,
 } from 'lucide-react';
 import { useReportData } from '../context/ReportDataContext';
 import { EditorTab } from '../store/useReportDataStore';
@@ -28,8 +29,8 @@ import { PhotosMediaEditor } from './admin/PhotosMediaEditor';
 import { MetricsEditor } from './admin/MetricsEditor';
 import { SectionTextsEditor } from './admin/SectionTextsEditor';
 import { WingsEditor } from './admin/WingsEditor';
-import { RoadmapEditor } from './admin/RoadmapEditor';
 import { BotFaqEditor } from './admin/BotFaqEditor';
+import { FestEventsEditor } from './admin/FestEventsEditor';
 import { ToolsEditor } from './admin/ToolsEditor';
 import { UserManagementTab } from './UserManagementTab';
 
@@ -76,6 +77,11 @@ export const ContentEditorDrawer: React.FC = () => {
       icon: ImageIcon,
     },
     {
+      id: 'fests',
+      label: 'TECHTIX & ZYRO',
+      icon: Trophy,
+    },
+    {
       id: 'photos',
       label: 'Events & Arenas',
       icon: Camera,
@@ -89,11 +95,6 @@ export const ContentEditorDrawer: React.FC = () => {
       id: 'wings',
       label: 'Tech Wings',
       icon: Cpu,
-    },
-    {
-      id: 'roadmap',
-      label: 'Vision 2027',
-      icon: Calendar,
     },
     {
       id: 'botfaq',
@@ -224,10 +225,10 @@ export const ContentEditorDrawer: React.FC = () => {
             {activeEditorTab === 'team' && <TeamEditor />}
             {activeEditorTab === 'logos' && <LogoThemeEditor />}
             {activeEditorTab === 'photos' && <PhotosMediaEditor />}
+            {activeEditorTab === 'fests' && <FestEventsEditor />}
             {activeEditorTab === 'metrics' && <MetricsEditor />}
             {activeEditorTab === 'texts' && <SectionTextsEditor />}
             {activeEditorTab === 'wings' && <WingsEditor />}
-            {activeEditorTab === 'roadmap' && <RoadmapEditor />}
             {activeEditorTab === 'botfaq' && <BotFaqEditor />}
             {activeEditorTab === 'tools' && <ToolsEditor />}
           </div>

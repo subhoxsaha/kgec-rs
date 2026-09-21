@@ -12,6 +12,7 @@ export interface FestEvent {
   rulesHighlights: string[];
   specsRequirements: string[];
   bannerUrl: string;
+  images?: string[];
 }
 
 export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
@@ -39,7 +40,13 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'S7/Hardox 500 armor plating allowed',
       'Dual optical & hardware RF link verification',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: 'tt-robowars-feather',
@@ -62,7 +69,13 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'Brushless outrunner weapon motors with ESC thermal telemetry',
       'UHMWPE & 6061-T6 Aluminum unibody chassis structures',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: 'tt-robosoccer',
@@ -85,7 +98,13 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'Mecanum or Omni-wheel 360-degree holonomic drive units',
       'High-voltage pulsed solenoid kickers with safe capacitive discharge',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1508873696983-2df5703bc20d?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: 'tt-line-follower',
@@ -108,7 +127,13 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'STM32 ARM Cortex-M4 or ESP32 dual-core processing units',
       '16-channel array QTR phototransistor reflectance sensors',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: 'tt-maze-runner',
@@ -131,7 +156,13 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'High-resolution magnetic encoders on coreless DC micro-motors',
       'VL53L1X Time-of-Flight laser ranging distance sensors',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: 'tt-drone-racing',
@@ -154,7 +185,13 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'Carbon fiber quad frame with 2207/2306 brushless motors',
       'Betaflight / INAV flight controllers running dynamic notch filters',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1534447677768-be436bb09401?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
 
   // ZYRO 36H HACKATHON TRACKS
@@ -179,7 +216,13 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'ROS2 Humble / Iron with Nav2 autonomous navigation stack',
       'RPLIDAR A1/A2 or Depth Camera real-time perception pipeline',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: 'zyro-assistive-biomedical',
@@ -202,7 +245,13 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'MyoWare 2.0 / Custom analog bio-amplifiers with active notch filters',
       'N20 high-torque micro metal gear-motors with tendon cable actuation',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1508873696983-2df5703bc20d?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
   {
     id: 'zyro-disaster-uav',
@@ -225,7 +274,42 @@ export const TECHTIX_ZYRO_EVENTS: FestEvent[] = [
       'Thermal FLIR Lepton / MLX90640 radiometric sensor arrays',
       'ESP32 LoRa 868/915MHz telemetry transceivers with custom protocol',
     ],
-    bannerUrl: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80',
+    bannerUrl: 'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80',
+    ],
+  },
+  {
+    id: 'zyro-industrial-ai',
+    fest: 'ZYRO',
+    title: 'ZYRO-TRACK 4: Edge-AI & Robotic Manipulation',
+    tagline: 'High-Speed Computer Vision Sorting & Kinematic Arm Control',
+    category: 'Industrial AI',
+    arenaOrTrack: 'Automated Conveyor Cell with 6-DOF Robotic Arms & Defect Sorting',
+    prizePool: '₹35,000+',
+    teamSize: '3–5 Developers',
+    duration: '36 Hours Continuous',
+    description:
+      'Designing intelligent 6-axis robotic arms and edge-AI visual sorting systems utilizing YOLOv8 defect detection, inverse kinematics, and real-time gripper actuation.',
+    rulesHighlights: [
+      'Autonomous vision inference pipeline running locally on embedded SBC',
+      'Accurate pick-and-place sorting into calibrated reject bins',
+      'Real-time collision avoidance and inverse kinematic trajectory planning',
+    ],
+    specsRequirements: [
+      'NVIDIA Jetson Orin / Coral Edge TPU vision accelerator',
+      '6-DOF articulated robotic arm chassis with servo closed-loop control',
+    ],
+    bannerUrl: 'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
+      'https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80',
+    ],
   },
 
   // WORKSHOPS & BOOTCAMPS

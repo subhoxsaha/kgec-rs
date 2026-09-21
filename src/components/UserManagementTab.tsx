@@ -484,11 +484,11 @@ export const UserManagementTab: React.FC = () => {
                     </div>
 
                     {/* Mobile Action Buttons Bar with Touch Targets (>= 44px) */}
-                    <div className="flex items-center gap-2 pt-1 border-t border-[#243324]/8 dark:border-white/8">
+                    <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#243324]/8 dark:border-white/8">
                       <button
                         type="button"
                         onClick={() => setSelectedUser(user)}
-                        className="flex-1 min-h-[44px] px-3 py-2 rounded-xl border border-[#243324]/15 dark:border-white/15 text-[#1F2B1D] dark:text-[#F4EFE6] hover:bg-[#243324]/10 dark:hover:bg-white/10 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        className="flex-1 min-w-[120px] min-h-[44px] px-3 py-2 rounded-xl border border-[#243324]/15 dark:border-white/15 text-[#1F2B1D] dark:text-[#F4EFE6] hover:bg-[#243324]/10 dark:hover:bg-white/10 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <Eye className="w-4 h-4 text-[#657351] dark:text-[#8E9F89]" />
                         Inspect Profile
@@ -498,7 +498,7 @@ export const UserManagementTab: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleOpenApproveModal(user)}
-                          className="flex-1 min-h-[44px] px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-700/20 transition-all cursor-pointer"
+                          className="flex-1 min-w-[110px] min-h-[44px] px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-md shadow-emerald-700/20 transition-all cursor-pointer"
                         >
                           <UserCheck className="w-4 h-4" />
                           Approve
@@ -519,7 +519,7 @@ export const UserManagementTab: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handlePromptDelete(user)}
-                        className="min-h-[44px] px-3.5 py-2 rounded-xl border border-rose-500/30 text-rose-700 dark:text-rose-300 hover:bg-rose-500/10 flex items-center justify-center transition-colors cursor-pointer"
+                        className="min-h-[44px] px-3.5 py-2 rounded-xl border border-rose-500/30 text-rose-700 dark:text-rose-300 hover:bg-rose-500/10 flex items-center justify-center transition-colors cursor-pointer ml-auto"
                         title="Delete User Record"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -703,7 +703,7 @@ export const UserManagementTab: React.FC = () => {
 
       {/* MODAL 1: Confirm Application Approval */}
       {approveTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
           <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1A2619] border border-emerald-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 text-left">
             <div className="flex items-center gap-3 border-b border-[#243324]/10 dark:border-white/10 pb-3">
               <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 shrink-0">
@@ -765,7 +765,7 @@ export const UserManagementTab: React.FC = () => {
 
       {/* MODAL 2: Confirm Role Change */}
       {roleChangeTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
           <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1A2619] border border-amber-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 text-left">
             <div className="flex items-center gap-3 border-b border-[#243324]/10 dark:border-white/10 pb-3">
               <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30 shrink-0">
@@ -821,7 +821,7 @@ export const UserManagementTab: React.FC = () => {
 
       {/* MODAL 3: Confirm Application Rejection */}
       {rejectTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
           <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1A2619] border border-rose-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 text-left">
             <div className="flex items-center gap-3 border-b border-[#243324]/10 dark:border-white/10 pb-3">
               <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 shrink-0">
@@ -873,7 +873,7 @@ export const UserManagementTab: React.FC = () => {
 
       {/* MODAL 4: Confirm User Deletion */}
       {deleteTargetUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in">
           <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-white dark:bg-[#1A2619] border border-rose-500/40 rounded-2xl p-5 sm:p-6 shadow-2xl space-y-4 text-left">
             <div className="flex items-center gap-3 border-b border-[#243324]/10 dark:border-white/10 pb-3">
               <div className="p-2.5 rounded-xl bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30 shrink-0">
@@ -921,7 +921,7 @@ export const UserManagementTab: React.FC = () => {
       {selectedUser && (
         <div
           id="user-detail-modal"
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in"
+          className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 bg-[#0A1009]/70 backdrop-blur-xs animate-fade-in"
         >
           <div className="relative w-full max-w-lg max-h-[90vh] flex flex-col bg-white dark:bg-[#1A2619] border border-[#243324]/20 dark:border-white/20 rounded-2xl p-5 sm:p-6 shadow-2xl">
             {/* Modal Header */}

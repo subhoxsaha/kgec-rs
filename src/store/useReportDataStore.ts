@@ -12,6 +12,7 @@ import {
   DEFAULT_HACKATHON_PHOTOS as INITIAL_HACKATHON_PHOTOS,
 } from '../data/eventsData';
 import { INITIAL_TEAM_MEMBERS } from '../data/teamData';
+import { TECHTIX_ZYRO_EVENTS, FestEvent } from '../data/techtixZyroEventsData';
 import {
   RoboticsWing,
   StrategicGoal,
@@ -36,6 +37,72 @@ import {
   AUTH_STORAGE_KEY,
   GOOGLE_USER_STORAGE_KEY,
 } from '../utils/storageManager';
+
+export interface PhaseItem {
+  step: string;
+  month: string;
+  title: string;
+  desc: string;
+  aiNote?: string;
+}
+
+export const DEFAULT_FEST_PHASES: PhaseItem[] = [
+  {
+    step: '01',
+    month: 'OCT',
+    title: 'Abstract Submissions',
+    desc: 'Hardware architectures & squad registrations.',
+    aiNote: 'AI verification assesses kinematic models, CAD chassis integrity, and compute-to-payload ratios before grant clearance.',
+  },
+  {
+    step: '02',
+    month: 'NOV',
+    title: 'Kits & Grants',
+    desc: 'Jetson Orin Nano & RPLIDAR hardware issued.',
+    aiNote: 'Hardware distribution authorizes NVIDIA Jetson Orin Nano boards and RPLIDAR units for benchtop testing.',
+  },
+  {
+    step: '03',
+    month: 'DEC',
+    title: '36H Sprint',
+    desc: 'Continuous fabrication, 3D printing & ROS2 coding.',
+    aiNote: '36 hours of continuous rapid prototyping, embedded ROS2 trajectory tuning, and edge vision optimization.',
+  },
+  {
+    step: '04',
+    month: 'JAN',
+    title: 'Arena Trials & Pitch',
+    desc: 'Obstacle benchmarking & jury evaluation.',
+    aiNote: 'Live arena qualification testing against randomized physical obstacles with zero manual intervention scoring.',
+  },
+];
+
+export const DEFAULT_TRACK_PASSAGES: Record<string, { code: string; title: string; passage: string }> = {
+  agv: {
+    code: 'TRACK 01 // AGV',
+    title: 'Autonomous Navigation',
+    passage:
+      'Build dual-drive rovers with ROS2 and 360° LiDAR to autonomously map, compute optimal paths, and navigate unknown arenas without teleoperation.',
+  },
+  bionics: {
+    code: 'TRACK 02 // BIONICS',
+    title: 'Assistive Mechatronics',
+    passage:
+      'Engineer 3D-printed bionic limbs controlled through real-time EMG bio-signals and adaptive multi-finger tendon actuation for tactile dexterity.',
+  },
+  uav: {
+    code: 'TRACK 03 // UAV',
+    title: 'Aerial Reconnaissance',
+    passage:
+      'Deploy autonomous quadcopters with onboard optical flow and thermal cameras for GPS-denied indoor search, hazard detection, and live telemetry.',
+  },
+  industrial: {
+    code: 'TRACK 04 // ROBOTICS',
+    title: 'Industrial Manipulation',
+    passage:
+      'Design 6-DOF robotic arms with edge-AI computer vision for real-time defect sorting, closed-loop servo feedback, and kinematic conveyor pick-and-place.',
+  },
+};
 
 export interface SectionTexts {
   heroTagline: string;
@@ -115,7 +182,8 @@ export type EditorTab =
   | 'wings'
   | 'roadmap'
   | 'botfaq'
-  | 'tools';
+  | 'tools'
+  | 'fests';
 
 export interface ReportDataState {
   metadata: SocietyMetadata;
@@ -129,6 +197,11 @@ export interface ReportDataState {
   activityPhotos: EventPhoto[];
   hackathonPhotos: EventPhoto[];
   teamMembers: TeamMember[];
+
+  // TECHTIX & ZYRO Hackathon Fest State
+  festEvents: FestEvent[];
+  festPhases: PhaseItem[];
+  trackPassages: Record<string, { code: string; title: string; passage: string }>;
 
   // User Management & Application Roster
   users: UserApplicationProfile[];
@@ -201,6 +274,14 @@ export interface ReportDataState {
   addHackathonPhoto: (photo: EventPhoto) => void;
   deleteHackathonPhoto: (id: string) => void;
   resetPhotosToDefaults: () => void;
+  // Fest & Track Mutations
+  updateFestEvent: (id: string, updates: Partial<FestEvent>) => void;
+  addFestEvent: (event: FestEvent) => void;
+  deleteFestEvent: (id: string) => void;
+  updateFestPhase: (step: string, updates: Partial<PhaseItem>) => void;
+  updateTrackPassage: (key: string, updates: Partial<{ code: string; title: string; passage: string }>) => void;
+  resetFestDataToDefaults: () => void;
+
   updateTeamMember: (id: string, updates: Partial<TeamMember>) => void;
   addTeamMember: (member: TeamMember) => void;
   deleteTeamMember: (id: string) => void;
@@ -276,6 +357,9 @@ const getInitialStoredState = () => {
   let initialActivities = INITIAL_ACTIVITY_PHOTOS;
   let initialHackathon = INITIAL_HACKATHON_PHOTOS;
   let initialTeam = INITIAL_TEAM_MEMBERS;
+  let initialFestEvents = [...TECHTIX_ZYRO_EVENTS];
+  let initialFestPhases = [...DEFAULT_FEST_PHASES];
+  let initialTrackPassages = { ...DEFAULT_TRACK_PASSAGES };
   let initialUser: GoogleUserProfile | null = null;
 
   if (typeof window !== 'undefined') {
@@ -304,6 +388,9 @@ const getInitialStoredState = () => {
         if (parsed.teamMembers && Array.isArray(parsed.teamMembers)) {
           initialTeam = sanitizeLoadedTeamMembers(parsed.teamMembers);
         }
+        if (parsed.festEvents && Array.isArray(parsed.festEvents)) initialFestEvents = parsed.festEvents;
+        if (parsed.festPhases && Array.isArray(parsed.festPhases)) initialFestPhases = parsed.festPhases;
+        if (parsed.trackPassages) initialTrackPassages = { ...DEFAULT_TRACK_PASSAGES, ...parsed.trackPassages };
       }
     } catch {
       // Safe fallback, no console error
@@ -342,6 +429,9 @@ const getInitialStoredState = () => {
     activityPhotos: initialActivities,
     hackathonPhotos: initialHackathon,
     teamMembers: initialTeam,
+    festEvents: initialFestEvents,
+    festPhases: initialFestPhases,
+    trackPassages: initialTrackPassages,
     googleUser: initialUser,
     userNotification: initialNotification,
     isAdminLoggedIn: isAdmin,
@@ -360,7 +450,10 @@ const saveStateToStorage = (
   techfestPhotos?: EventPhoto[],
   activityPhotos?: EventPhoto[],
   hackathonPhotos?: EventPhoto[],
-  teamMembers?: TeamMember[]
+  teamMembers?: TeamMember[],
+  festEvents?: FestEvent[],
+  festPhases?: PhaseItem[],
+  trackPassages?: Record<string, { code: string; title: string; passage: string }>
 ) => {
   if (typeof window === 'undefined') return;
   const payload = {
@@ -373,6 +466,9 @@ const saveStateToStorage = (
     activityPhotos,
     hackathonPhotos,
     teamMembers,
+    festEvents,
+    festPhases,
+    trackPassages,
     lastUpdated: new Date().toISOString(),
   };
   persistCmsState(payload);
@@ -394,6 +490,9 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
   activityPhotos: initial.activityPhotos,
   hackathonPhotos: initial.hackathonPhotos,
   teamMembers: initial.teamMembers,
+  festEvents: initial.festEvents,
+  festPhases: initial.festPhases,
+  trackPassages: initial.trackPassages,
 
   isAdminLoggedIn: initial.isAdminLoggedIn,
   isStudentLoggedIn: initial.isStudentLoggedIn,
@@ -526,11 +625,25 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
   },
 
   submitUserApplication: async (profile: Partial<UserApplicationProfile>) => {
+    const currentGoogleUser = get().googleUser;
+    if (!currentGoogleUser) {
+      get().showToast('Authentication Required: You must be signed in with Google to submit an application.');
+      return false;
+    }
+
+    // Ensure application is strictly bound to the authenticated Google user's verified credentials
+    const verifiedPayload: Partial<UserApplicationProfile> = {
+      ...profile,
+      email: currentGoogleUser.email,
+      name: profile.name?.trim() || currentGoogleUser.name,
+      picture: profile.picture || currentGoogleUser.picture,
+    };
+
     try {
       const res = await fetch('/api/users/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile),
+        body: JSON.stringify(verifiedPayload),
       });
       const ct = res.headers.get('content-type') || '';
       if (!res.ok || !ct.includes('application/json')) {
@@ -1316,7 +1429,10 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       INITIAL_TECHFEST_PHOTOS,
       INITIAL_ACTIVITY_PHOTOS,
       INITIAL_HACKATHON_PHOTOS,
-      get().teamMembers
+      get().teamMembers,
+      get().festEvents,
+      get().festPhases,
+      get().trackPassages
     );
     set({
       botProjects: INITIAL_BOT_PROJECTS,
@@ -1325,6 +1441,134 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       hackathonPhotos: INITIAL_HACKATHON_PHOTOS,
     });
     get().showToast('All photos restored to default gallery');
+  },
+
+  updateFestEvent: (id: string, updates: Partial<FestEvent>) => {
+    const next = get().festEvents.map((ev) => (ev.id === id ? { ...ev, ...updates } : ev));
+    saveStateToStorage(
+      get().metadata,
+      get().sectionTexts,
+      get().wings,
+      get().roadmap,
+      get().botProjects,
+      get().techfestPhotos,
+      get().activityPhotos,
+      get().hackathonPhotos,
+      get().teamMembers,
+      next,
+      get().festPhases,
+      get().trackPassages
+    );
+    set({ festEvents: next });
+    get().showToast('Fest event updated');
+  },
+
+  addFestEvent: (event: FestEvent) => {
+    const next = [...get().festEvents, event];
+    saveStateToStorage(
+      get().metadata,
+      get().sectionTexts,
+      get().wings,
+      get().roadmap,
+      get().botProjects,
+      get().techfestPhotos,
+      get().activityPhotos,
+      get().hackathonPhotos,
+      get().teamMembers,
+      next,
+      get().festPhases,
+      get().trackPassages
+    );
+    set({ festEvents: next });
+    get().showToast(`Added event: ${event.title}`);
+  },
+
+  deleteFestEvent: (id: string) => {
+    const next = get().festEvents.filter((ev) => ev.id !== id);
+    saveStateToStorage(
+      get().metadata,
+      get().sectionTexts,
+      get().wings,
+      get().roadmap,
+      get().botProjects,
+      get().techfestPhotos,
+      get().activityPhotos,
+      get().hackathonPhotos,
+      get().teamMembers,
+      next,
+      get().festPhases,
+      get().trackPassages
+    );
+    set({ festEvents: next });
+    get().showToast('Fest event deleted');
+  },
+
+  updateFestPhase: (step: string, updates: Partial<PhaseItem>) => {
+    const next = get().festPhases.map((ph) => (ph.step === step ? { ...ph, ...updates } : ph));
+    saveStateToStorage(
+      get().metadata,
+      get().sectionTexts,
+      get().wings,
+      get().roadmap,
+      get().botProjects,
+      get().techfestPhotos,
+      get().activityPhotos,
+      get().hackathonPhotos,
+      get().teamMembers,
+      get().festEvents,
+      next,
+      get().trackPassages
+    );
+    set({ festPhases: next });
+    get().showToast(`Phase ${step} updated`);
+  },
+
+  updateTrackPassage: (key: string, updates: Partial<{ code: string; title: string; passage: string }>) => {
+    const prev = get().trackPassages;
+    const current = prev[key] || { code: '', title: '', passage: '' };
+    const next = {
+      ...prev,
+      [key]: { ...current, ...updates },
+    };
+    saveStateToStorage(
+      get().metadata,
+      get().sectionTexts,
+      get().wings,
+      get().roadmap,
+      get().botProjects,
+      get().techfestPhotos,
+      get().activityPhotos,
+      get().hackathonPhotos,
+      get().teamMembers,
+      get().festEvents,
+      get().festPhases,
+      next
+    );
+    set({ trackPassages: next });
+    get().showToast(`Track ${key.toUpperCase()} passage updated`);
+  },
+
+  resetFestDataToDefaults: () => {
+    saveStateToStorage(
+      get().metadata,
+      get().sectionTexts,
+      get().wings,
+      get().roadmap,
+      get().botProjects,
+      get().techfestPhotos,
+      get().activityPhotos,
+      get().hackathonPhotos,
+      get().teamMembers,
+      TECHTIX_ZYRO_EVENTS,
+      DEFAULT_FEST_PHASES,
+      DEFAULT_TRACK_PASSAGES
+    );
+    set({
+      festEvents: TECHTIX_ZYRO_EVENTS,
+      festPhases: DEFAULT_FEST_PHASES,
+      trackPassages: DEFAULT_TRACK_PASSAGES,
+    });
+    get().showToast('TECHTIX & ZYRO data restored to defaults');
   },
 
   updateTeamMember: (id: string, updates: Partial<TeamMember>) => {
@@ -1338,7 +1582,10 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       get().techfestPhotos,
       get().activityPhotos,
       get().hackathonPhotos,
-      next
+      next,
+      get().festEvents,
+      get().festPhases,
+      get().trackPassages
     );
     set({ teamMembers: next });
     get().showToast('Team member updated');
@@ -1355,7 +1602,10 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       get().techfestPhotos,
       get().activityPhotos,
       get().hackathonPhotos,
-      next
+      next,
+      get().festEvents,
+      get().festPhases,
+      get().trackPassages
     );
     set({ teamMembers: next });
     get().showToast(`Added ${member.name} to team`);
@@ -1373,7 +1623,10 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       get().techfestPhotos,
       get().activityPhotos,
       get().hackathonPhotos,
-      next
+      next,
+      get().festEvents,
+      get().festPhases,
+      get().trackPassages
     );
     set({ teamMembers: next });
     get().showToast(target ? `Removed ${target.name}` : 'Team member removed');
@@ -1399,7 +1652,10 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       get().techfestPhotos,
       get().activityPhotos,
       get().hackathonPhotos,
-      list
+      list,
+      get().festEvents,
+      get().festPhases,
+      get().trackPassages
     );
     set({ teamMembers: list });
   },
@@ -1414,7 +1670,10 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       get().techfestPhotos,
       get().activityPhotos,
       get().hackathonPhotos,
-      INITIAL_TEAM_MEMBERS
+      INITIAL_TEAM_MEMBERS,
+      get().festEvents,
+      get().festPhases,
+      get().trackPassages
     );
     set({ teamMembers: INITIAL_TEAM_MEMBERS });
     get().showToast('Team directory restored to default roster');
@@ -1434,6 +1693,9 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       activityPhotos: INITIAL_ACTIVITY_PHOTOS,
       hackathonPhotos: INITIAL_HACKATHON_PHOTOS,
       teamMembers: INITIAL_TEAM_MEMBERS,
+      festEvents: TECHTIX_ZYRO_EVENTS,
+      festPhases: DEFAULT_FEST_PHASES,
+      trackPassages: DEFAULT_TRACK_PASSAGES,
     });
     get().showToast('All data successfully restored to KGEC defaults');
   },
@@ -1450,6 +1712,9 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       activityPhotos: state.activityPhotos,
       hackathonPhotos: state.hackathonPhotos,
       teamMembers: state.teamMembers,
+      festEvents: state.festEvents,
+      festPhases: state.festPhases,
+      trackPassages: state.trackPassages,
       exportedAt: new Date().toISOString(),
       organization: 'KGEC Robotics Society',
     };
@@ -1468,6 +1733,9 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       const nextActivities = parsed.activityPhotos || get().activityPhotos;
       const nextHackathon = parsed.hackathonPhotos || get().hackathonPhotos;
       const nextTeam = parsed.teamMembers || get().teamMembers;
+      const nextFestEvents = parsed.festEvents || get().festEvents;
+      const nextFestPhases = parsed.festPhases || get().festPhases;
+      const nextTrackPassages = parsed.trackPassages || get().trackPassages;
 
       saveStateToStorage(
         nextMeta,
@@ -1478,7 +1746,10 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
         nextTechfest,
         nextActivities,
         nextHackathon,
-        nextTeam
+        nextTeam,
+        nextFestEvents,
+        nextFestPhases,
+        nextTrackPassages
       );
       set({
         metadata: nextMeta,
@@ -1491,6 +1762,9 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
         activityPhotos: nextActivities,
         hackathonPhotos: nextHackathon,
         teamMembers: nextTeam,
+        festEvents: nextFestEvents,
+        festPhases: nextFestPhases,
+        trackPassages: nextTrackPassages,
       });
 
       get().showToast('Configuration imported successfully!');
@@ -1514,6 +1788,9 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
       activityPhotos: fresh.activityPhotos,
       hackathonPhotos: fresh.hackathonPhotos,
       teamMembers: fresh.teamMembers,
+      festEvents: fresh.festEvents,
+      festPhases: fresh.festPhases,
+      trackPassages: fresh.trackPassages,
       googleUser: fresh.googleUser,
       isAdminLoggedIn: fresh.isAdminLoggedIn,
       isStudentLoggedIn: fresh.isStudentLoggedIn,
@@ -1539,6 +1816,9 @@ if (typeof window !== 'undefined') {
           activityPhotos: Array.isArray(idbData.activityPhotos) && idbData.activityPhotos.length > 0 ? idbData.activityPhotos : prev.activityPhotos,
           hackathonPhotos: Array.isArray(idbData.hackathonPhotos) && idbData.hackathonPhotos.length > 0 ? idbData.hackathonPhotos : prev.hackathonPhotos,
           teamMembers: Array.isArray(idbData.teamMembers) && idbData.teamMembers.length > 0 ? sanitizeLoadedTeamMembers(idbData.teamMembers) : prev.teamMembers,
+          festEvents: Array.isArray(idbData.festEvents) && idbData.festEvents.length > 0 ? idbData.festEvents : prev.festEvents,
+          festPhases: Array.isArray(idbData.festPhases) && idbData.festPhases.length > 0 ? idbData.festPhases : prev.festPhases,
+          trackPassages: idbData.trackPassages ? { ...prev.trackPassages, ...idbData.trackPassages } : prev.trackPassages,
         }));
       }
     })
@@ -1558,6 +1838,9 @@ if (typeof window !== 'undefined') {
               activityPhotos: Array.isArray(dbData.activityPhotos) && dbData.activityPhotos.length > 0 ? dbData.activityPhotos : prev.activityPhotos,
               hackathonPhotos: Array.isArray(dbData.hackathonPhotos) && dbData.hackathonPhotos.length > 0 ? dbData.hackathonPhotos : prev.hackathonPhotos,
               teamMembers: Array.isArray(dbData.teamMembers) && dbData.teamMembers.length > 0 ? sanitizeLoadedTeamMembers(dbData.teamMembers) : prev.teamMembers,
+              festEvents: Array.isArray(dbData.festEvents) && dbData.festEvents.length > 0 ? dbData.festEvents : prev.festEvents,
+              festPhases: Array.isArray(dbData.festPhases) && dbData.festPhases.length > 0 ? dbData.festPhases : prev.festPhases,
+              trackPassages: dbData.trackPassages ? { ...prev.trackPassages, ...dbData.trackPassages } : prev.trackPassages,
             }));
           }
         })

@@ -16,6 +16,7 @@ import {
   Users,
   UserCheck,
   Database,
+  Trophy,
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
 import { EditorTab } from '../../store/useReportDataStore';
@@ -38,7 +39,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
     activityPhotos,
     hackathonPhotos,
     teamMembers,
-    roadmap,
+    festEvents,
     googleUser,
     users,
   } = useReportData();
@@ -113,13 +114,13 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       color: 'from-cyan-600/20 to-blue-600/10 border-cyan-500/30 text-cyan-400',
     },
     {
-      id: 'roadmap' as EditorTab,
-      name: 'Vision 2027 Strategic Roadmap',
+      id: 'fests' as EditorTab,
+      name: 'TECHTIX & ZYRO Fest Arenas',
       tag: 'Section 6',
-      icon: Calendar,
-      count: `${roadmap?.length || 4} Horizons`,
-      description: 'University Rover Challenge 2027, Centre of Excellence, and hardware patent milestones.',
-      color: 'from-emerald-600/20 to-green-600/10 border-emerald-500/30 text-emerald-400',
+      icon: Trophy,
+      count: `${festEvents?.length || 10} Events & Tracks`,
+      description: 'Robowars, Autonomous AGVs, Bionics, UAV tracks, 36H Hackathon phases, and challenge passages.',
+      color: 'from-amber-600/20 to-emerald-600/10 border-amber-500/30 text-amber-400',
     },
     {
       id: 'botfaq' as EditorTab,
@@ -265,13 +266,13 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
         <div className="p-3 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs">
           <div className="text-[10px] font-mono uppercase tracking-wider text-[#657351] dark:text-[#9DAE9A]">
-            Roadmap Goals
+            Fest Events &amp; Tracks
           </div>
           <div className="text-lg font-bold text-[#1F2B1D] dark:text-[#F4EFE6] font-mono mt-0.5">
-            {roadmap?.length || 4}
+            {festEvents?.length || 10}
           </div>
-          <div className="text-[10px] text-cyan-600 dark:text-cyan-400 font-medium">
-            Vision 2027
+          <div className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+            TECHTIX &amp; ZYRO
           </div>
         </div>
       </div>

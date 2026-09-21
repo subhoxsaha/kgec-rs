@@ -1,30 +1,31 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ArrowLeft,
   Flame,
   Zap,
-  ChevronLeft,
-  ChevronRight,
   X,
   Sun,
   Moon,
-  Volume2,
-  VolumeX,
-  Play,
-  Pause,
   SlidersHorizontal,
   Navigation,
   Activity,
   Radio,
   Cpu,
-  FileCode,
-  PackageCheck,
-  Hammer,
-  Award,
+  ChevronRight,
+  ChevronLeft,
+  ChevronDown,
+  ChevronUp,
+  CheckCircle2,
+  Wrench,
+  Maximize2,
+  Pause,
+  Play,
+  Camera,
+  Layers,
 } from 'lucide-react';
-import beesVideo from '../assets/images/gorgeous-bees.webm';
-import { TECHTIX_ZYRO_EVENTS } from '../data/techtixZyroEventsData';
+import { TECHTIX_ZYRO_EVENTS, FestEvent } from '../data/techtixZyroEventsData';
+import { ZyroSection } from './ZyroSection';
 import { useReportData } from '../context/ReportDataContext';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -36,66 +37,215 @@ import {
 import {
   DEFAULT_TECHFEST_PHOTOS,
   DEFAULT_HACKATHON_PHOTOS,
+  DEFAULT_OTHER_ACTIVITIES_PHOTOS,
 } from '../data/eventsData';
+import { EventPhoto } from '../types';
 
 interface TechtixZyroPageProps {
   onBack: () => void;
 }
 
+/**
+ * Clean edge-to-edge photo carousel window without any top bar.
+ * Controls & metadata are overlaid directly onto the image with zero separating header.
+ */
+interface AutoScrollPhotoWindowProps {
+  photos: EventPhoto[];
+  title: string;
+  badge: string;
+  accent: 'emerald' | 'amber';
+  onPhotoClick: (url: string) => void;
+}
+
+const AutoScrollPhotoWindow: React.FC<AutoScrollPhotoWindowProps> = ({
+  photos,
+  title,
+  accent,
+  onPhotoClick,
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
+
+  useEffect(() => {
+    if (photos.length <= 1 || isPaused) return;
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % photos.length);
+    }, 3600);
+    return () => clearInterval(interval);
+  }, [photos.length, isPaused]);
+
+  if (!photos || photos.length === 0) return null;
+  const currentPhoto = photos[currentIndex] || photos[0];
+
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentIndex((prev) => (prev + 1) % photos.length);
+  };
+
+  const isEmerald = accent === 'emerald';
+  const dotActiveClasses = isEmerald ? 'bg-emerald-400 w-5' : 'bg-amber-400 w-5';
+
+  return (
+    <div
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      className="relative rounded-xl overflow-hidden border border-[#243324]/15 dark:border-white/15 bg-black shadow-md group transition-all"
+    >
+      {/* Edge-to-Edge Photo Canvas (NO top dividing bar) */}
+      <div
+        onClick={() => onPhotoClick(currentPhoto.imageUrl)}
+        className="relative h-60 sm:h-64 md:h-72 w-full overflow-hidden cursor-pointer bg-neutral-900"
+      >
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={currentPhoto.id || currentIndex}
+            src={currentPhoto.imageUrl}
+            alt={currentPhoto.title}
+            referrerPolicy="no-referrer"
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.45, ease: 'easeOut' }}
+            className="w-full h-full object-cover"
+          />
+        </AnimatePresence>
+
+        {/* Ambient Dark Gradients */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-black/40 pointer-events-none" />
+
+        {/* Floating Top Floating Overlays (Directly over the image) */}
+        <div className="absolute top-2.5 inset-x-2.5 flex items-center justify-between z-20 pointer-events-none">
+          {/* Live Ping & Title Badge */}
+          <div className="flex items-center gap-2 bg-black/75 backdrop-blur-xs px-2.5 py-1 rounded-md border border-white/15 text-white pointer-events-auto shadow-xs">
+            <span className="flex h-2 w-2 relative">
+              <span
+                className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${
+                  isEmerald ? 'bg-emerald-400' : 'bg-amber-400'
+                }`}
+              />
+              <span
+                className={`relative inline-flex rounded-full h-2 w-2 ${
+                  isEmerald ? 'bg-emerald-400' : 'bg-amber-400'
+                }`}
+              />
+            </span>
+            <span className="font-mono text-[10px] uppercase font-semibold text-white/90">
+              {title}
+            </span>
+          </div>
+
+          {/* Controls: Count, Pause/Play, Expand */}
+          <div className="flex items-center gap-1.5 bg-black/75 backdrop-blur-xs px-2 py-1 rounded-md border border-white/15 text-white pointer-events-auto shadow-xs">
+            <span className="text-[10px] font-mono text-white/70">
+              {String(currentIndex + 1).padStart(2, '0')}/{String(photos.length).padStart(2, '0')}
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsPaused(!isPaused);
+              }}
+              className="p-0.5 rounded text-white/70 hover:text-white transition-colors cursor-pointer"
+              title={isPaused ? 'Resume scroll' : 'Pause scroll'}
+            >
+              {isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
+            </button>
+            <div className="w-[1px] h-2.5 bg-white/25" />
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onPhotoClick(currentPhoto.imageUrl);
+              }}
+              className="p-0.5 rounded text-white/70 hover:text-white transition-colors cursor-pointer"
+              title="Expand photo"
+            >
+              <Maximize2 className="w-3 h-3" />
+            </button>
+          </div>
+        </div>
+
+        {/* Manual Left/Right Navigation Arrows */}
+        <button
+          type="button"
+          onClick={handlePrev}
+          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/65 text-white/80 hover:text-white hover:bg-black/90 transition-all opacity-0 group-hover:opacity-100 cursor-pointer border border-white/10 z-20"
+          title="Previous"
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={handleNext}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/65 text-white/80 hover:text-white hover:bg-black/90 transition-all opacity-0 group-hover:opacity-100 cursor-pointer border border-white/10 z-20"
+          title="Next"
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+
+        {/* Bottom Metadata Overlay */}
+        <div className="absolute bottom-0 inset-x-0 p-3 text-white z-10 space-y-0.5">
+          <span className={`text-[9px] font-mono uppercase font-bold tracking-wider ${isEmerald ? 'text-emerald-300' : 'text-amber-300'}`}>
+            {currentPhoto.category || 'Arena Capture'}
+          </span>
+          <h4 className="text-xs font-semibold text-white/95 truncate">
+            {currentPhoto.title}
+          </h4>
+
+          {/* Slide Progress Indicators */}
+          <div className="flex items-center gap-1 pt-1">
+            {photos.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setCurrentIndex(idx);
+                }}
+                className={`h-1 rounded-full transition-all duration-300 cursor-pointer ${
+                  currentIndex === idx ? dotActiveClasses : 'bg-white/30 hover:bg-white/60 w-1.5'
+                }`}
+                title={`Capture ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const techtixScrollRef = useRef<HTMLDivElement>(null);
-  const zyroScrollRef = useRef<HTMLDivElement>(null);
-
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true);
-  const [selectedGalleryPhoto, setSelectedGalleryPhoto] = useState<string | null>(null);
-
-  const { metadata, techfestPhotos, hackathonPhotos, isAdminLoggedIn, openEditor } = useReportData();
+  const {
+    metadata,
+    techfestPhotos,
+    hackathonPhotos,
+    activityPhotos,
+    isAdminLoggedIn,
+    openEditor,
+    festEvents,
+    festPhases,
+    trackPassages,
+  } = useReportData();
   const { isDark, toggleTheme } = useTheme();
+
+  const eventsList = festEvents && festEvents.length > 0 ? festEvents : TECHTIX_ZYRO_EVENTS;
+
+  const [activeNav, setActiveNav] = useState<'all' | 'techtix' | 'zyro' | 'workshops' | 'gallery'>('all');
+  const [selectedTechtixId, setSelectedTechtixId] = useState<string>(eventsList[0]?.id || 'tt-robowars-heavy');
+  const [selectedGalleryPhoto, setSelectedGalleryPhoto] = useState<string | null>(null);
+  const [isTechtixExpanded, setIsTechtixExpanded] = useState<boolean>(false);
+  const [activeTechtixImgIdx, setActiveTechtixImgIdx] = useState<number>(0);
+  const techtixImgScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-    if (videoRef.current) {
-      videoRef.current.defaultMuted = true;
-      videoRef.current.muted = true;
-      const playPromise = videoRef.current.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-      }
-    }
   }, []);
-
-  const togglePlayPause = () => {
-    if (!videoRef.current) return;
-    if (videoRef.current.paused) {
-      videoRef.current.play();
-      setIsPlaying(true);
-    } else {
-      videoRef.current.pause();
-      setIsPlaying(false);
-    }
-  };
-
-  const toggleAudio = () => {
-    if (!videoRef.current) return;
-    const nextMuted = !isMuted;
-    videoRef.current.muted = nextMuted;
-    setIsMuted(nextMuted);
-  };
-
-  const scrollContainer = (ref: React.RefObject<HTMLDivElement | null>, direction: 'left' | 'right') => {
-    if (!ref.current) return;
-    const offset = direction === 'left' ? -ref.current.clientWidth * 0.75 : ref.current.clientWidth * 0.75;
-    ref.current.scrollBy({ left: offset, behavior: 'smooth' });
-  };
-
-  const scrollToSection = (id: string) => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  };
 
   const logo1Src =
     (isDark ? (metadata.logo1Dark || metadata.logo1) : (metadata.logo1Light || metadata.logo1)) ||
@@ -104,487 +254,631 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
     (isDark ? (metadata.logo2Dark || metadata.logo2) : (metadata.logo2Light || metadata.logo2)) ||
     (isDark ? DEFAULT_KRS_LOGO_DARK : DEFAULT_KRS_LOGO_LIGHT);
 
-  const techtixEvents = TECHTIX_ZYRO_EVENTS.filter((e) => e.fest === 'TECHTIX');
-  const zyroEvents = TECHTIX_ZYRO_EVENTS.filter((e) => e.fest === 'ZYRO' || e.fest === 'WORKSHOP');
+  const techtixEvents = eventsList.filter((e) => e.fest === 'TECHTIX');
+  const zyroEvents = eventsList.filter((e) => e.fest === 'ZYRO');
+  const workshopEvents = eventsList.filter((e) => e.fest === 'WORKSHOP');
+
+  const currentTechtixIndex = techtixEvents.findIndex((e) => e.id === selectedTechtixId);
+  const activeTechtixIdx = currentTechtixIndex >= 0 ? currentTechtixIndex : 0;
+  const selectedTechtixEvent = techtixEvents[activeTechtixIdx] || techtixEvents[0];
+
+  const handlePrevTechtix = () => {
+    const prevIdx = (activeTechtixIdx - 1 + techtixEvents.length) % techtixEvents.length;
+    setSelectedTechtixId(techtixEvents[prevIdx].id);
+  };
+
+  const handleNextTechtix = () => {
+    const nextIdx = (activeTechtixIdx + 1) % techtixEvents.length;
+    setSelectedTechtixId(techtixEvents[nextIdx].id);
+  };
+
+  const techtixImages = selectedTechtixEvent.images && selectedTechtixEvent.images.length > 0
+    ? selectedTechtixEvent.images
+    : [selectedTechtixEvent.bannerUrl];
+
+  // Reset image scroll on competition change
+  useEffect(() => {
+    setActiveTechtixImgIdx(0);
+    if (techtixImgScrollRef.current) {
+      techtixImgScrollRef.current.scrollTo({ left: 0, behavior: 'instant' });
+    }
+  }, [selectedTechtixEvent.id]);
+
+  // Smoothly scroll through multiple images inside existing container without any extra UI
+  useEffect(() => {
+    const container = techtixImgScrollRef.current;
+    if (!container || techtixImages.length <= 1) return;
+
+    const timer = setInterval(() => {
+      if (!container) return;
+      const nextIdx = (activeTechtixImgIdx + 1) % techtixImages.length;
+      container.scrollTo({
+        left: nextIdx * container.clientWidth,
+        behavior: 'smooth',
+      });
+      setActiveTechtixImgIdx(nextIdx);
+    }, 3400);
+
+    return () => clearInterval(timer);
+  }, [activeTechtixImgIdx, techtixImages.length, selectedTechtixEvent.id]);
+
+  const handleTechtixImgScroll = () => {
+    const container = techtixImgScrollRef.current;
+    if (!container || !container.clientWidth) return;
+    const idx = Math.round(container.scrollLeft / container.clientWidth);
+    if (idx >= 0 && idx < techtixImages.length && idx !== activeTechtixImgIdx) {
+      setActiveTechtixImgIdx(idx);
+    }
+  };
 
   const techtixGallery = techfestPhotos && techfestPhotos.length > 0 ? techfestPhotos : DEFAULT_TECHFEST_PHOTOS;
   const zyroGallery = hackathonPhotos && hackathonPhotos.length > 0 ? hackathonPhotos : DEFAULT_HACKATHON_PHOTOS;
+  const outreachGallery = activityPhotos && activityPhotos.length > 0 ? activityPhotos : DEFAULT_OTHER_ACTIVITIES_PHOTOS;
 
-  // Track icons mapping
-  const getTrackIcon = (eventId: string) => {
-    if (eventId.includes('mobility') || eventId.includes('agv')) {
-      return <Navigation className="w-6 h-6 text-amber-400" />;
+  // Unified seamless album without gaps
+  const unifiedAlbum: EventPhoto[] = [
+    ...techtixGallery,
+    ...zyroGallery,
+    ...outreachGallery,
+  ];
+
+  const scrollToAnchor = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    if (eventId.includes('biomedical') || eventId.includes('assistive')) {
-      return <Activity className="w-6 h-6 text-emerald-400" />;
-    }
-    if (eventId.includes('disaster') || eventId.includes('uav')) {
-      return <Radio className="w-6 h-6 text-cyan-400" />;
-    }
-    return <Cpu className="w-6 h-6 text-purple-400" />;
   };
 
+  const phases = [
+    {
+      step: '01',
+      month: 'OCT',
+      title: 'Abstract Submissions',
+      desc: 'Hardware architectures & squad registrations.',
+    },
+    {
+      step: '02',
+      month: 'NOV',
+      title: 'Kits & Grants',
+      desc: 'Jetson Orin Nano & RPLIDAR hardware issued.',
+    },
+    {
+      step: '03',
+      month: 'DEC',
+      title: '36H Sprint',
+      desc: 'Continuous fabrication, 3D printing & ROS2 coding.',
+    },
+    {
+      step: '04',
+      month: 'JAN',
+      title: 'Arena Trials & Pitch',
+      desc: 'Obstacle benchmarking & jury evaluation.',
+    },
+  ];
+
   return (
-    <div className="relative min-h-screen w-full bg-[#070D08] text-[#F4EFE6] font-sans selection:bg-[#204022] selection:text-white">
-      {/* ========================================================================= */}
-      {/* FULL-PAGE BACKGROUND VIDEO & REFRACTIVE AMBIENT BACKDROP                   */}
-      {/* ========================================================================= */}
-      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
-        <video
-          ref={videoRef}
-          autoPlay
-          loop
-          muted={isMuted}
-          playsInline
-          preload="auto"
-          src={beesVideo}
-          className="w-full h-full object-cover object-center filter brightness-[0.42] contrast-110 saturate-110 scale-105"
-        >
-          <source src={beesVideo} type="video/webm" />
-        </video>
-        
-        {/* Layered dark gradients for deep translucency */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#070D08]/85 via-[#070D08]/75 to-[#070D08]/92 backdrop-blur-[1px]" />
-        
-        {/* Glowing refractive glass light orbs */}
-        <div className="absolute top-10 right-1/4 w-[600px] h-[600px] bg-emerald-500/20 rounded-full blur-[140px]" />
-        <div className="absolute top-1/3 left-10 w-[550px] h-[550px] bg-teal-500/15 rounded-full blur-[150px]" />
-        <div className="absolute top-2/3 right-10 w-[550px] h-[550px] bg-amber-500/15 rounded-full blur-[160px]" />
-        <div className="absolute bottom-10 left-1/4 w-[500px] h-[500px] bg-emerald-600/15 rounded-full blur-[140px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(#10b981_0.6px,transparent_0.6px)] [background-size:32px_32px] opacity-15" />
-      </div>
+    <div className="relative min-h-screen w-full bg-[#FBF9F5] dark:bg-[#131D12] text-[#243324] dark:text-[#F4EFE6] font-sans antialiased transition-colors duration-400 selection:bg-[#204022] selection:text-white">
+      {/* Subtle Precision Grid Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-[radial-gradient(#243324_0.75px,transparent_0.75px)] dark:bg-[radial-gradient(#ffffff_0.75px,transparent_0.75px)] [background-size:24px_24px] opacity-10 dark:opacity-8" />
 
       {/* ========================================================================= */}
-      {/* GLASS TOP HEADER                                                          */}
+      {/* 1. COMPACT INSTITUTIONAL HEADER                                           */}
       {/* ========================================================================= */}
-      <header className="sticky top-0 z-40 w-full bg-white/[0.06] backdrop-blur-2xl border-b border-white/[0.14] shadow-[0_8px_32px_0_rgba(0,0,0,0.45)] px-4 sm:px-8 py-3">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-          {/* Glass Back Button */}
-          <button
-            type="button"
-            onClick={onBack}
-            className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white/[0.08] hover:bg-emerald-500/30 text-white font-medium text-xs sm:text-sm border border-white/[0.2] hover:border-emerald-400/60 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition-all cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform text-emerald-300" />
-            <span>Annual Report</span>
-          </button>
-
-          {/* Glass Navigation Switcher */}
-          <div className="flex items-center gap-1.5 p-1 rounded-full bg-white/[0.06] backdrop-blur-2xl border border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
+      <header className="sticky top-0 z-40 w-full bg-[#FBF9F5]/95 dark:bg-[#131D12]/95 backdrop-blur-md border-b border-[#243324]/10 dark:border-white/10 px-3 sm:px-6 lg:px-8 py-2 transition-colors duration-400">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          {/* Left: Back & Breadcrumb */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               type="button"
-              onClick={() => scrollToSection('techtix-section')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-300 hover:text-white hover:bg-white/[0.15] transition-all cursor-pointer"
+              onClick={onBack}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#243324] dark:text-[#F4EFE6] hover:bg-[#243324]/5 dark:hover:bg-white/5 border border-[#243324]/10 dark:border-white/10 transition-colors cursor-pointer shrink-0"
+              title="Return to Annual Report"
             >
-              <Flame className="w-3.5 h-3.5 text-emerald-400" />
-              <span>TECHTIX</span>
+              <ArrowLeft className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Report</span>
             </button>
-            <span className="text-white/25">•</span>
-            <button
-              type="button"
-              onClick={() => scrollToSection('zyro-section')}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold text-amber-300 hover:text-white hover:bg-white/[0.15] transition-all cursor-pointer"
-            >
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span>ZYRO</span>
-            </button>
+            <span className="hidden sm:inline-block text-xs text-[#243324]/30 dark:text-white/20">/</span>
+            <span className="hidden sm:inline-flex items-center gap-1 text-xs text-[#243324]/80 dark:text-white/80 font-mono font-medium truncate">
+              Arenas &amp; Hackathons
+            </span>
           </div>
 
-          {/* Right Utilities (Theme, Background Video Controls, Logos) */}
-          <div className="flex items-center gap-2">
-            {/* Background Video Glass Controls */}
-            <div className="hidden sm:flex items-center gap-1 p-1 rounded-xl bg-white/[0.06] backdrop-blur-2xl border border-white/[0.18] shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
-              <button
-                type="button"
-                onClick={togglePlayPause}
-                className="p-1.5 rounded-lg hover:bg-white/[0.18] text-neutral-300 hover:text-white transition-all cursor-pointer"
-                title={isPlaying ? 'Pause Background Video' : 'Play Background Video'}
-              >
-                {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 fill-current" />}
-              </button>
-              <button
-                type="button"
-                onClick={toggleAudio}
-                className="p-1.5 rounded-lg hover:bg-white/[0.18] text-neutral-300 hover:text-white transition-all cursor-pointer"
-                title={isMuted ? 'Unmute Video Audio' : 'Mute Video Audio'}
-              >
-                {isMuted ? <VolumeX className="w-3.5 h-3.5 text-amber-300" /> : <Volume2 className="w-3.5 h-3.5 text-emerald-300" />}
-              </button>
-            </div>
-
+          {/* Center: In-Page Quick Navigation Tabs */}
+          <nav className="hidden md:flex items-center gap-1 bg-[#243324]/5 dark:bg-white/5 p-1 rounded-lg border border-[#243324]/10 dark:border-white/10 text-xs font-medium">
             <button
               type="button"
-              onClick={toggleTheme}
-              className="p-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.18] text-neutral-200 hover:text-white border border-white/[0.18] backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
-              title="Toggle Theme"
+              onClick={() => {
+                setActiveNav('all');
+                scrollToAnchor('overview-dossier');
+              }}
+              className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                activeNav === 'all'
+                  ? 'bg-white dark:bg-[#1D2B1C] text-[#243324] dark:text-white shadow-xs font-semibold'
+                  : 'text-[#243324]/70 dark:text-white/70 hover:text-[#243324] dark:hover:text-white'
+              }`}
             >
-              {isDark ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-emerald-300" />}
+              Overview
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveNav('techtix');
+                scrollToAnchor('techtix-arena');
+              }}
+              className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
+                activeNav === 'techtix'
+                  ? 'bg-white dark:bg-[#1D2B1C] text-emerald-700 dark:text-emerald-400 shadow-xs font-semibold'
+                  : 'text-[#243324]/70 dark:text-white/70 hover:text-[#243324] dark:hover:text-white'
+              }`}
+            >
+              <Flame className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+              TECHTIX
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveNav('zyro');
+                scrollToAnchor('zyro-hackathon');
+              }}
+              className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1 ${
+                activeNav === 'zyro'
+                  ? 'bg-white dark:bg-[#1D2B1C] text-amber-700 dark:text-amber-400 shadow-xs font-semibold'
+                  : 'text-[#243324]/70 dark:text-white/70 hover:text-[#243324] dark:hover:text-white'
+              }`}
+            >
+              <Zap className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+              ZYRO 36H
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveNav('workshops');
+                scrollToAnchor('workshops-section');
+              }}
+              className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                activeNav === 'workshops'
+                  ? 'bg-white dark:bg-[#1D2B1C] text-[#243324] dark:text-white shadow-xs font-semibold'
+                  : 'text-[#243324]/70 dark:text-white/70 hover:text-[#243324] dark:hover:text-white'
+              }`}
+            >
+              Workshops
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveNav('gallery');
+                scrollToAnchor('album-section');
+              }}
+              className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                activeNav === 'gallery'
+                  ? 'bg-white dark:bg-[#1D2B1C] text-[#243324] dark:text-white shadow-xs font-semibold'
+                  : 'text-[#243324]/70 dark:text-white/70 hover:text-[#243324] dark:hover:text-white'
+              }`}
+            >
+              Field Album
+            </button>
+          </nav>
 
+          {/* Right: Actions & Theme Toggle */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {isAdminLoggedIn && (
               <button
                 type="button"
                 onClick={() => openEditor('photos')}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-700/50 hover:bg-emerald-600/70 text-white border border-emerald-400/40 backdrop-blur-xl shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] transition-all cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#243324]/5 dark:bg-white/5 hover:bg-[#243324]/10 dark:hover:bg-white/10 text-[#243324] dark:text-white border border-[#243324]/10 dark:border-white/10 transition-colors cursor-pointer"
+                title="Edit Media via CMS"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
-                <span>Edit Media</span>
+                <span className="hidden sm:inline">CMS</span>
               </button>
             )}
 
-            {/* Logos with Glass Frame */}
-            <div className="flex items-center gap-2 pl-2.5 border-l border-white/[0.18]">
-              <div className="p-1 rounded-lg bg-white/[0.06] backdrop-blur-md border border-white/[0.15]">
-                <img
-                  src={logo1Src}
-                  alt="KGEC Logo"
-                  className="w-6 h-6 sm:w-7 sm:h-7 object-contain filter brightness-110"
-                />
-              </div>
-              <div className="p-1 rounded-lg bg-white/[0.06] backdrop-blur-md border border-white/[0.15]">
-                <img
-                  src={logo2Src}
-                  alt="KRS Logo"
-                  className="w-6 h-6 sm:w-7 sm:h-7 object-contain filter brightness-110"
-                />
-              </div>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-[#243324] dark:text-white hover:bg-[#243324]/5 dark:hover:bg-white/5 border border-[#243324]/10 dark:border-white/10 transition-colors cursor-pointer"
+              title="Toggle Theme"
+            >
+              {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-emerald-700" />}
+            </button>
+
+            {/* Dual Logos */}
+            <div className="flex items-center gap-1.5 pl-1.5 sm:pl-2 border-l border-[#243324]/10 dark:border-white/10">
+              <img src={logo1Src} alt="KGEC" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+              <img src={logo2Src} alt="KRS" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
             </div>
           </div>
         </div>
       </header>
 
       {/* ========================================================================= */}
-      {/* MAIN GLASS CONTENT                                                        */}
+      {/* 2. MAIN STRUCTURED CONTAINER                                              */}
       {/* ========================================================================= */}
-      <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 sm:pt-12 pb-24 space-y-20 sm:space-y-24">
-        
-        {/* ========================================================================= */}
-        {/* SECTION 1: TECHTIX                                                        */}
-        {/* ========================================================================= */}
-        <section id="techtix-section" className="space-y-8 scroll-mt-20">
-          {/* Glass Hero Panel */}
-          <div className="relative rounded-3xl bg-gradient-to-b from-white/[0.09] via-white/[0.04] to-white/[0.02] backdrop-blur-3xl border border-white/[0.18] shadow-[0_16px_48px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.25)] p-6 sm:p-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-400/40 text-emerald-300 text-xs font-mono font-semibold">
-              <Flame className="w-3.5 h-3.5 text-emerald-400" />
-              <span>ANNUAL ROBOTICS CHAMPIONSHIP</span>
+      <main className="relative z-10 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-8 sm:space-y-10">
+        {/* SECTION: OVERVIEW DOSSIER */}
+        <section id="overview-dossier" className="space-y-3 pt-1">
+          {/* Editorial Title Block - Shortened */}
+          <div className="border-b border-[#243324]/10 dark:border-white/10 pb-3 sm:pb-4 space-y-1">
+            <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono text-emerald-700 dark:text-emerald-400 font-semibold uppercase tracking-wider">
+              <span>KGEC Robotics Society</span>
+              <span className="text-[#243324]/30 dark:text-white/20">•</span>
+              <span>Flagship Arenas</span>
             </div>
-
-            <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal text-white tracking-tight leading-tight">
-              TECHTIX
+            <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl font-normal text-[#1F2B1D] dark:text-[#F4EFE6] tracking-tight">
+              TECHTIX &amp; ZYRO Arenas
             </h1>
-            
-            <p className="max-w-4xl text-base sm:text-lg text-neutral-200 font-light leading-relaxed">
-              Eastern India’s flagship inter-collegiate robotics championship organized by the KGEC Robotics Society. Featuring heavyweight combat robots in armored polycarbonate cages, autonomous line followers, agile soccer bots, micromouse mazes, and high-speed FPV drones in elimination matches.
+            <p className="text-xs sm:text-sm text-[#4A5D44] dark:text-[#CBD7C7] font-light">
+              Mechatronics combat championship &amp; 36-hour continuous edge-AI hardware hackathon.
             </p>
           </div>
 
-          {/* Side-by-Side Glass Competitions Showcase */}
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display text-2xl sm:text-3xl font-normal text-white">
+          {/* Showcase: TECHTIX Overview & Video (Side-by-side, Direct Display) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-8 items-center pt-2">
+            {/* Left: Small Passage about TECHTIX */}
+            <div className="lg:col-span-6 space-y-2.5">
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold font-mono text-emerald-700 dark:text-emerald-400">
+                <Flame className="w-3.5 h-3.5" />
+                <span>ABOUT TECHTIX</span>
+              </div>
+              <h2 className="font-display text-xl sm:text-2xl font-normal text-[#1F2B1D] dark:text-[#F4EFE6]">
+                Eastern India's Premier Robotics Arena
+              </h2>
+              <p className="text-xs sm:text-sm text-[#4A5D44] dark:text-[#CBD7C7] font-light leading-relaxed">
+                TECHTIX is the flagship annual mechatronics championship organized by the KGEC Robotics Society. Bringing together mechanical grit, high-torque combat bots, autonomous path-planning rovers, and micro-drone racers, the festival transforms the campus into an electrifying proving ground for engineering talent across the country.
+              </p>
+              <p className="text-xs text-[#243324]/80 dark:text-white/80 font-normal leading-relaxed">
+                Every discipline is calibrated with strict international weight and RF compliance standards—fostering relentless innovation, sportsmanship, and practical mechatronics mastery under high-stakes arena conditions.
+              </p>
+            </div>
+
+            {/* Right: YouTube Video Embed (Autoplay in loop, no touch controls) */}
+            <div className="lg:col-span-6">
+              <div className="relative aspect-video rounded-xl overflow-hidden border border-[#243324]/10 dark:border-white/10 shadow-xs bg-black pointer-events-none select-none">
+                <iframe
+                  src="https://www.youtube.com/embed/ESrFtRcL0KY?autoplay=1&mute=1&loop=1&playlist=ESrFtRcL0KY&controls=0&disablekb=1&modestbranding=1&rel=0&playsinline=1"
+                  title="TECHTIX Official Video"
+                  className="w-full h-full border-0 pointer-events-none"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 1: TECHTIX ARENA COMPETITIONS - CLEAN SINGLE CONTROL & OPTIMAL UI */}
+        {/* ========================================================================= */}
+        <section id="techtix-arena" className="space-y-3 pt-3 border-t border-[#243324]/10 dark:border-white/10">
+          {/* Section Header with Single Unified Arrow Navigation Control */}
+          <div className="flex items-center justify-between gap-2.5">
+            <div>
+              <div className="inline-flex items-center gap-1.5 text-xs font-semibold font-mono text-emerald-700 dark:text-emerald-400">
+                <Flame className="w-3.5 h-3.5" />
+                <span>TECHTIX CHAMPIONSHIP</span>
+              </div>
+              <h2 className="font-display text-xl sm:text-2xl font-normal text-[#1F2B1D] dark:text-[#F4EFE6]">
                 Competitions
-              </h3>
-
-              {/* Glass Navigation Arrows */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => scrollContainer(techtixScrollRef, 'left')}
-                  className="p-2.5 rounded-2xl bg-white/[0.08] hover:bg-emerald-500/30 text-white border border-white/[0.2] hover:border-emerald-400/60 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollContainer(techtixScrollRef, 'right')}
-                  className="p-2.5 rounded-2xl bg-white/[0.08] hover:bg-emerald-500/30 text-white border border-white/[0.2] hover:border-emerald-400/60 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
+              </h2>
             </div>
 
-            {/* Horizontal Glass Cards Row */}
-            <div
-              ref={techtixScrollRef}
-              className="flex gap-6 overflow-x-auto pb-6 pt-1 snap-x snap-mandatory scrollbar-none no-scrollbar"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {techtixEvents.map((event) => (
-                <div
-                  key={event.id}
-                  className="w-[310px] sm:w-[390px] lg:w-[430px] shrink-0 snap-start flex flex-col justify-between rounded-3xl overflow-hidden bg-gradient-to-b from-white/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-3xl border border-white/[0.18] shadow-[0_16px_40px_0_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.3)] hover:border-emerald-400/50 hover:shadow-[0_20px_50px_0_rgba(16,185,129,0.15)] transition-all duration-300 p-5 space-y-4 group"
-                >
-                  {/* Photo with Glass Badge */}
-                  <div className="relative w-full h-48 sm:h-54 rounded-2xl overflow-hidden bg-black/40 border border-white/[0.15] shrink-0">
-                    <img
-                      src={event.bannerUrl}
-                      alt={event.title}
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                    
-                    {/* Glass Prize Badge */}
-                    <div className="absolute top-3 right-3">
-                      <span className="px-3 py-1 rounded-xl bg-black/50 backdrop-blur-xl border border-white/[0.25] text-emerald-300 text-xs font-mono font-bold shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
-                        {event.prizePool}
-                      </span>
-                    </div>
+            {/* Single Unified Arrow Switcher */}
+            <div className="flex items-center gap-1 bg-white/80 dark:bg-[#162215]/80 p-1 rounded-xl border border-[#243324]/10 dark:border-white/10 shadow-xs">
+              <button
+                type="button"
+                onClick={handlePrevTechtix}
+                className="p-1.5 rounded-lg text-[#243324] dark:text-[#F4EFE6] hover:bg-[#243324]/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                title="Previous Competition"
+                aria-label="Previous Competition"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
 
-                    <div className="absolute bottom-3 left-3 text-xs font-mono text-emerald-300/90 font-medium">
-                      {event.arenaOrTrack}
-                    </div>
-                  </div>
+              <span className="font-mono text-xs font-semibold px-2 text-emerald-800 dark:text-emerald-400 select-none">
+                0{activeTechtixIdx + 1} / 0{techtixEvents.length}
+              </span>
 
-                  {/* Clean 1-Para Description */}
-                  <div className="space-y-2 flex-1">
-                    <h4 className="font-display text-xl sm:text-2xl font-bold text-white leading-tight">
-                      {event.title}
-                    </h4>
-                    <p className="text-xs sm:text-sm text-neutral-200/90 font-light leading-relaxed">
-                      {event.description}
-                    </p>
-                  </div>
-
-                  {/* Glass Specifications Footer */}
-                  <div className="pt-3 border-t border-white/[0.14] text-xs text-neutral-300 font-light flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-lg bg-white/[0.06] backdrop-blur-md border border-white/[0.12]">
-                      {event.category}
-                    </span>
-                    <span className="font-mono text-emerald-400 font-semibold">{event.teamSize}</span>
-                  </div>
-                </div>
-              ))}
+              <button
+                type="button"
+                onClick={handleNextTechtix}
+                className="p-1.5 rounded-lg text-[#243324] dark:text-[#F4EFE6] hover:bg-[#243324]/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                title="Next Competition"
+                aria-label="Next Competition"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          {/* Glass Gallery */}
-          <div className="space-y-4 pt-4">
-            <h3 className="font-display text-2xl sm:text-3xl font-normal text-white">
-              Gallery
-            </h3>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-              {techtixGallery.map((photo) => (
-                <div
-                  key={photo.id}
-                  onClick={() => setSelectedGalleryPhoto(photo.imageUrl)}
-                  className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-white/[0.05] backdrop-blur-2xl border border-white/[0.16] hover:border-emerald-400/70 p-1 shadow-[0_8px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_12px_32px_rgba(16,185,129,0.25)] cursor-pointer transition-all duration-300"
-                >
-                  <div className="relative w-full h-full rounded-xl overflow-hidden">
-                    <img
-                      src={photo.imageUrl}
-                      alt={photo.title}
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                      <span className="text-[10px] font-mono text-white leading-tight line-clamp-2">
-                        {photo.title}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-
-        {/* ========================================================================= */}
-        {/* SECTION 2: ZYRO                                                           */}
-        {/* ========================================================================= */}
-        <section id="zyro-section" className="space-y-8 scroll-mt-20 pt-8 border-t border-white/[0.16]">
-          {/* Glass Hero Panel */}
-          <div className="relative rounded-3xl bg-gradient-to-b from-white/[0.09] via-white/[0.04] to-white/[0.02] backdrop-blur-3xl border border-white/[0.18] shadow-[0_16px_48px_0_rgba(0,0,0,0.4),inset_0_1px_0_0_rgba(255,255,255,0.25)] p-6 sm:p-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 backdrop-blur-md border border-amber-400/40 text-amber-300 text-xs font-mono font-semibold">
-              <Zap className="w-3.5 h-3.5 text-amber-400" />
-              <span>36-HOUR HARDWARE &amp; AI SPRINT</span>
-            </div>
-
-            <h2 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal text-white tracking-tight leading-tight">
-              ZYRO
-            </h2>
+          {/* Master Competition Showcase: Directly Displayed Without Outer Div Background */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             
-            <p className="max-w-4xl text-base sm:text-lg text-neutral-200 font-light leading-relaxed">
-              A 36-hour physical mechatronics and AI hackathon where student teams design, fabricate, and program autonomous robotics systems from scratch with 24/7 access to KRS prototyping facilities and compute kits.
-            </p>
-          </div>
-
-          {/* Monthly Phases Timeline */}
-          <div className="space-y-4">
-            <h3 className="font-display text-2xl sm:text-3xl font-normal text-white">
-              Phases Timeline
-            </h3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Phase 1 */}
-              <div className="p-5 rounded-3xl bg-gradient-to-b from-amber-500/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-3xl border border-amber-400/[0.25] shadow-[0_12px_32px_0_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.25)] space-y-2.5 hover:border-amber-400/50 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-amber-400 font-bold tracking-wider">PHASE 01 • OCT</span>
-                  <div className="p-2 rounded-xl bg-amber-500/20 backdrop-blur-md border border-amber-400/30">
-                    <FileCode className="w-4 h-4 text-amber-300" />
-                  </div>
-                </div>
-                <h4 className="font-bold text-white text-sm sm:text-base">Problem Release &amp; Abstracts</h4>
-                <p className="text-xs text-neutral-200/90 font-light leading-relaxed">
-                  Track problem statement rollout, team registrations, and technical architecture abstracts.
-                </p>
-              </div>
-
-              {/* Phase 2 */}
-              <div className="p-5 rounded-3xl bg-gradient-to-b from-amber-500/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-3xl border border-amber-400/[0.25] shadow-[0_12px_32px_0_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.25)] space-y-2.5 hover:border-amber-400/50 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-amber-400 font-bold tracking-wider">PHASE 02 • NOV</span>
-                  <div className="p-2 rounded-xl bg-amber-500/20 backdrop-blur-md border border-amber-400/30">
-                    <PackageCheck className="w-4 h-4 text-amber-300" />
-                  </div>
-                </div>
-                <h4 className="font-bold text-white text-sm sm:text-base">Shortlisting &amp; Hardware Grants</h4>
-                <p className="text-xs text-neutral-200/90 font-light leading-relaxed">
-                  Top squad selections and distribution of compute loaner kits (NVIDIA Jetson, RPLIDAR, sensors).
-                </p>
-              </div>
-
-              {/* Phase 3 */}
-              <div className="p-5 rounded-3xl bg-gradient-to-b from-amber-500/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-3xl border border-amber-400/[0.25] shadow-[0_12px_32px_0_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.25)] space-y-2.5 hover:border-amber-400/50 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-amber-400 font-bold tracking-wider">PHASE 03 • DEC</span>
-                  <div className="p-2 rounded-xl bg-amber-500/20 backdrop-blur-md border border-amber-400/30">
-                    <Hammer className="w-4 h-4 text-amber-300" />
-                  </div>
-                </div>
-                <h4 className="font-bold text-white text-sm sm:text-base">36-Hour Rapid Fabrication</h4>
-                <p className="text-xs text-neutral-200/90 font-light leading-relaxed">
-                  All-night sprint in the makerspace with 3D printers, laser cutters, ROS2 tuning, and live breadboarding.
-                </p>
-              </div>
-
-              {/* Phase 4 */}
-              <div className="p-5 rounded-3xl bg-gradient-to-b from-amber-500/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-3xl border border-amber-400/[0.25] shadow-[0_12px_32px_0_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.25)] space-y-2.5 hover:border-amber-400/50 transition-all duration-300">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-amber-400 font-bold tracking-wider">PHASE 04 • JAN</span>
-                  <div className="p-2 rounded-xl bg-amber-500/20 backdrop-blur-md border border-amber-400/30">
-                    <Award className="w-4 h-4 text-amber-300" />
-                  </div>
-                </div>
-                <h4 className="font-bold text-white text-sm sm:text-base">Live Trials &amp; Grand Pitch</h4>
-                <p className="text-xs text-neutral-200/90 font-light leading-relaxed">
-                  Obstacle course runs, technical jury audits, prize announcements, and incubation onboarding.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Compact Glass Tracks with Single SVG and Small Text */}
-          <div className="space-y-4 pt-2">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display text-2xl sm:text-3xl font-normal text-white">
-                Problem Statement Tracks
-              </h3>
-
-              {/* Glass Navigation Arrows */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => scrollContainer(zyroScrollRef, 'left')}
-                  className="p-2.5 rounded-2xl bg-white/[0.08] hover:bg-amber-500/30 text-white border border-white/[0.2] hover:border-amber-400/60 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
-                  aria-label="Scroll left"
-                >
-                  <ChevronLeft className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => scrollContainer(zyroScrollRef, 'right')}
-                  className="p-2.5 rounded-2xl bg-white/[0.08] hover:bg-amber-500/30 text-white border border-white/[0.2] hover:border-amber-400/60 backdrop-blur-2xl shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] transition-all cursor-pointer"
-                  aria-label="Scroll right"
-                >
-                  <ChevronRight className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
-
-            {/* Horizontal Glass Tracks with SVG and Small Text */}
-            <div
-              ref={zyroScrollRef}
-              className="flex gap-5 overflow-x-auto pb-6 pt-1 snap-x snap-mandatory scrollbar-none no-scrollbar"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {zyroEvents.map((event, idx) => (
-                <div
-                  key={event.id}
-                  className="w-[280px] sm:w-[320px] lg:w-[350px] shrink-0 snap-start flex flex-col justify-between rounded-3xl bg-gradient-to-b from-white/[0.12] via-white/[0.05] to-white/[0.02] backdrop-blur-3xl border border-white/[0.18] shadow-[0_16px_40px_0_rgba(0,0,0,0.5),inset_0_1px_0_0_rgba(255,255,255,0.3)] hover:border-amber-400/50 hover:shadow-[0_20px_50px_0_rgba(245,158,11,0.15)] transition-all duration-300 p-5 space-y-4 group"
-                >
-                  {/* Top Bar with One SVG Icon and Prize Badge */}
-                  <div className="flex items-center justify-between">
-                    <div className="p-3 rounded-2xl bg-white/[0.08] backdrop-blur-xl border border-white/[0.2] shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] group-hover:scale-110 transition-transform">
-                      {getTrackIcon(event.id)}
+            {/* Left Column: Dedicated High-Resolution Event Image */}
+            <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
+              <div className="space-y-3">
+                {/* Event Visual Canvas */}
+                  <div className="relative aspect-16/10 rounded-xl overflow-hidden border border-[#243324]/10 dark:border-white/10 shadow-xs group bg-[#111A10]">
+                    {/* Horizontal Smooth Scroll Track */}
+                    <div
+                      ref={techtixImgScrollRef}
+                      onScroll={handleTechtixImgScroll}
+                      className="w-full h-full flex overflow-x-auto snap-x snap-mandatory scroll-smooth no-scrollbar select-none"
+                      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                      {techtixImages.map((imgUrl, imgIdx) => (
+                        <div
+                          key={`${selectedTechtixEvent.id}-img-${imgIdx}`}
+                          className="w-full h-full shrink-0 snap-center relative overflow-hidden"
+                        >
+                          <img
+                            src={imgUrl}
+                            alt={`${selectedTechtixEvent.title} shot ${imgIdx + 1}`}
+                            className="w-full h-full object-cover object-center cursor-pointer transition-transform duration-700 hover:scale-103"
+                            onClick={() => setSelectedGalleryPhoto(imgUrl)}
+                            referrerPolicy="no-referrer"
+                            loading={imgIdx === 0 ? 'eager' : 'lazy'}
+                          />
+                        </div>
+                      ))}
                     </div>
-                    <span className="px-3 py-1 rounded-xl bg-black/50 backdrop-blur-xl border border-white/[0.25] text-amber-300 text-xs font-mono font-bold shadow-[0_4px_16px_rgba(0,0,0,0.4)]">
-                      {event.prizePool}
-                    </span>
-                  </div>
 
-                  {/* Track Details in Small Text */}
-                  <div className="space-y-2 flex-1">
-                    <div className="text-[11px] font-mono text-amber-400/90 uppercase tracking-wider font-semibold">
-                      Track 0{idx + 1} • {event.category}
+                    {/* Gradient Overlay for Readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-black/30 pointer-events-none" />
+
+                    {/* Top Floating Badges */}
+                    <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2 pointer-events-none">
+                      <span className="px-2 py-0.5 rounded-md bg-black/65 backdrop-blur-md text-[10px] font-mono font-bold text-emerald-400 border border-white/15">
+                        {selectedTechtixEvent.category}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedGalleryPhoto(techtixImages[activeTechtixImgIdx] || selectedTechtixEvent.bannerUrl)}
+                        className="pointer-events-auto p-1.5 rounded-md bg-black/65 hover:bg-black/90 text-white/90 hover:text-white backdrop-blur-md border border-white/15 transition-colors cursor-pointer"
+                        title="Expand High-Res Photo"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <h4 className="font-display text-lg sm:text-xl font-bold text-white leading-snug">
-                      {(event.title || '').replace(/^ZYRO-TRACK \d+:\s*/, '')}
-                    </h4>
-                    <p className="text-xs text-neutral-200/90 font-light leading-relaxed line-clamp-3">
-                      {event.description}
-                    </p>
-                  </div>
 
-                  {/* Sandbox Environment in Small Text */}
-                  <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.1] text-[11px] text-neutral-300 font-light">
-                    <span className="text-amber-400 font-mono font-medium block text-[10px]">ENVIRONMENT:</span>
-                    <span className="line-clamp-1">{event.arenaOrTrack}</span>
-                  </div>
-
-                  {/* Footer */}
-                  <div className="pt-2 border-t border-white/[0.14] text-xs text-neutral-300 font-light flex items-center justify-between">
-                    <span className="text-[11px] font-mono text-neutral-400">{event.teamSize}</span>
-                    <span className="text-[11px] font-mono text-amber-400 font-medium">36h Continuous</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Glass Gallery */}
-          <div className="space-y-4 pt-4">
-            <h3 className="font-display text-2xl sm:text-3xl font-normal text-white">
-              Gallery
-            </h3>
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-              {zyroGallery.map((photo) => (
-                <div
-                  key={photo.id}
-                  onClick={() => setSelectedGalleryPhoto(photo.imageUrl)}
-                  className="group relative aspect-4/3 rounded-2xl overflow-hidden bg-white/[0.05] backdrop-blur-2xl border border-white/[0.16] hover:border-amber-400/70 p-1 shadow-[0_8px_24px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.2)] hover:shadow-[0_12px_32px_rgba(245,158,11,0.25)] cursor-pointer transition-all duration-300"
-                >
-                  <div className="relative w-full h-full rounded-xl overflow-hidden">
-                    <img
-                      src={photo.imageUrl}
-                      alt={photo.title}
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                      <span className="text-[10px] font-mono text-white leading-tight line-clamp-2">
-                        {photo.title}
+                    {/* Bottom Metadata on Image */}
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                      <span className="px-2 py-0.5 rounded bg-emerald-600/90 text-white text-[10px] font-mono font-bold shadow-xs">
+                        Prize: {selectedTechtixEvent.prizePool}
+                      </span>
+                      <span className="text-[10px] font-mono text-white/90 font-medium">
+                        Team: {selectedTechtixEvent.teamSize}
                       </span>
                     </div>
+                  </div>
+
+                  {/* Arena Specifications Box */}
+                  <div className="p-2.5 rounded-xl bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/20 space-y-1">
+                    <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-emerald-800 dark:text-emerald-300 block">
+                      Arena Environment
+                    </span>
+                    <p className="text-xs text-[#243324]/90 dark:text-white/90 leading-relaxed font-normal">
+                      {selectedTechtixEvent.arenaOrTrack}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Event Info - Directly Displayed Without Box Background */}
+              <div className="lg:col-span-7 flex flex-col justify-between space-y-3">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedTechtixEvent.id}
+                    initial={{ opacity: 0, y: 4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-3"
+                  >
+                    {/* Event Header */}
+                    <div className="border-b border-[#243324]/10 dark:border-white/10 pb-2.5 space-y-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                          Track 0{activeTechtixIdx + 1} of 0{techtixEvents.length} • {selectedTechtixEvent.duration}
+                        </span>
+                        <span className="text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                          {selectedTechtixEvent.prizePool}
+                        </span>
+                      </div>
+                      <h3 className="font-display text-lg sm:text-xl font-bold text-[#1F2B1D] dark:text-white">
+                        {selectedTechtixEvent.title}
+                      </h3>
+                      <p className="text-xs text-emerald-700/80 dark:text-emerald-400/90 font-mono">
+                        {selectedTechtixEvent.tagline}
+                      </p>
+                    </div>
+
+                    {/* Concise Core Objective */}
+                    <p className="text-xs text-[#4A5D44] dark:text-[#CBD7C7] font-light leading-relaxed">
+                      {selectedTechtixEvent.description}
+                    </p>
+
+                    {/* Key Highlights Row */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#243324]/80 dark:text-white/80">
+                      <span className="px-2 py-1 rounded bg-[#243324]/5 dark:bg-white/5 border border-[#243324]/10 dark:border-white/10">
+                        Squad: {selectedTechtixEvent.teamSize}
+                      </span>
+                      <span className="px-2 py-1 rounded bg-[#243324]/5 dark:bg-white/5 border border-[#243324]/10 dark:border-white/10">
+                        Match: {selectedTechtixEvent.duration}
+                      </span>
+                    </div>
+
+                    {/* Expandable Rules and Limits Section */}
+                    {isTechtixExpanded && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs pt-1"
+                      >
+                        {/* Mandatory Rules Card */}
+                        <div className="p-3 rounded-xl bg-[#243324]/5 dark:bg-white/5 border border-[#243324]/10 dark:border-white/10 space-y-1.5">
+                          <h4 className="text-[10px] font-bold text-[#1F2B1D] dark:text-white uppercase font-mono flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span>Mandatory Rules</span>
+                          </h4>
+                          <ul className="space-y-1 text-[11px] text-[#243324]/85 dark:text-white/85">
+                            {selectedTechtixEvent.rulesHighlights.slice(0, 3).map((rule, i) => (
+                              <li key={i} className="flex items-start gap-1.5 leading-tight">
+                                <span className="text-emerald-600 dark:text-emerald-400 font-bold shrink-0">•</span>
+                                <span>{rule}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Hardware Caps Card */}
+                        <div className="p-3 rounded-xl bg-[#243324]/5 dark:bg-white/5 border border-[#243324]/10 dark:border-white/10 space-y-1.5">
+                          <h4 className="text-[10px] font-bold text-[#1F2B1D] dark:text-white uppercase font-mono flex items-center gap-1.5">
+                            <Wrench className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                            <span>Hardware &amp; Limits</span>
+                          </h4>
+                          <ul className="space-y-1 text-[11px] text-[#243324]/85 dark:text-white/85">
+                            {selectedTechtixEvent.specsRequirements.slice(0, 3).map((spec, i) => (
+                              <li key={i} className="flex items-start gap-1.5 leading-tight">
+                                <span className="text-amber-600 dark:text-amber-400 font-bold shrink-0">•</span>
+                                <span>{spec}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {/* Single Action Button: View More / View Less */}
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsTechtixExpanded(!isTechtixExpanded)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-mono text-xs font-semibold transition-all cursor-pointer shadow-xs active:scale-98"
+                      >
+                        <span>{isTechtixExpanded ? 'View Less' : 'View More & Rules'}</span>
+                        {isTechtixExpanded ? (
+                          <ChevronUp className="w-3.5 h-3.5" />
+                        ) : (
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        )}
+                      </button>
+                    </div>
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+            </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 2: ZYRO HACKATHON (3 PARTS: ABOUT, PREVIOUS TRACKS SVG REVEAL, VERTICAL TIMELINE) */}
+        {/* ========================================================================= */}
+        <ZyroSection
+          zyroEvents={zyroEvents}
+          phases={festPhases}
+          trackPassages={trackPassages}
+          onPhotoClick={(url) => setSelectedGalleryPhoto(url)}
+        />
+
+        {/* ========================================================================= */}
+        {/* SECTION 3: WORKSHOPS & BOOTCAMPS - SHORTENED                              */}
+        {/* ========================================================================= */}
+        <section id="workshops-section" className="space-y-3 pt-4 border-t border-[#243324]/10 dark:border-white/10">
+          <div>
+            <div className="inline-flex items-center gap-1.5 text-xs font-semibold font-mono text-[#243324]/70 dark:text-white/70">
+              <Layers className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>LABORATORY SESSIONS</span>
+            </div>
+            <h2 className="font-display text-xl sm:text-2xl font-normal text-[#1F2B1D] dark:text-[#F4EFE6]">
+              Hands-On Technical Bootcamps
+            </h2>
+          </div>
+
+          <div className="border border-[#243324]/10 dark:border-white/10 rounded-xl overflow-hidden bg-white/70 dark:bg-[#162215]/70 p-3.5 sm:p-4 space-y-3">
+            {workshopEvents.map((ws) => (
+              <div key={ws.id} className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <div>
+                    <span className="text-[9px] font-mono uppercase text-emerald-700 dark:text-emerald-400 font-bold">
+                      {ws.category} • {ws.duration}
+                    </span>
+                    <h3 className="text-xs sm:text-sm font-bold text-[#1F2B1D] dark:text-white">
+                      {ws.title}
+                    </h3>
+                  </div>
+                  <span className="text-xs font-mono text-[#243324]/70 dark:text-white/70 px-2 py-0.5 rounded bg-[#243324]/5 dark:bg-white/10 self-start sm:self-auto">
+                    {ws.prizePool}
+                  </span>
+                </div>
+
+                <p className="text-xs text-[#4A5D44] dark:text-[#CBD7C7] font-light leading-relaxed">
+                  {ws.description}
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                  <div className="p-2 rounded bg-[#243324]/5 dark:bg-white/5 border border-[#243324]/10 dark:border-white/10">
+                    <span className="text-[9px] font-mono uppercase text-emerald-700 dark:text-emerald-400 font-semibold block">
+                      Curriculum:
+                    </span>
+                    <span className="text-[11px] text-[#243324]/85 dark:text-white/85">
+                      {ws.rulesHighlights.join(' • ')}
+                    </span>
+                  </div>
+                  <div className="p-2 rounded bg-[#243324]/5 dark:bg-white/5 border border-[#243324]/10 dark:border-white/10">
+                    <span className="text-[9px] font-mono uppercase text-amber-700 dark:text-amber-400 font-semibold block">
+                      Tooling:
+                    </span>
+                    <span className="text-[11px] text-[#243324]/85 dark:text-white/85">
+                      {ws.specsRequirements.join(' • ')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ========================================================================= */}
+        {/* SECTION 4: UNIFIED GAPLESS ALBUM (GAP-0)                                  */}
+        {/* ========================================================================= */}
+        <section id="album-section" className="space-y-3 pt-4 border-t border-[#243324]/10 dark:border-white/10">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Camera className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <h2 className="font-display text-lg sm:text-xl font-normal text-[#1F2B1D] dark:text-[#F4EFE6]">
+                Championship Field Album
+              </h2>
+            </div>
+            <span className="text-[10px] text-[#243324]/60 dark:text-white/50 font-mono">
+              {unifiedAlbum.length} Captures
+            </span>
+          </div>
+
+          {/* GAPLESS UNIFIED MOSAIC (gap-0) */}
+          <div className="rounded-xl overflow-hidden border border-[#243324]/15 dark:border-white/15 bg-black shadow-lg">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-0">
+              {unifiedAlbum.map((photo, idx) => (
+                <div
+                  key={photo.id || idx}
+                  onClick={() => setSelectedGalleryPhoto(photo.imageUrl)}
+                  className="group relative aspect-4/3 overflow-hidden cursor-pointer bg-neutral-900 border-r border-b border-white/10"
+                >
+                  <img
+                    src={photo.imageUrl}
+                    alt={photo.title}
+                    referrerPolicy="no-referrer"
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-400 ease-out"
+                  />
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-2">
+                    <span className="text-[8px] font-mono text-emerald-300 uppercase tracking-wider font-semibold">
+                      {photo.category || 'Archive'}
+                    </span>
+                    <p className="text-[10px] font-semibold text-white leading-tight line-clamp-1">
+                      {photo.title}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -593,48 +887,54 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
         </section>
 
         {/* ========================================================================= */}
-        {/* GLASS FOOTER                                                              */}
+        {/* 5. INSTITUTIONAL FOOTER                                                   */}
         {/* ========================================================================= */}
-        <div className="pt-8 text-center border-t border-white/[0.16]">
-          <button
-            type="button"
-            onClick={onBack}
-            className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full bg-emerald-500/80 hover:bg-emerald-400/90 text-black font-semibold text-sm backdrop-blur-2xl border border-emerald-300/40 shadow-[0_12px_36px_rgba(16,185,129,0.35),inset_0_1px_0_rgba(255,255,255,0.4)] transition-all hover:scale-105 cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Return to Annual Report</span>
-          </button>
-        </div>
+        <footer className="pt-4 pb-10 text-center border-t border-[#243324]/10 dark:border-white/10 space-y-3">
+          <div className="flex items-center justify-center">
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-[#243324]/15 dark:border-white/15 bg-white dark:bg-[#162215] hover:bg-[#243324]/5 dark:hover:bg-white/5 text-xs font-semibold text-[#243324] dark:text-white transition-colors cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Society Annual Report</span>
+            </button>
+          </div>
+          <p className="text-[10px] text-[#243324]/50 dark:text-white/40 font-mono">
+            KRS Mechatronics Arenas Committee • Kalyani Government Engineering College • West Bengal, India
+          </p>
+        </footer>
       </main>
 
-      {/* Lightbox for Gallery Photos with Glass styling */}
+      {/* Lightbox for Fullscreen Photo Viewing */}
       <AnimatePresence>
         {selectedGalleryPhoto && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedGalleryPhoto(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-2xl"
+              className="absolute inset-0 bg-black/85 backdrop-blur-xs"
             />
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="relative z-10 max-w-4xl max-h-[85vh] rounded-3xl overflow-hidden bg-white/[0.08] backdrop-blur-3xl border border-white/[0.25] shadow-[0_24px_64px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(255,255,255,0.3)] p-2"
+              className="relative z-10 max-w-4xl max-h-[85vh] rounded-xl overflow-hidden bg-black/95 border border-white/20 p-2 shadow-2xl"
             >
               <img
                 src={selectedGalleryPhoto}
-                alt="Event capture"
-                className="w-full h-full object-contain max-h-[80vh] rounded-2xl"
+                alt="Championship capture"
+                className="w-full h-full object-contain max-h-[80vh] rounded-lg"
               />
               <button
                 type="button"
                 onClick={() => setSelectedGalleryPhoto(null)}
-                className="absolute top-4 right-4 p-2 rounded-full bg-black/60 backdrop-blur-xl border border-white/20 text-white hover:bg-white/20 transition-all cursor-pointer"
+                className="absolute top-4 right-4 p-2 rounded-full bg-black/70 text-white hover:bg-white/20 transition-all cursor-pointer border border-white/10"
+                title="Close Lightbox"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4" />
               </button>
             </motion.div>
           </div>

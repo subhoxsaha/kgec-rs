@@ -151,10 +151,10 @@ export const RoadmapGratitudeSection: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="#roadmap-section"
+                  href="#techtix-zyro"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  Strategic Roadmap
+                  TECHTIX &amp; ZYRO
                 </a>
               </li>
             </ul>
