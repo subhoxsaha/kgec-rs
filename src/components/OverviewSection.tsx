@@ -28,12 +28,12 @@ export const OverviewSection: React.FC = () => {
               {isAdminLoggedIn && (
                 <button
                   type="button"
-                  onClick={() => openEditor('metrics')}
+                  onClick={() => openEditor('texts')}
                   className="inline-flex items-center gap-1 px-2.5 py-0.8 rounded-full text-[11px] font-semibold bg-emerald-700 hover:bg-emerald-600 text-white shadow-xs transition-all cursor-pointer"
-                  title="Edit Section 2 in Admin"
+                  title="Edit Section Texts & Narratives in Admin"
                 >
                   <Edit3 className="w-3 h-3" />
-                  <span>Edit Sec 2</span>
+                  <span>Edit Texts</span>
                 </button>
               )}
             </div>

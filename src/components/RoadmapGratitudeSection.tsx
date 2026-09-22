@@ -60,51 +60,51 @@ export const RoadmapGratitudeSection: React.FC = () => {
             </p>
           </div>
 
-          {/* Research Wings Links */}
+          {/* Technical Fleet & Domains */}
           <div className="lg:col-span-3 space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
               <Bot className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Research Wings</span>
+              <span>Fleet &amp; Domains</span>
             </h4>
             <ul className="space-y-2 text-xs text-[#526340] dark:text-[#B4C2B0]">
               <li>
                 <a
-                  href="#domains-section"
+                  href="#projects-section"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  Autonomous Systems & AGVs
+                  Autonomous AGVs &amp; Rovers
                 </a>
               </li>
               <li>
                 <a
-                  href="#domains-section"
+                  href="#projects-section"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  Combat Mechatronics & Robowars
+                  Combat Mechatronics &amp; Robowars
                 </a>
               </li>
               <li>
                 <a
-                  href="#domains-section"
+                  href="#projects-section"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  Aerial UAVs & Quadcopters
+                  Aerial UAVs &amp; Quadcopters
                 </a>
               </li>
               <li>
                 <a
-                  href="#domains-section"
+                  href="#projects-section"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  Embedded IoT & Computer Vision
+                  Embedded IoT &amp; Telemetry
                 </a>
               </li>
               <li>
                 <a
-                  href="#education-section"
+                  href="#overview-section"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  STEM Outreach & Kits
+                  Interactive Mascot Lab
                 </a>
               </li>
             </ul>
@@ -127,7 +127,7 @@ export const RoadmapGratitudeSection: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="#projects-showcase"
+                  href="#projects-section"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
                   Flagship Projects
@@ -135,18 +135,18 @@ export const RoadmapGratitudeSection: React.FC = () => {
               </li>
               <li>
                 <a
-                  href="#techfest-section"
+                  href="#events-section"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  Techfest & Competitions
+                  Techfest &amp; Hackathons
                 </a>
               </li>
               <li>
                 <a
-                  href="#team-section"
+                  href="#leadership-team-section"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  Society Team
+                  Society Mentors &amp; Team
                 </a>
               </li>
               <li>
@@ -154,7 +154,7 @@ export const RoadmapGratitudeSection: React.FC = () => {
                   href="#techtix-zyro"
                   className="hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
                 >
-                  TECHTIX &amp; ZYRO
+                  TECHTIX &amp; ZYRO Arenas
                 </a>
               </li>
             </ul>

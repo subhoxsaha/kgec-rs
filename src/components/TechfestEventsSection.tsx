@@ -123,7 +123,7 @@ export const TechfestEventsSection: React.FC<TechfestEventsSectionProps> = ({ on
               title="Edit Events & Media in Admin"
             >
               <Edit3 className="w-3.5 h-3.5" />
-              <span>Edit Section 4: Events &amp; Media</span>
+              <span>Edit Events &amp; Media Gallery</span>
             </button>
           )}
         </div>
