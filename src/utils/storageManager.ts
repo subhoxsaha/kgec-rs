@@ -2,7 +2,7 @@
  * Resilient multi-tier persistence manager for KGEC Robotics Society CMS.
  * Uses MongoDB database as cloud source of truth,
  * backed by IndexedDB for high-capacity offline caching (no 5MB limit),
- * and a quota-safe localStorage mirror for instant synchronous initial render.
+ * and a synchronized localStorage mirror for instant initial render.
  */
 
 export const STORAGE_KEY = 'kgec_robotics_society_cms_v1';
@@ -86,7 +86,6 @@ export async function fetchCmsFromMongoDB(): Promise<any | null> {
     return null;
   }
 }
-
 
 /**
  * Open or upgrade native IndexedDB connection safely
@@ -189,114 +188,42 @@ export async function clearIndexedDB(): Promise<boolean> {
 }
 
 /**
- * Create a lightweight version of payload for localStorage by trimming huge base64 strings
- */
-function createQuotaSafePayload(rawPayload: any): any {
-  if (!rawPayload || typeof rawPayload !== 'object') return rawPayload;
-
-  const sanitizeImage = (val: any, fallbackUrl = ''): any => {
-    if (typeof val === 'string' && val.startsWith('data:image/') && val.length > 2048) {
-      return fallbackUrl || 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80';
-    }
-    return val;
-  };
-
-  const copy = { ...rawPayload };
-
-  if (copy.metadata) {
-    const metaCopy = { ...copy.metadata };
-    if (metaCopy.kgecLogoDark?.length > 2048) metaCopy.kgecLogoDark = undefined;
-    if (metaCopy.kgecLogoLight?.length > 2048) metaCopy.kgecLogoLight = undefined;
-    if (metaCopy.krsLogoDark?.length > 2048) metaCopy.krsLogoDark = undefined;
-    if (metaCopy.krsLogoLight?.length > 2048) metaCopy.krsLogoLight = undefined;
-    if (metaCopy.footerLogoLight?.length > 2048) metaCopy.footerLogoLight = undefined;
-    if (metaCopy.footerLogoDark?.length > 2048) metaCopy.footerLogoDark = undefined;
-    copy.metadata = metaCopy;
-  }
-
-  if (Array.isArray(copy.botProjects)) {
-    copy.botProjects = copy.botProjects.map((p: any) => ({
-      ...p,
-      imageUrl: sanitizeImage(p.imageUrl, 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80'),
-    }));
-  }
-
-  if (Array.isArray(copy.techfestPhotos)) {
-    copy.techfestPhotos = copy.techfestPhotos.map((p: any) => ({
-      ...p,
-      imageUrl: sanitizeImage(p.imageUrl),
-    }));
-  }
-
-  if (Array.isArray(copy.activityPhotos)) {
-    copy.activityPhotos = copy.activityPhotos.map((p: any) => ({
-      ...p,
-      imageUrl: sanitizeImage(p.imageUrl),
-    }));
-  }
-
-  if (Array.isArray(copy.hackathonPhotos)) {
-    copy.hackathonPhotos = copy.hackathonPhotos.map((p: any) => ({
-      ...p,
-      imageUrl: sanitizeImage(p.imageUrl),
-    }));
-  }
-
-  if (Array.isArray(copy.teamMembers)) {
-    copy.teamMembers = copy.teamMembers.map((m: any) => ({
-      ...m,
-      avatarUrl: sanitizeImage(m.avatarUrl, 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'),
-    }));
-  }
-
-  return copy;
-}
-
-/**
- * Save CMS payload to IndexedDB, localStorage mirror, and background MongoDB API.
- * Guarantees zero unhandled QuotaExceededError exceptions.
+ * Save CMS payload across all storage layers (localStorage, IndexedDB, and MongoDB API).
+ * Never strips or deletes uploaded images.
  */
 let debouncedIdbTimer: NodeJS.Timeout | null = null;
 let debouncedMongoTimer: NodeJS.Timeout | null = null;
 
-export function persistCmsState(payload: unknown): void {
-  if (typeof window === 'undefined') return;
+export function persistCmsState(payload: any): void {
+  if (typeof window === 'undefined' || !payload) return;
 
-  // 1. Debounced async persistence to IndexedDB (complete payload with full-res media)
+  // Ensure payload has timestamp
+  if (!payload.lastUpdated) {
+    payload.lastUpdated = Date.now();
+  }
+
+  // 1. Synchronous localStorage write for zero-delay refresh persistence
+  try {
+    const serialized = JSON.stringify(payload);
+    localStorage.setItem(STORAGE_KEY, serialized);
+  } catch (err: any) {
+    // If browser localStorage quota is reached, rely on high-capacity IndexedDB
+    try {
+      console.warn('localStorage write failed, relying on IndexedDB:', err?.message);
+    } catch {}
+  }
+
+  // 2. Debounced async persistence to IndexedDB (complete payload)
   if (debouncedIdbTimer) clearTimeout(debouncedIdbTimer);
   debouncedIdbTimer = setTimeout(() => {
     saveToIndexedDB(payload);
-  }, 100);
+  }, 50);
 
-  // 2. Debounced background sync to MongoDB API
+  // 3. Debounced background sync to MongoDB API
   if (debouncedMongoTimer) clearTimeout(debouncedMongoTimer);
   debouncedMongoTimer = setTimeout(() => {
     syncCmsToMongoDB(payload);
-  }, 600);
-
-  // 3. Safe localStorage write with automatic fallback
-  try {
-    const rawString = JSON.stringify(payload);
-    // Check approximate byte size; if > 1.5MB, proactively sanitize to protect localStorage quota
-    if (rawString.length > 1500000) {
-      const lightweight = createQuotaSafePayload(payload);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
-    } else {
-      localStorage.setItem(STORAGE_KEY, rawString);
-    }
-  } catch (err: any) {
-    // QuotaExceededError or security restrictions: fallback to sanitized payload
-    try {
-      const lightweight = createQuotaSafePayload(payload);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(lightweight));
-    } catch {
-      // If even lightweight fails because localStorage is completely saturated:
-      // Remove stale key to free space, relying on IndexedDB as primary
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch {}
-    }
-  }
+  }, 400);
 }
 
 /**
@@ -314,7 +241,7 @@ export function getStoredStateSync<T>(): T | null {
 }
 
 /**
- * Full clean reset across both storage layers
+ * Full clean reset across all storage layers
  */
 export async function clearAllCmsStorage(): Promise<void> {
   if (typeof window === 'undefined') return;
@@ -323,3 +250,4 @@ export async function clearAllCmsStorage(): Promise<void> {
   } catch {}
   await clearIndexedDB();
 }
+

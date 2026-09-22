@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Plus,
   Trash2,
@@ -14,10 +14,12 @@ import {
   Layers,
   Wrench,
   Search,
+  Upload,
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
 import { BotProject } from '../../types';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+import { compressImageFile } from '../../utils/imageUtils';
 
 export const ProjectsEditor: React.FC = () => {
   const { botProjects, addBotProject, updateBotProject, deleteBotProject, showToast } =
@@ -27,6 +29,42 @@ export const ProjectsEditor: React.FC = () => {
   const [expandedProjectId, setExpandedProjectId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const newProjectFileInputRef = useRef<HTMLInputElement>(null);
+  const editProjectFileInputRef = useRef<HTMLInputElement>(null);
+  const [activeUploadProjectId, setActiveUploadProjectId] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleUploadNewImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const dataUrl = await compressImageFile(file, 1200, 1200, 0.82);
+      setNewProject((prev) => ({ ...prev, imageUrl: dataUrl }));
+      showToast('Project image uploaded & compressed');
+    } catch {
+      showToast('Failed to compress image');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleUploadEditImage = async (e: React.ChangeEvent<HTMLInputElement>, projectId: string) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const dataUrl = await compressImageFile(file, 1200, 1200, 0.82);
+      updateBotProject(projectId, { imageUrl: dataUrl });
+      showToast('Project photo updated & compressed');
+    } catch {
+      showToast('Failed to compress image');
+    } finally {
+      setIsUploading(false);
+      setActiveUploadProjectId(null);
+    }
+  };
 
   // New Project Form State
   const [newProject, setNewProject] = useState<Partial<BotProject>>({
@@ -375,10 +413,17 @@ export const ProjectsEditor: React.FC = () => {
             </div>
           </div>
 
-          {/* Photo & Live Preview */}
+          {/* Photo & Live Preview with Upload */}
           <div className="p-3 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10 space-y-2">
+            <input
+              type="file"
+              ref={newProjectFileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleUploadNewImage}
+            />
             <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-              <div className="w-20 h-16 rounded-lg overflow-hidden bg-black/10 shrink-0 border border-black/10">
+              <div className="w-20 h-16 rounded-lg overflow-hidden bg-black/10 shrink-0 border border-black/10 relative group">
                 <img
                   src={newProject.imageUrl || ''}
                   alt="Preview"
@@ -388,14 +433,32 @@ export const ProjectsEditor: React.FC = () => {
                       'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=600&q=80';
                   }}
                 />
+                <button
+                  type="button"
+                  onClick={() => newProjectFileInputRef.current?.click()}
+                  className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition-opacity cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                </button>
               </div>
               <div className="flex-1 min-w-0">
-                <label className="block text-[10px] font-bold uppercase text-[#526340] dark:text-[#A3B59E] mb-1">
-                  Project Photo URL
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[10px] font-bold uppercase text-[#526340] dark:text-[#A3B59E]">
+                    Project Photo (URL or Device File)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => newProjectFileInputRef.current?.click()}
+                    disabled={isUploading}
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>{isUploading ? 'Compressing...' : 'Upload Image'}</span>
+                  </button>
+                </div>
                 <input
                   type="url"
-                  placeholder="https://..."
+                  placeholder="https://... or click Upload Image above"
                   value={newProject.imageUrl || ''}
                   onChange={(e) => setNewProject({ ...newProject, imageUrl: e.target.value })}
                   className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15 font-mono text-[11px]"
@@ -633,6 +696,17 @@ export const ProjectsEditor: React.FC = () => {
       </div>
 
       {/* Projects List with Inline Comprehensive Editing */}
+      <input
+        type="file"
+        ref={editProjectFileInputRef}
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          if (activeUploadProjectId) {
+            handleUploadEditImage(e, activeUploadProjectId);
+          }
+        }}
+      />
       <div className="space-y-3">
         {filteredProjects.map((project, idx) => {
           const isExpanded = expandedProjectId === project.id;
@@ -804,12 +878,40 @@ export const ProjectsEditor: React.FC = () => {
                     </div>
 
                     <div className="sm:col-span-3">
-                      <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                        Image URL
-                      </label>
-                      <div className="flex gap-2">
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E]">
+                          Project Photo (URL or Upload)
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveUploadProjectId(project.id);
+                            editProjectFileInputRef.current?.click();
+                          }}
+                          disabled={isUploading}
+                          className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer"
+                        >
+                          <Upload className="w-3 h-3" />
+                          <span>{isUploading && activeUploadProjectId === project.id ? 'Compressing...' : 'Upload Image'}</span>
+                        </button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {project.imageUrl && (
+                          <div className="w-12 h-9 rounded overflow-hidden bg-black/10 shrink-0 border border-black/10">
+                            <img
+                              src={project.imageUrl}
+                              alt={project.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src =
+                                  'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=300&q=80';
+                              }}
+                            />
+                          </div>
+                        )}
                         <input
                           type="url"
+                          placeholder="https://... or click Upload Image above"
                           value={project.imageUrl || ''}
                           onChange={(e) => updateBotProject(project.id, { imageUrl: e.target.value })}
                           className="flex-1 px-2 py-1 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-mono text-[11px]"

@@ -186,6 +186,7 @@ export type EditorTab =
   | 'fests';
 
 export interface ReportDataState {
+  lastUpdated: number;
   metadata: SocietyMetadata;
   sectionTexts: SectionTexts;
   wings: RoboticsWing[];
@@ -361,6 +362,7 @@ const getInitialStoredState = () => {
   let initialFestPhases = [...DEFAULT_FEST_PHASES];
   let initialTrackPassages = { ...DEFAULT_TRACK_PASSAGES };
   let initialUser: GoogleUserProfile | null = null;
+  let initialLastUpdated = 0;
 
   if (typeof window !== 'undefined') {
     try {
@@ -375,6 +377,7 @@ const getInitialStoredState = () => {
 
       const parsed: any = getStoredStateSync();
       if (parsed) {
+        if (typeof parsed.lastUpdated === 'number') initialLastUpdated = parsed.lastUpdated;
         if (parsed.metadata) initialMeta = { ...initialMeta, ...parsed.metadata };
         if (parsed.sectionTexts) initialTexts = { ...initialTexts, ...parsed.sectionTexts };
         if (parsed.wings && Array.isArray(parsed.wings)) initialWings = parsed.wings;
@@ -420,6 +423,7 @@ const getInitialStoredState = () => {
       };
 
   return {
+    lastUpdated: initialLastUpdated,
     metadata: initialMeta,
     sectionTexts: initialTexts,
     wings: initialWings,
@@ -442,10 +446,10 @@ const getInitialStoredState = () => {
 };
 
 const saveStateToStorage = (
-  meta: SocietyMetadata,
-  texts: SectionTexts,
-  wings: RoboticsWing[],
-  roadmap: StrategicGoal[],
+  meta?: SocietyMetadata,
+  texts?: SectionTexts,
+  wings?: RoboticsWing[],
+  roadmap?: StrategicGoal[],
   botProjects?: BotProject[],
   techfestPhotos?: EventPhoto[],
   activityPhotos?: EventPhoto[],
@@ -456,21 +460,31 @@ const saveStateToStorage = (
   trackPassages?: Record<string, { code: string; title: string; passage: string }>
 ) => {
   if (typeof window === 'undefined') return;
+  const current = (useReportDataStore && typeof useReportDataStore.getState === 'function')
+    ? useReportDataStore.getState()
+    : ({} as any);
+
+  const now = Date.now();
   const payload = {
-    metadata: meta,
-    sectionTexts: texts,
-    wings,
-    roadmap,
-    botProjects,
-    techfestPhotos,
-    activityPhotos,
-    hackathonPhotos,
-    teamMembers,
-    festEvents,
-    festPhases,
-    trackPassages,
-    lastUpdated: new Date().toISOString(),
+    metadata: meta || current.metadata || INITIAL_METADATA,
+    sectionTexts: texts || current.sectionTexts || INITIAL_SECTION_TEXTS,
+    wings: wings || current.wings || INITIAL_WINGS,
+    roadmap: roadmap || current.roadmap || INITIAL_ROADMAP,
+    botProjects: botProjects || current.botProjects || INITIAL_BOT_PROJECTS,
+    techfestPhotos: techfestPhotos || current.techfestPhotos || INITIAL_TECHFEST_PHOTOS,
+    activityPhotos: activityPhotos || current.activityPhotos || INITIAL_ACTIVITY_PHOTOS,
+    hackathonPhotos: hackathonPhotos || current.hackathonPhotos || INITIAL_HACKATHON_PHOTOS,
+    teamMembers: teamMembers || current.teamMembers || INITIAL_TEAM_MEMBERS,
+    festEvents: festEvents || current.festEvents || TECHTIX_ZYRO_EVENTS,
+    festPhases: festPhases || current.festPhases || DEFAULT_FEST_PHASES,
+    trackPassages: trackPassages || current.trackPassages || DEFAULT_TRACK_PASSAGES,
+    lastUpdated: now,
   };
+
+  if (useReportDataStore && typeof useReportDataStore.setState === 'function') {
+    useReportDataStore.setState({ lastUpdated: now });
+  }
+
   persistCmsState(payload);
 };
 
@@ -479,6 +493,7 @@ const initial = getInitialStoredState();
 let toastTimeout: NodeJS.Timeout | null = null;
 
 export const useReportDataStore = create<ReportDataState>((set, get) => ({
+  lastUpdated: initial.lastUpdated,
   metadata: initial.metadata,
   sectionTexts: initial.sectionTexts,
   wings: initial.wings,
@@ -1805,21 +1820,26 @@ if (typeof window !== 'undefined') {
   loadFromIndexedDB<any>()
     .then((idbData) => {
       if (idbData && typeof idbData === 'object') {
-        useReportDataStore.setState((prev) => ({
-          metadata: idbData.metadata ? { ...prev.metadata, ...idbData.metadata } : prev.metadata,
-          sectionTexts: idbData.sectionTexts ? { ...prev.sectionTexts, ...idbData.sectionTexts } : prev.sectionTexts,
-          wings: Array.isArray(idbData.wings) && idbData.wings.length > 0 ? idbData.wings : prev.wings,
-          boroughs: Array.isArray(idbData.wings) && idbData.wings.length > 0 ? idbData.wings : prev.boroughs,
-          roadmap: Array.isArray(idbData.roadmap) && idbData.roadmap.length > 0 ? idbData.roadmap : prev.roadmap,
-          botProjects: Array.isArray(idbData.botProjects) && idbData.botProjects.length > 0 ? sanitizeLoadedBotProjects(idbData.botProjects) : prev.botProjects,
-          techfestPhotos: Array.isArray(idbData.techfestPhotos) && idbData.techfestPhotos.length > 0 ? idbData.techfestPhotos : prev.techfestPhotos,
-          activityPhotos: Array.isArray(idbData.activityPhotos) && idbData.activityPhotos.length > 0 ? idbData.activityPhotos : prev.activityPhotos,
-          hackathonPhotos: Array.isArray(idbData.hackathonPhotos) && idbData.hackathonPhotos.length > 0 ? idbData.hackathonPhotos : prev.hackathonPhotos,
-          teamMembers: Array.isArray(idbData.teamMembers) && idbData.teamMembers.length > 0 ? sanitizeLoadedTeamMembers(idbData.teamMembers) : prev.teamMembers,
-          festEvents: Array.isArray(idbData.festEvents) && idbData.festEvents.length > 0 ? idbData.festEvents : prev.festEvents,
-          festPhases: Array.isArray(idbData.festPhases) && idbData.festPhases.length > 0 ? idbData.festPhases : prev.festPhases,
-          trackPassages: idbData.trackPassages ? { ...prev.trackPassages, ...idbData.trackPassages } : prev.trackPassages,
-        }));
+        const cur = useReportDataStore.getState();
+        const incomingTime = Number(idbData.lastUpdated) || 0;
+        if (incomingTime >= (cur.lastUpdated || 0)) {
+          useReportDataStore.setState((prev) => ({
+            lastUpdated: incomingTime || prev.lastUpdated,
+            metadata: idbData.metadata ? { ...prev.metadata, ...idbData.metadata } : prev.metadata,
+            sectionTexts: idbData.sectionTexts ? { ...prev.sectionTexts, ...idbData.sectionTexts } : prev.sectionTexts,
+            wings: Array.isArray(idbData.wings) && idbData.wings.length > 0 ? idbData.wings : prev.wings,
+            boroughs: Array.isArray(idbData.wings) && idbData.wings.length > 0 ? idbData.wings : prev.boroughs,
+            roadmap: Array.isArray(idbData.roadmap) && idbData.roadmap.length > 0 ? idbData.roadmap : prev.roadmap,
+            botProjects: Array.isArray(idbData.botProjects) && idbData.botProjects.length > 0 ? sanitizeLoadedBotProjects(idbData.botProjects) : prev.botProjects,
+            techfestPhotos: Array.isArray(idbData.techfestPhotos) && idbData.techfestPhotos.length > 0 ? idbData.techfestPhotos : prev.techfestPhotos,
+            activityPhotos: Array.isArray(idbData.activityPhotos) && idbData.activityPhotos.length > 0 ? idbData.activityPhotos : prev.activityPhotos,
+            hackathonPhotos: Array.isArray(idbData.hackathonPhotos) && idbData.hackathonPhotos.length > 0 ? idbData.hackathonPhotos : prev.hackathonPhotos,
+            teamMembers: Array.isArray(idbData.teamMembers) && idbData.teamMembers.length > 0 ? sanitizeLoadedTeamMembers(idbData.teamMembers) : prev.teamMembers,
+            festEvents: Array.isArray(idbData.festEvents) && idbData.festEvents.length > 0 ? idbData.festEvents : prev.festEvents,
+            festPhases: Array.isArray(idbData.festPhases) && idbData.festPhases.length > 0 ? idbData.festPhases : prev.festPhases,
+            trackPassages: idbData.trackPassages ? { ...prev.trackPassages, ...idbData.trackPassages } : prev.trackPassages,
+          }));
+        }
       }
     })
     .catch(() => {})
@@ -1827,21 +1847,26 @@ if (typeof window !== 'undefined') {
       fetchCmsFromMongoDB()
         .then((dbData) => {
           if (dbData && typeof dbData === 'object') {
-            useReportDataStore.setState((prev) => ({
-              metadata: dbData.metadata ? { ...prev.metadata, ...dbData.metadata } : prev.metadata,
-              sectionTexts: dbData.sectionTexts ? { ...prev.sectionTexts, ...dbData.sectionTexts } : prev.sectionTexts,
-              wings: Array.isArray(dbData.wings) && dbData.wings.length > 0 ? dbData.wings : prev.wings,
-              boroughs: Array.isArray(dbData.wings) && dbData.wings.length > 0 ? dbData.wings : prev.boroughs,
-              roadmap: Array.isArray(dbData.roadmap) && dbData.roadmap.length > 0 ? dbData.roadmap : prev.roadmap,
-              botProjects: Array.isArray(dbData.botProjects) && dbData.botProjects.length > 0 ? sanitizeLoadedBotProjects(dbData.botProjects) : prev.botProjects,
-              techfestPhotos: Array.isArray(dbData.techfestPhotos) && dbData.techfestPhotos.length > 0 ? dbData.techfestPhotos : prev.techfestPhotos,
-              activityPhotos: Array.isArray(dbData.activityPhotos) && dbData.activityPhotos.length > 0 ? dbData.activityPhotos : prev.activityPhotos,
-              hackathonPhotos: Array.isArray(dbData.hackathonPhotos) && dbData.hackathonPhotos.length > 0 ? dbData.hackathonPhotos : prev.hackathonPhotos,
-              teamMembers: Array.isArray(dbData.teamMembers) && dbData.teamMembers.length > 0 ? sanitizeLoadedTeamMembers(dbData.teamMembers) : prev.teamMembers,
-              festEvents: Array.isArray(dbData.festEvents) && dbData.festEvents.length > 0 ? dbData.festEvents : prev.festEvents,
-              festPhases: Array.isArray(dbData.festPhases) && dbData.festPhases.length > 0 ? dbData.festPhases : prev.festPhases,
-              trackPassages: dbData.trackPassages ? { ...prev.trackPassages, ...dbData.trackPassages } : prev.trackPassages,
-            }));
+            const cur = useReportDataStore.getState();
+            const incomingTime = Number(dbData.lastUpdated) || 0;
+            if (incomingTime > (cur.lastUpdated || 0)) {
+              useReportDataStore.setState((prev) => ({
+                lastUpdated: incomingTime,
+                metadata: dbData.metadata ? { ...prev.metadata, ...dbData.metadata } : prev.metadata,
+                sectionTexts: dbData.sectionTexts ? { ...prev.sectionTexts, ...dbData.sectionTexts } : prev.sectionTexts,
+                wings: Array.isArray(dbData.wings) && dbData.wings.length > 0 ? dbData.wings : prev.wings,
+                boroughs: Array.isArray(dbData.wings) && dbData.wings.length > 0 ? dbData.wings : prev.boroughs,
+                roadmap: Array.isArray(dbData.roadmap) && dbData.roadmap.length > 0 ? dbData.roadmap : prev.roadmap,
+                botProjects: Array.isArray(dbData.botProjects) && dbData.botProjects.length > 0 ? sanitizeLoadedBotProjects(dbData.botProjects) : prev.botProjects,
+                techfestPhotos: Array.isArray(dbData.techfestPhotos) && dbData.techfestPhotos.length > 0 ? dbData.techfestPhotos : prev.techfestPhotos,
+                activityPhotos: Array.isArray(dbData.activityPhotos) && dbData.activityPhotos.length > 0 ? dbData.activityPhotos : prev.activityPhotos,
+                hackathonPhotos: Array.isArray(dbData.hackathonPhotos) && dbData.hackathonPhotos.length > 0 ? dbData.hackathonPhotos : prev.hackathonPhotos,
+                teamMembers: Array.isArray(dbData.teamMembers) && dbData.teamMembers.length > 0 ? sanitizeLoadedTeamMembers(dbData.teamMembers) : prev.teamMembers,
+                festEvents: Array.isArray(dbData.festEvents) && dbData.festEvents.length > 0 ? dbData.festEvents : prev.festEvents,
+                festPhases: Array.isArray(dbData.festPhases) && dbData.festPhases.length > 0 ? dbData.festPhases : prev.festPhases,
+                trackPassages: dbData.trackPassages ? { ...prev.trackPassages, ...dbData.trackPassages } : prev.trackPassages,
+              }));
+            }
           }
         })
         .catch(() => {});

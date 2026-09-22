@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
 import { TeamCategory, TeamMember } from '../../types';
+import { compressImageFile } from '../../utils/imageUtils';
 
 const CATEGORY_CONFIG: Record<
   TeamCategory,
@@ -148,21 +149,31 @@ export const TeamEditor: React.FC = () => {
   const leadCount = teamMembers.filter((m) => m.category === 'lead').length;
   const alumniCount = teamMembers.filter((m) => m.category === 'alumni').length;
 
-  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>, isForNew = true) => {
+  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>, isForNew = true) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
+    try {
+      const dataUrl = await compressImageFile(file, 500, 500, 0.85);
       if (isForNew) {
         setNewMember((prev) => ({ ...prev, avatarUrl: dataUrl }));
       } else if (uploadTargetId) {
         updateTeamMember(uploadTargetId, { avatarUrl: dataUrl });
         setUploadTargetId(null);
       }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (isForNew) {
+          setNewMember((prev) => ({ ...prev, avatarUrl: dataUrl }));
+        } else if (uploadTargetId) {
+          updateTeamMember(uploadTargetId, { avatarUrl: dataUrl });
+          setUploadTargetId(null);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleCreateMember = (e: React.FormEvent) => {
