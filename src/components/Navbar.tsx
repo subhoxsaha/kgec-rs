@@ -81,12 +81,9 @@ export const Navbar: React.FC = () => {
     setIsScrolledPastHero(latest >= threshold);
   });
 
-  const logo1Src =
-    (isDark ? (metadata.logo1Dark || metadata.logo1) : (metadata.logo1Light || metadata.logo1)) ||
-    (isDark ? DEFAULT_KGEC_LOGO_DARK : DEFAULT_KGEC_LOGO_LIGHT);
-  const logo2Src =
-    (isDark ? (metadata.logo2Dark || metadata.logo2) : (metadata.logo2Light || metadata.logo2)) ||
-    (isDark ? DEFAULT_KRS_LOGO_DARK : DEFAULT_KRS_LOGO_LIGHT);
+  // Fetch logos directly from /logos/ directory according to current active theme
+  const logo1Src = isDark ? '/logos/kgec-logo-dark.svg' : '/logos/kgec-logo-light.svg';
+  const logo2Src = isDark ? '/logos/krs-logo-dark.svg' : '/logos/krs-logo-light.svg';
 
   const navLinks = [
     { label: 'Overview', href: '#overview-section', icon: LayoutDashboard },

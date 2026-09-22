@@ -1,150 +1,67 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
-  Upload,
-  RefreshCw,
   Sun,
   Moon,
-  ArrowLeftRight,
+  FolderTree,
   Sparkles,
-  Check,
+  Info,
+  CheckCircle2,
+  FileCode2,
+  ExternalLink,
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
-import { compressImageFile } from '../../utils/imageUtils';
-import {
-  DEFAULT_KGEC_LOGO_LIGHT,
-  DEFAULT_KGEC_LOGO_DARK,
-  DEFAULT_KRS_LOGO_LIGHT,
-  DEFAULT_KRS_LOGO_DARK,
-} from '../../data/reportData';
+import { STATIC_LOGOS } from '../../utils/logoUtils';
 
 export const LogoThemeEditor: React.FC = () => {
-  const { metadata, updateMetadata, showToast } = useReportData();
+  const { showToast } = useReportData();
   const [previewTheme, setPreviewTheme] = useState<'light' | 'dark'>('dark');
 
-  // Input states
-  const [kgecUrl, setKgecUrl] = useState('');
-  const [krsUrl, setKrsUrl] = useState('');
-
-  // File input refs
-  const kgecFileRef = useRef<HTMLInputElement>(null);
-  const krsFileRef = useRef<HTMLInputElement>(null);
-
-  const handleKgecUpload = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      showToast('Please upload a valid image file (PNG, SVG, JPG, WebP)');
-      return;
-    }
-    compressImageFile(file, 512, 512, 0.9)
-      .then((dataUrl) => {
-        if (dataUrl) {
-          updateMetadata({
-            logo1: dataUrl,
-            logo1Light: dataUrl,
-            logo1Dark: dataUrl,
-          });
-          showToast('KGEC Emblem updated successfully!');
-        }
-      })
-      .catch(() => {
-        showToast('Failed to process image file');
-      });
-  };
-
-  const handleKrsUpload = (file: File) => {
-    if (!file.type.startsWith('image/')) {
-      showToast('Please upload a valid image file (PNG, SVG, JPG, WebP)');
-      return;
-    }
-    compressImageFile(file, 512, 512, 0.9)
-      .then((dataUrl) => {
-        if (dataUrl) {
-          updateMetadata({
-            logo2: dataUrl,
-            logo2Light: dataUrl,
-            logo2Dark: dataUrl,
-            footerLogoLight: dataUrl,
-            footerLogoDark: dataUrl,
-          });
-          showToast('KRS Emblem updated successfully!');
-        }
-      })
-      .catch(() => {
-        showToast('Failed to process image file');
-      });
-  };
-
-  const applyKgecUrl = () => {
-    if (!kgecUrl.trim()) return;
-    const url = kgecUrl.trim();
-    updateMetadata({
-      logo1: url,
-      logo1Light: url,
-      logo1Dark: url,
-    });
-    setKgecUrl('');
-    showToast('KGEC Emblem URL updated!');
-  };
-
-  const applyKrsUrl = () => {
-    if (!krsUrl.trim()) return;
-    const url = krsUrl.trim();
-    updateMetadata({
-      logo2: url,
-      logo2Light: url,
-      logo2Dark: url,
-      footerLogoLight: url,
-      footerLogoDark: url,
-    });
-    setKrsUrl('');
-    showToast('KRS Emblem URL updated!');
-  };
-
-  // Compute currently active logos for preview
-  const currentKgecPreview =
-    previewTheme === 'light'
-      ? metadata.logo1Light || metadata.logo1 || DEFAULT_KGEC_LOGO_LIGHT
-      : metadata.logo1Dark || metadata.logo1 || DEFAULT_KGEC_LOGO_DARK;
-
-  const currentKrsPreview =
-    previewTheme === 'light'
-      ? metadata.logo2Light || metadata.logo2 || DEFAULT_KRS_LOGO_LIGHT
-      : metadata.logo2Dark || metadata.logo2 || DEFAULT_KRS_LOGO_DARK;
-
-  const handleSwap = () => {
-    updateMetadata({
-      logo1Light: metadata.logo2Light || DEFAULT_KRS_LOGO_LIGHT,
-      logo1Dark: metadata.logo2Dark || DEFAULT_KRS_LOGO_DARK,
-      logo1: metadata.logo2 || DEFAULT_KRS_LOGO_DARK,
-      logo2Light: metadata.logo1Light || DEFAULT_KGEC_LOGO_LIGHT,
-      logo2Dark: metadata.logo1Dark || DEFAULT_KGEC_LOGO_DARK,
-      logo2: metadata.logo1 || DEFAULT_KGEC_LOGO_DARK,
-      logo1Alt: metadata.logo2Alt || 'KRS Logo',
-      logo2Alt: metadata.logo1Alt || 'KGEC Logo',
-    });
-    showToast('Swapped College & Society logo positions');
-  };
+  const logosConfig = [
+    {
+      id: 'kgec',
+      name: 'College Emblem (KGEC)',
+      subtitle: 'Kalyani Government Engineering College Official Emblem',
+      lightFile: 'kgec-logo-light.svg',
+      darkFile: 'kgec-logo-dark.svg',
+      lightSrc: STATIC_LOGOS.kgec.light,
+      darkSrc: STATIC_LOGOS.kgec.dark,
+    },
+    {
+      id: 'krs',
+      name: 'Society Emblem (KRS)',
+      subtitle: 'KGEC Robotics Society Official Insignia',
+      lightFile: 'krs-logo-light.svg',
+      darkFile: 'krs-logo-dark.svg',
+      lightSrc: STATIC_LOGOS.krs.light,
+      darkSrc: STATIC_LOGOS.krs.dark,
+    },
+  ];
 
   return (
     <div className="space-y-5 text-[#243324] dark:text-[#F4EFE6]">
       {/* Informative Header Banner */}
-      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-start gap-2.5">
-        <Sparkles className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-        <div className="space-y-1">
-          <p className="font-semibold text-emerald-900 dark:text-emerald-200">
-            Brand Emblems &amp; Logos
+      <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-start gap-3">
+        <FolderTree className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+        <div className="space-y-1.5">
+          <p className="font-semibold text-emerald-900 dark:text-emerald-200 text-sm">
+            Static File-Based Logo Architecture (/logos/)
           </p>
-          <p className="text-[#3F543C] dark:text-[#CBD7C7] text-[11px] leading-relaxed">
-            Upload or link high-resolution emblems for Kalyani Government Engineering College and the KGEC Robotics Society. Changes sync seamlessly across navigation bars, headers, and footers.
+          <p className="text-[#3F543C] dark:text-[#CBD7C7] text-xs leading-relaxed">
+            Logos are loaded directly from the static <code className="px-1.5 py-0.5 rounded bg-emerald-500/20 font-mono text-[11px] text-emerald-800 dark:text-emerald-200">/logos/</code> directory.
+            To update any logo, simply upload or replace the file in the <code className="px-1.5 py-0.5 rounded bg-emerald-500/20 font-mono text-[11px] text-emerald-800 dark:text-emerald-200">public/logos/</code> folder with the exact matching filename.
           </p>
         </div>
       </div>
 
       {/* Unified Live Preview Bar */}
-      <div className="p-3.5 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-3">
+      <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E]">
-            Live Preview ({previewTheme.toUpperCase()} MODE)
-          </span>
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E]">
+              Theme Simulation ({previewTheme.toUpperCase()} MODE)
+            </span>
+          </div>
 
           <div className="flex items-center gap-1.5">
             {/* Theme Toggle Button */}
@@ -152,219 +69,154 @@ export const LogoThemeEditor: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setPreviewTheme('light')}
-                className={`px-2 py-1 rounded-md text-[11px] font-medium flex items-center gap-1 cursor-pointer transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
                   previewTheme === 'light'
                     ? 'bg-white text-emerald-800 shadow-2xs'
                     : 'text-[#657351] dark:text-[#A3B59E] hover:text-[#1F2B1D]'
                 }`}
               >
-                <Sun className="w-3 h-3 text-amber-500" />
-                <span>Light</span>
+                <Sun className="w-3.5 h-3.5 text-amber-500" />
+                <span>Light Theme</span>
               </button>
               <button
                 type="button"
                 onClick={() => setPreviewTheme('dark')}
-                className={`px-2 py-1 rounded-md text-[11px] font-medium flex items-center gap-1 cursor-pointer transition-colors ${
+                className={`px-3 py-1 rounded-md text-xs font-medium flex items-center gap-1.5 cursor-pointer transition-colors ${
                   previewTheme === 'dark'
                     ? 'bg-emerald-900 text-white shadow-2xs'
                     : 'text-[#657351] dark:text-[#A3B59E] hover:text-[#1F2B1D]'
                 }`}
               >
-                <Moon className="w-3 h-3 text-emerald-300" />
-                <span>Dark</span>
+                <Moon className="w-3.5 h-3.5 text-emerald-300" />
+                <span>Dark Theme</span>
               </button>
             </div>
-
-            <button
-              type="button"
-              onClick={handleSwap}
-              className="text-[11px] px-2.5 py-1 rounded-lg border border-[#243324]/15 dark:border-white/15 text-[#4A5D44] dark:text-[#CBD7C7] hover:bg-black/5 dark:hover:bg-white/5 font-medium flex items-center gap-1 cursor-pointer transition-colors"
-              title="Swap Logo 1 and Logo 2"
-            >
-              <ArrowLeftRight className="w-3 h-3" />
-              <span>Swap Order</span>
-            </button>
           </div>
         </div>
 
-        {/* Live Simulation Card */}
+        {/* Live Simulation Navbar Preview */}
         <div
-          className={`p-3.5 rounded-xl border transition-colors flex items-center justify-between ${
+          className={`p-4 rounded-xl border transition-colors flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 ${
             previewTheme === 'light'
               ? 'bg-[#FAF7F0] border-[#243324]/15 text-[#1F2B1D]'
               : 'bg-[#0E150D] border-white/15 text-white'
           }`}
         >
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center p-0.5 border shadow-2xs bg-white/90">
-              <img src={currentKgecPreview} alt="KGEC" className="w-full h-full object-contain" />
+            {/* Logo 1 */}
+            <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center p-1 border shadow-xs bg-white">
+              <img
+                src={previewTheme === 'light' ? STATIC_LOGOS.kgec.light : STATIC_LOGOS.kgec.dark}
+                alt="KGEC Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
-            <span className={previewTheme === 'light' ? 'text-neutral-400 font-light' : 'text-white/40 font-light'}>•</span>
-            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center p-0.5 border shadow-2xs bg-white/90">
-              <img src={currentKrsPreview} alt="KRS" className="w-full h-full object-contain" />
+            <span className={previewTheme === 'light' ? 'text-neutral-400 font-light' : 'text-white/40 font-light'}>|</span>
+            {/* Logo 2 */}
+            <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center p-1 border shadow-xs bg-white">
+              <img
+                src={previewTheme === 'light' ? STATIC_LOGOS.krs.light : STATIC_LOGOS.krs.dark}
+                alt="KRS Logo"
+                className="w-full h-full object-contain"
+              />
             </div>
             <div className="leading-tight">
-              <p className="text-xs font-semibold">KGEC Robotics Society</p>
-              <p className={`text-[10px] ${previewTheme === 'light' ? 'text-neutral-600' : 'text-neutral-400'}`}>Official Technical Report</p>
+              <p className="text-sm font-bold tracking-tight">KGEC Robotics Society</p>
+              <p className={`text-xs ${previewTheme === 'light' ? 'text-neutral-600' : 'text-neutral-400'}`}>
+                Kalyani Government Engineering College
+              </p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-medium border border-emerald-500/20">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Active in Navbar &amp; Footer
+            </span>
           </div>
         </div>
       </div>
 
-      {/* 1. College Logo (KGEC) Single Clean Section */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white">
-              Logo 1: College Emblem (KGEC)
-            </h3>
-            <p className="text-[11px] text-[#657351] dark:text-[#A3B59E]">
-              Kalyani Government Engineering College emblem
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              updateMetadata({
-                logo1Light: DEFAULT_KGEC_LOGO_LIGHT,
-                logo1Dark: DEFAULT_KGEC_LOGO_DARK,
-                logo1: DEFAULT_KGEC_LOGO_DARK,
-              });
-              showToast('Restored KGEC default emblem');
-            }}
-            className="text-[10px] px-2 py-1 rounded border border-[#243324]/15 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-1 cursor-pointer"
+      {/* Directory File Reference Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {logosConfig.map((item) => (
+          <div
+            key={item.id}
+            className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-3"
           >
-            <RefreshCw className="w-2.5 h-2.5" />
-            <span>Reset</span>
-          </button>
-        </div>
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white">
+                {item.name}
+              </h3>
+              <p className="text-[11px] text-[#657351] dark:text-[#A3B59E]">
+                {item.subtitle}
+              </p>
+            </div>
 
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
-          <div className="w-12 h-12 rounded-xl bg-white border border-neutral-200 dark:border-white/20 p-1 shrink-0 overflow-hidden flex items-center justify-center shadow-xs">
-            <img
-              src={metadata.logo1 || metadata.logo1Dark || DEFAULT_KGEC_LOGO_DARK}
-              alt="KGEC Logo"
-              className="w-full h-full object-contain"
-            />
-          </div>
+            {/* Two Theme Badges */}
+            <div className="grid grid-cols-2 gap-2.5 pt-1">
+              {/* Light Theme File */}
+              <div className="p-3 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold flex items-center gap-1 text-amber-800 dark:text-amber-300">
+                    <Sun className="w-3 h-3 text-amber-500" />
+                    Light Theme
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">Live</span>
+                </div>
+                <div className="w-12 h-12 mx-auto rounded-lg bg-white border border-neutral-200 dark:border-white/20 p-1 flex items-center justify-center shadow-xs">
+                  <img src={item.lightSrc} alt={`${item.name} (Light)`} className="w-full h-full object-contain" />
+                </div>
+                <div className="text-center">
+                  <p className="font-mono text-[10px] text-emerald-800 dark:text-emerald-300 font-medium truncate" title={item.lightFile}>
+                    /logos/{item.lightFile}
+                  </p>
+                </div>
+              </div>
 
-          <div className="flex-1 space-y-2">
-            <input
-              type="file"
-              ref={kgecFileRef}
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                if (e.target.files?.[0]) handleKgecUpload(e.target.files[0]);
-              }}
-            />
-
-            <div className="flex gap-1.5">
-              <input
-                type="url"
-                placeholder="Paste logo image URL..."
-                value={kgecUrl}
-                onChange={(e) => setKgecUrl(e.target.value)}
-                className="flex-1 px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#0D150C] border border-[#243324]/15 dark:border-white/15 font-mono"
-              />
-              <button
-                type="button"
-                onClick={applyKgecUrl}
-                className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium cursor-pointer transition-colors shadow-2xs"
-              >
-                Apply URL
-              </button>
-              <button
-                type="button"
-                onClick={() => kgecFileRef.current?.click()}
-                className="px-3 py-1.5 rounded-lg border border-[#243324]/20 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/5 text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
-                title="Upload image file"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Upload</span>
-              </button>
+              {/* Dark Theme File */}
+              <div className="p-3 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-semibold flex items-center gap-1 text-emerald-800 dark:text-emerald-300">
+                    <Moon className="w-3 h-3 text-emerald-400" />
+                    Dark Theme
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">Live</span>
+                </div>
+                <div className="w-12 h-12 mx-auto rounded-lg bg-[#0d140e] border border-neutral-700 dark:border-white/20 p-1 flex items-center justify-center shadow-xs">
+                  <img src={item.darkSrc} alt={`${item.name} (Dark)`} className="w-full h-full object-contain" />
+                </div>
+                <div className="text-center">
+                  <p className="font-mono text-[10px] text-emerald-800 dark:text-emerald-300 font-medium truncate" title={item.darkFile}>
+                    /logos/{item.darkFile}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
 
-      {/* 2. Society Logo (KRS) Single Clean Section */}
-      <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white">
-              Logo 2: Society Emblem (KRS)
-            </h3>
-            <p className="text-[11px] text-[#657351] dark:text-[#A3B59E]">
-              KGEC Robotics Society official insignia
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              updateMetadata({
-                logo2Light: DEFAULT_KRS_LOGO_LIGHT,
-                logo2Dark: DEFAULT_KRS_LOGO_DARK,
-                logo2: DEFAULT_KRS_LOGO_DARK,
-                footerLogoLight: DEFAULT_KRS_LOGO_LIGHT,
-                footerLogoDark: DEFAULT_KRS_LOGO_DARK,
-              });
-              showToast('Restored KRS default emblem');
-            }}
-            className="text-[10px] px-2 py-1 rounded border border-[#243324]/15 dark:border-white/15 hover:bg-black/5 dark:hover:bg-white/5 flex items-center gap-1 cursor-pointer"
-          >
-            <RefreshCw className="w-2.5 h-2.5" />
-            <span>Reset</span>
-          </button>
-        </div>
-
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
-          <div className="w-12 h-12 rounded-xl bg-white border border-neutral-200 dark:border-white/20 p-1 shrink-0 overflow-hidden flex items-center justify-center shadow-xs">
-            <img
-              src={metadata.logo2 || metadata.logo2Dark || DEFAULT_KRS_LOGO_DARK}
-              alt="KRS Logo"
-              className="w-full h-full object-contain"
-            />
-          </div>
-
-          <div className="flex-1 space-y-2">
-            <input
-              type="file"
-              ref={krsFileRef}
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => {
-                if (e.target.files?.[0]) handleKrsUpload(e.target.files[0]);
-              }}
-            />
-
-            <div className="flex gap-1.5">
-              <input
-                type="url"
-                placeholder="Paste logo image URL..."
-                value={krsUrl}
-                onChange={(e) => setKrsUrl(e.target.value)}
-                className="flex-1 px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#0D150C] border border-[#243324]/15 dark:border-white/15 font-mono"
-              />
-              <button
-                type="button"
-                onClick={applyKrsUrl}
-                className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium cursor-pointer transition-colors shadow-2xs"
-              >
-                Apply URL
-              </button>
-              <button
-                type="button"
-                onClick={() => krsFileRef.current?.click()}
-                className="px-3 py-1.5 rounded-lg border border-[#243324]/20 dark:border-white/20 hover:bg-black/5 dark:hover:bg-white/5 text-xs font-medium flex items-center gap-1 cursor-pointer transition-colors"
-                title="Upload image file"
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Upload</span>
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Instructions Card */}
+      <div className="p-4 rounded-xl bg-[#FAF7F0] dark:bg-[#131E12] border border-[#243324]/10 dark:border-white/10 text-xs space-y-2.5">
+        <h4 className="font-semibold text-xs text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
+          <Info className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+          <span>How to update logos:</span>
+        </h4>
+        <ol className="list-decimal list-inside space-y-1.5 text-[11px] text-[#4A5D44] dark:text-[#CBD7C7] leading-relaxed">
+          <li>
+            Prepare your logo in SVG or PNG format (recommended size: 512x512 with transparent background).
+          </li>
+          <li>
+            Name your files exactly as listed above: <code className="font-mono font-bold text-emerald-700 dark:text-emerald-300">kgec-logo-light.svg</code>, <code className="font-mono font-bold text-emerald-700 dark:text-emerald-300">kgec-logo-dark.svg</code>, <code className="font-mono font-bold text-emerald-700 dark:text-emerald-300">krs-logo-light.svg</code>, <code className="font-mono font-bold text-emerald-700 dark:text-emerald-300">krs-logo-dark.svg</code>.
+          </li>
+          <li>
+            Place or overwrite them directly into the <code className="font-mono font-bold text-emerald-700 dark:text-emerald-300">/public/logos/</code> folder.
+          </li>
+          <li>
+            The website automatically displays the newly uploaded logo across all headers, navigation bars, and footers without requiring database queries.
+          </li>
+        </ol>
       </div>
     </div>
   );

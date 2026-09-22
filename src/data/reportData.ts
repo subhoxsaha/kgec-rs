@@ -6,118 +6,12 @@ import {
   SocietyMetadata,
 } from '../types';
 
-export const DEFAULT_KGEC_LOGO_DARK =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <circle cx="50" cy="50" r="48" fill="#1b2e1b" stroke="#34d399" stroke-width="3"/>
-  <circle cx="50" cy="50" r="40" fill="#0d180d" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3 2"/>
-  <path d="M50 20 L75 35 V65 L50 80 L25 65 V35 Z" stroke="#e0e7de" stroke-width="2" fill="#142414"/>
-  <path d="M50 28 L68 40 V60 L50 72 L32 60 V40 Z" fill="#10b981" fill-opacity="0.3"/>
-  <circle cx="50" cy="50" r="10" fill="#e0e7de"/>
-  <path d="M50 36 L54 44 H63 L56 50 L59 58 L50 53 L41 58 L44 50 L37 44 H46 Z" fill="#0d180d"/>
-  <text x="50" y="88" text-anchor="middle" fill="#a7f3d0" font-size="8" font-family="system-ui, sans-serif" font-weight="bold" letter-spacing="1">KGEC</text>
-</svg>
-`.trim());
-
-export const DEFAULT_KGEC_LOGO_LIGHT =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <circle cx="50" cy="50" r="48" fill="#FFFFFF" stroke="#047857" stroke-width="3.5"/>
-  <circle cx="50" cy="50" r="40" fill="#F0FDF4" stroke="#059669" stroke-width="1.5" stroke-dasharray="3 2"/>
-  <path d="M50 20 L75 35 V65 L50 80 L25 65 V35 Z" stroke="#064E3B" stroke-width="2.5" fill="#DCFCE7"/>
-  <path d="M50 28 L68 40 V60 L50 72 L32 60 V40 Z" fill="#059669" fill-opacity="0.4"/>
-  <circle cx="50" cy="50" r="10" fill="#064E3B"/>
-  <path d="M50 36 L54 44 H63 L56 50 L59 58 L50 53 L41 58 L44 50 L37 44 H46 Z" fill="#FFFFFF"/>
-  <text x="50" y="88" text-anchor="middle" fill="#065F46" font-size="8.5" font-family="system-ui, sans-serif" font-weight="900" letter-spacing="1.2">KGEC</text>
-</svg>
-`.trim());
-
+export const DEFAULT_KGEC_LOGO_DARK = '/logos/kgec-logo-dark.svg';
+export const DEFAULT_KGEC_LOGO_LIGHT = '/logos/kgec-logo-light.svg';
 export const DEFAULT_KGEC_LOGO = DEFAULT_KGEC_LOGO_DARK;
 
-export const DEFAULT_KRS_LOGO_DARK =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <defs>
-    <linearGradient id="krsGradDark" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#34d399"/>
-      <stop offset="50%" stop-color="#10b981"/>
-      <stop offset="100%" stop-color="#059669"/>
-    </linearGradient>
-  </defs>
-  <circle cx="50" cy="50" r="48" fill="#0B160E" stroke="#10b981" stroke-width="3"/>
-  <circle cx="50" cy="50" r="41" fill="#122416" stroke="#34d399" stroke-width="1.2" stroke-dasharray="3 2"/>
-  
-  {/* Antenna */}
-  <rect x="48" y="16" width="4" height="10" rx="2" fill="url(#krsGradDark)"/>
-  <circle cx="50" cy="14" r="3.5" fill="#34d399"/>
-  
-  {/* Robot Head Shape */}
-  <rect x="26" y="26" width="48" height="38" rx="14" fill="url(#krsGradDark)" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.4"/>
-  
-  {/* Visor Screen */}
-  <rect x="32" y="32" width="36" height="24" rx="10" fill="#050B07" stroke="#34d399" stroke-width="1.5"/>
-  
-  {/* Robot Eyes */}
-  <circle cx="41" cy="44" r="4.5" fill="#10b981"/>
-  <circle cx="42.5" cy="42.5" r="1.8" fill="#ffffff"/>
-  <circle cx="59" cy="44" r="4.5" fill="#10b981"/>
-  <circle cx="60.5" cy="42.5" r="1.8" fill="#ffffff"/>
-  
-  {/* Circuit traces */}
-  <path d="M18 50 H26 M74 50 H82 M50 64 V74" stroke="#34d399" stroke-width="2" stroke-linecap="round"/>
-  <circle cx="16" cy="50" r="2.5" fill="#34d399"/>
-  <circle cx="84" cy="50" r="2.5" fill="#34d399"/>
-  
-  {/* Society Label */}
-  <text x="50" y="87" text-anchor="middle" fill="#ecfdf5" font-size="8.5" font-family="system-ui, sans-serif" font-weight="900" letter-spacing="2.5">KRS</text>
-  <text x="50" y="94" text-anchor="middle" fill="#6ee7b7" font-size="4.5" font-family="system-ui, sans-serif" font-weight="700" letter-spacing="1">ROBOTICS</text>
-</svg>
-`.trim());
-
-export const DEFAULT_KRS_LOGO_LIGHT =
-  'data:image/svg+xml;utf8,' +
-  encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
-  <defs>
-    <linearGradient id="krsGradLight" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#059669"/>
-      <stop offset="50%" stop-color="#047857"/>
-      <stop offset="100%" stop-color="#065f46"/>
-    </linearGradient>
-  </defs>
-  <circle cx="50" cy="50" r="48" fill="#FFFFFF" stroke="#059669" stroke-width="3.5"/>
-  <circle cx="50" cy="50" r="41" fill="#F0FDF4" stroke="#10B981" stroke-width="1.2" stroke-dasharray="3 2"/>
-  
-  {/* Antenna */}
-  <rect x="48" y="16" width="4" height="10" rx="2" fill="url(#krsGradLight)"/>
-  <circle cx="50" cy="14" r="3.5" fill="#059669"/>
-  
-  {/* Robot Head Shape */}
-  <rect x="26" y="26" width="48" height="38" rx="14" fill="url(#krsGradLight)" stroke="#064E3B" stroke-width="1.5"/>
-  
-  {/* Visor Screen */}
-  <rect x="32" y="32" width="36" height="24" rx="10" fill="#064E3B" stroke="#34D399" stroke-width="1.5"/>
-  
-  {/* Robot Eyes */}
-  <circle cx="41" cy="44" r="4.5" fill="#34D399"/>
-  <circle cx="42.5" cy="42.5" r="1.8" fill="#FFFFFF"/>
-  <circle cx="59" cy="44" r="4.5" fill="#34D399"/>
-  <circle cx="60.5" cy="42.5" r="1.8" fill="#FFFFFF"/>
-  
-  {/* Circuit traces */}
-  <path d="M18 50 H26 M74 50 H82 M50 64 V74" stroke="#059669" stroke-width="2" stroke-linecap="round"/>
-  <circle cx="16" cy="50" r="2.5" fill="#059669"/>
-  <circle cx="84" cy="50" r="2.5" fill="#059669"/>
-  
-  {/* Society Label */}
-  <text x="50" y="87" text-anchor="middle" fill="#064E3B" font-size="8.5" font-family="system-ui, sans-serif" font-weight="900" letter-spacing="2.5">KRS</text>
-  <text x="50" y="94" text-anchor="middle" fill="#059669" font-size="4.5" font-family="system-ui, sans-serif" font-weight="800" letter-spacing="1">ROBOTICS</text>
-</svg>
-`.trim());
-
+export const DEFAULT_KRS_LOGO_DARK = '/logos/krs-logo-dark.svg';
+export const DEFAULT_KRS_LOGO_LIGHT = '/logos/krs-logo-light.svg';
 export const DEFAULT_KRS_LOGO = DEFAULT_KRS_LOGO_DARK;
 
 export const REPORT_METADATA: SocietyMetadata = {
@@ -143,8 +37,8 @@ export const REPORT_METADATA: SocietyMetadata = {
   sponsoredFundsInr: 1850000,
   stemKitsDistributed: 1250,
   schoolStudentsMentored: 3800,
-  logo1: DEFAULT_KGEC_LOGO,
-  logo2: DEFAULT_KRS_LOGO,
+  logo1: DEFAULT_KGEC_LOGO_DARK,
+  logo2: DEFAULT_KRS_LOGO_DARK,
   logo1Light: DEFAULT_KGEC_LOGO_LIGHT,
   logo1Dark: DEFAULT_KGEC_LOGO_DARK,
   logo2Light: DEFAULT_KRS_LOGO_LIGHT,

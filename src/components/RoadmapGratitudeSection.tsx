@@ -8,10 +8,8 @@ export const RoadmapGratitudeSection: React.FC = () => {
   const { metadata } = useReportData();
   const { isDark } = useTheme();
 
-  // Club logo with theme support
-  const mainLogoSrc = isDark
-    ? (metadata.footerLogoDark || metadata.logo2Dark || metadata.logo2 || DEFAULT_KRS_LOGO_DARK)
-    : (metadata.footerLogoLight || metadata.logo2Light || metadata.logo2 || DEFAULT_KRS_LOGO_LIGHT);
+  // Club logo with theme support fetched directly from /logos/ folder
+  const mainLogoSrc = isDark ? '/logos/krs-logo-dark.svg' : '/logos/krs-logo-light.svg';
 
   const scrollToTop = () => {
     window.scrollTo({
