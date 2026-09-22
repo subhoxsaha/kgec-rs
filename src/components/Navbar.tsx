@@ -23,6 +23,7 @@ import {
 import { useTheme } from '../context/ThemeContext';
 import { useReportData } from '../context/ReportDataContext';
 import { getUserAvatarUrl, getUserRoleDisplayLabel } from '../utils/avatarUtils';
+import { ThemedLogo } from './ThemedLogo';
 import {
   DEFAULT_KGEC_LOGO,
   DEFAULT_KRS_LOGO,
@@ -187,17 +188,12 @@ export const Navbar: React.FC = () => {
                   className="w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full overflow-hidden flex items-center justify-center bg-white dark:bg-white p-0.5 border border-white/40 shadow-xs shrink-0 transition-transform group-hover:scale-105"
                   title={metadata.logo1Alt || 'Kalyani Government Engineering College Logo'}
                 >
-                  {logo1Src ? (
-                    <img
-                      src={logo1Src}
-                      alt={metadata.logo1Alt || 'Logo 1'}
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-emerald-700 text-white flex items-center justify-center font-bold text-[9px]">
-                      KGEC
-                    </div>
-                  )}
+                  <ThemedLogo
+                    type="kgec"
+                    isDark={isDark}
+                    alt={metadata.logo1Alt || 'KGEC Emblem'}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
 
                 {/* Separator | */}
@@ -220,17 +216,12 @@ export const Navbar: React.FC = () => {
                   className="w-7 h-7 sm:w-7.5 sm:h-7.5 rounded-full overflow-hidden flex items-center justify-center bg-white dark:bg-white p-0.5 border border-white/40 shadow-xs shrink-0 transition-transform group-hover:scale-105"
                   title={metadata.logo2Alt || 'KGEC Robotics Society Logo'}
                 >
-                  {logo2Src ? (
-                    <img
-                      src={logo2Src}
-                      alt={metadata.logo2Alt || 'Logo 2'}
-                      className="w-full h-full object-contain"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-emerald-600 text-white flex items-center justify-center font-mono font-bold text-xs shadow-xs">
-                      <Cpu className="w-3.5 h-3.5" />
-                    </div>
-                  )}
+                  <ThemedLogo
+                    type="krs"
+                    isDark={isDark}
+                    alt={metadata.logo2Alt || 'KRS Robotics Logo'}
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
 

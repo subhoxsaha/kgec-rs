@@ -2,14 +2,12 @@ import React from 'react';
 import { ArrowUp, Bot, Compass, MapPin } from 'lucide-react';
 import { useReportData } from '../context/ReportDataContext';
 import { useTheme } from '../context/ThemeContext';
+import { ThemedLogo } from './ThemedLogo';
 import { DEFAULT_KRS_LOGO_DARK, DEFAULT_KRS_LOGO_LIGHT } from '../data/reportData';
 
 export const RoadmapGratitudeSection: React.FC = () => {
   const { metadata } = useReportData();
   const { isDark } = useTheme();
-
-  // Club logo with theme support fetched directly from /logos/ folder
-  const mainLogoSrc = isDark ? '/logos/krs-logo-dark.svg' : '/logos/krs-logo-light.svg';
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -34,8 +32,9 @@ export const RoadmapGratitudeSection: React.FC = () => {
                 className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center bg-white dark:bg-black/80 border border-[#243324]/10 dark:border-white/10 shadow-2xs p-1"
                 title="KGEC Robotics Society"
               >
-                <img
-                  src={mainLogoSrc}
+                <ThemedLogo
+                  type="krs"
+                  isDark={isDark}
                   alt="KGEC RS Logo"
                   className="w-full h-full object-contain"
                 />

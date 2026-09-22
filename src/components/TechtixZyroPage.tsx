@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { TECHTIX_ZYRO_EVENTS, FestEvent } from '../data/techtixZyroEventsData';
 import { ZyroSection } from './ZyroSection';
+import { ThemedLogo } from './ThemedLogo';
 import { useReportData } from '../context/ReportDataContext';
 import { useTheme } from '../context/ThemeContext';
 import {
@@ -484,8 +485,12 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
 
             {/* Dual Logos */}
             <div className="flex items-center gap-1.5 pl-1.5 sm:pl-2 border-l border-[#243324]/10 dark:border-white/10">
-              <img src={logo1Src} alt="KGEC" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
-              <img src={logo2Src} alt="KRS" className="w-5 h-5 sm:w-6 sm:h-6 object-contain" />
+              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full overflow-hidden flex items-center justify-center bg-white p-0.5 shadow-2xs">
+                <ThemedLogo type="kgec" isDark={isDark} alt="KGEC" className="w-full h-full object-contain" />
+              </div>
+              <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full overflow-hidden flex items-center justify-center bg-white p-0.5 shadow-2xs">
+                <ThemedLogo type="krs" isDark={isDark} alt="KRS" className="w-full h-full object-contain" />
+              </div>
             </div>
           </div>
         </div>
