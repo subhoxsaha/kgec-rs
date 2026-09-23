@@ -47,11 +47,11 @@
     "name": "Dr. Aritra Acharya",
     "post": "Treasurer",
     "departmentOrBatch": "Dept. of Electronics & Communication Engg.",
-    "avatarUrl": "/team/treasurer.png",
+    "avatarUrl": '/team/treasurer.png',
     "email": "",
     "linkedinUrl": "",
     "scholarUrl": "",
-    "githubUrl": "",
+    "githubUrl": "github.com",
     "bio": "",
     "order": 4
   },
