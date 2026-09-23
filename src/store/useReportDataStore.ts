@@ -12,6 +12,7 @@ import {
   DEFAULT_HACKATHON_PHOTOS as INITIAL_HACKATHON_PHOTOS,
 } from '../data/eventsData';
 import { INITIAL_TEAM_MEMBERS } from '../data/teamData';
+import { fetchStaticTeamMembers } from '../utils/teamUtils';
 import { TECHTIX_ZYRO_EVENTS, FestEvent } from '../data/techtixZyroEventsData';
 import {
   RoboticsWing,
@@ -1815,8 +1816,18 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
   },
 }));
 
-// Asynchronously hydrate from IndexedDB and remote MongoDB
+// Asynchronously hydrate from static team.json, IndexedDB, and remote MongoDB
 if (typeof window !== 'undefined') {
+  // 1. Fetch static team.json to ensure filesystem edits reflect instantly
+  fetchStaticTeamMembers()
+    .then((staticMembers) => {
+      if (Array.isArray(staticMembers) && staticMembers.length > 0) {
+        useReportDataStore.setState({ teamMembers: staticMembers });
+      }
+    })
+    .catch(() => {});
+
+  // 2. Load cached user state & preferences
   loadFromIndexedDB<any>()
     .then((idbData) => {
       if (idbData && typeof idbData === 'object') {

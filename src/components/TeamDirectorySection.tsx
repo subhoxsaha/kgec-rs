@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Linkedin, Github, GraduationCap, Edit3, Plus } from 'lucide-react';
+import { Mail, Linkedin, Github, GraduationCap, Edit3, Plus, User } from 'lucide-react';
 import { useReportData } from '../context/ReportDataContext';
 import { TeamMember } from '../types';
 
@@ -40,10 +40,28 @@ const formatRoleText = (post?: string): string => {
   return words.slice(0, 2).join(' ') || post;
 };
 
+const DEFAULT_AVATARS: Record<string, string> = {
+  teacher: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+  student: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80',
+  lead: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+  alumni: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
+};
+
 const ProfileCard: React.FC<ProfileCardProps> = ({ member, index }) => {
   const roleString = member.post || (member as any).role || (member as any).designation || 'Member';
   const shortRole = formatRoleText(roleString);
-  const avatarUrl = member.avatarUrl || `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80`;
+  const fallbackUrl = DEFAULT_AVATARS[member.category] || DEFAULT_AVATARS.student;
+  const initialUrl = member.avatarUrl || fallbackUrl;
+
+  const [currentImgSrc, setCurrentImgSrc] = useState<string>(initialUrl);
+  const [hasError, setHasError] = useState<boolean>(false);
+
+  const handleImageError = () => {
+    if (!hasError) {
+      setHasError(true);
+      setCurrentImgSrc(fallbackUrl);
+    }
+  };
 
   return (
     <motion.div
@@ -56,14 +74,15 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ member, index }) => {
       {/* Top: Portrait Image with Vignette & Inside Overlays (Role on top, Name/Info on bottom) */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-neutral-900 shrink-0">
         <img
-          src={avatarUrl}
+          src={currentImgSrc}
           alt={member.name || 'Team Member'}
           referrerPolicy="no-referrer"
           loading="lazy"
+          onError={handleImageError}
           className="w-full h-full object-cover object-top sm:object-center group-hover:scale-105 transition-transform duration-500 ease-out block"
         />
 
-        {/* Bottom deep vignette for Name & Info clarity (No vignette on top) */}
+        {/* Bottom deep vignette for Name & Info clarity */}
         <div className="absolute inset-x-0 bottom-0 h-[65%] bg-gradient-to-t from-black/95 via-black/80 via-40% to-transparent pointer-events-none" />
 
         {/* TOP: Role / Post (Plain clean text without shadow) */}
