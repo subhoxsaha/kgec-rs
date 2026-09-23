@@ -3,7 +3,7 @@ import { LogoType, getLogoCandidateUrls } from '../utils/logoUtils';
 
 interface ThemedLogoProps {
   type: LogoType;
-  isDark: boolean;
+  isDark?: boolean;
   alt: string;
   className?: string;
 }

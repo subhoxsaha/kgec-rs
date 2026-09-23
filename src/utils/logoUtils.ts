@@ -1,44 +1,38 @@
 /**
- * Static Logo Configuration & Format Support
- * Supports SVG, PNG, JPG, JPEG, and WEBP formats directly from `/logos/` folder.
- * 
- * You can place any of the following filenames in `/public/logos/`:
- *   - kgec-logo-light.[png|jpg|jpeg|svg|webp]
- *   - kgec-logo-dark.[png|jpg|jpeg|svg|webp]
- *   - krs-logo-light.[png|jpg|jpeg|svg|webp]
- *   - krs-logo-dark.[png|jpg|jpeg|svg|webp]
+ * Unified Static Logo Configuration & Helper
+ * Unified 2-Logo Architecture for both Light and Dark themes:
+ *  - KGEC College Emblem: `kgec-logo.[png|jpg|jpeg|svg|webp]` or `kgec.[png|jpg|jpeg|svg|webp]`
+ *  - KRS Society Insignia: `krs-logo.[png|jpg|jpeg|svg|webp]` or `krs.[png|jpg|jpeg|svg|webp]`
+ *
+ * Any upload or replacement of these 2 files inside `/public/logos/` directly updates
+ * the logos across the entire website instantly.
  */
 
 export type LogoType = 'kgec' | 'krs';
 
-export const SUPPORTED_EXTENSIONS = ['svg', 'png', 'jpg', 'jpeg', 'webp'] as const;
+export const SUPPORTED_EXTENSIONS = ['png', 'jpg', 'jpeg', 'svg', 'webp'] as const;
 
-export function getLogoCandidateUrls(type: LogoType, isDark: boolean): string[] {
-  const theme = isDark ? 'dark' : 'light';
-  const altTheme = isDark ? 'light' : 'dark';
+export function getLogoCandidateUrls(type: LogoType, _isDark?: boolean): string[] {
   const prefix = type === 'kgec' ? 'kgec-logo' : 'krs-logo';
   const shortPrefix = type === 'kgec' ? 'kgec' : 'krs';
 
   const candidates: string[] = [];
 
-  // 1. Primary requested theme with each supported extension (.svg, .png, .jpg, .jpeg, .webp)
-  SUPPORTED_EXTENSIONS.forEach((ext) => {
-    candidates.push(`/logos/${prefix}-${theme}.${ext}`);
-  });
-
-  // 2. Short prefix format (e.g. /logos/kgec-dark.png, /logos/krs-dark.jpg)
-  SUPPORTED_EXTENSIONS.forEach((ext) => {
-    candidates.push(`/logos/${shortPrefix}-${theme}.${ext}`);
-  });
-
-  // 3. Generic un-themed format (e.g. /logos/kgec-logo.png, /logos/krs-logo.svg)
+  // 1. Unified file names with each extension (png, jpg, jpeg, svg, webp)
+  // e.g. /logos/kgec-logo.png, /logos/kgec-logo.jpg, /logos/kgec-logo.svg
   SUPPORTED_EXTENSIONS.forEach((ext) => {
     candidates.push(`/logos/${prefix}.${ext}`);
   });
 
-  // 4. Fallback to alternative theme if primary missing
+  // 2. Short prefix unified file names (e.g. /logos/kgec.png, /logos/krs.jpg)
   SUPPORTED_EXTENSIONS.forEach((ext) => {
-    candidates.push(`/logos/${prefix}-${altTheme}.${ext}`);
+    candidates.push(`/logos/${shortPrefix}.${ext}`);
+  });
+
+  // 3. Fallbacks to theme-specific files if unified file isn't uploaded yet
+  SUPPORTED_EXTENSIONS.forEach((ext) => {
+    candidates.push(`/logos/${prefix}-dark.${ext}`);
+    candidates.push(`/logos/${prefix}-light.${ext}`);
   });
 
   return candidates;
@@ -46,31 +40,25 @@ export function getLogoCandidateUrls(type: LogoType, isDark: boolean): string[] 
 
 export const STATIC_LOGOS = {
   kgec: {
-    dark: '/logos/kgec-logo-dark.svg',
-    light: '/logos/kgec-logo-light.svg',
-    darkPng: '/logos/kgec-logo-dark.png',
-    lightPng: '/logos/kgec-logo-light.png',
-    darkJpg: '/logos/kgec-logo-dark.jpg',
-    lightJpg: '/logos/kgec-logo-light.jpg',
+    unified: '/logos/kgec-logo.svg',
+    dark: '/logos/kgec-logo.svg',
+    light: '/logos/kgec-logo.svg',
   },
   krs: {
-    dark: '/logos/krs-logo-dark.svg',
-    light: '/logos/krs-logo-light.svg',
-    darkPng: '/logos/krs-logo-dark.png',
-    lightPng: '/logos/krs-logo-light.png',
-    darkJpg: '/logos/krs-logo-dark.jpg',
-    lightJpg: '/logos/krs-logo-light.jpg',
+    unified: '/logos/krs-logo.svg',
+    dark: '/logos/krs-logo.svg',
+    light: '/logos/krs-logo.svg',
   },
 } as const;
 
-export function getKgecLogoPath(isDark: boolean): string {
-  return isDark ? STATIC_LOGOS.kgec.dark : STATIC_LOGOS.kgec.light;
+export function getKgecLogoPath(): string {
+  return STATIC_LOGOS.kgec.unified;
 }
 
-export function getKrsLogoPath(isDark: boolean): string {
-  return isDark ? STATIC_LOGOS.krs.dark : STATIC_LOGOS.krs.light;
+export function getKrsLogoPath(): string {
+  return STATIC_LOGOS.krs.unified;
 }
 
-export function getMainSocietyLogoPath(isDark: boolean): string {
-  return getKrsLogoPath(isDark);
+export function getMainSocietyLogoPath(): string {
+  return getKrsLogoPath();
 }

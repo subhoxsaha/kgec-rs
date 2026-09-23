@@ -4,7 +4,6 @@ import {
   Moon,
   FolderTree,
   Sparkles,
-  Info,
   CheckCircle2,
   FileCheck2,
 } from 'lucide-react';
@@ -18,25 +17,22 @@ export const LogoThemeEditor: React.FC = () => {
     id: LogoType;
     name: string;
     subtitle: string;
-    lightFile: string;
-    darkFile: string;
-    supportedExts: string;
+    recommendedFilename: string;
+    description: string;
   }[] = [
     {
       id: 'kgec',
-      name: 'College Emblem (KGEC)',
+      name: '1. College Emblem (KGEC)',
       subtitle: 'Kalyani Government Engineering College Official Emblem',
-      lightFile: 'kgec-logo-light.(png/jpg/svg/webp)',
-      darkFile: 'kgec-logo-dark.(png/jpg/svg/webp)',
-      supportedExts: '.png, .jpg, .jpeg, .svg, .webp',
+      recommendedFilename: 'kgec-logo.(png / jpg / svg / webp)',
+      description: 'Unified emblem used in navbar, headers, and footer across all themes.',
     },
     {
       id: 'krs',
-      name: 'Society Emblem (KRS)',
+      name: '2. Society Insignia (KRS)',
       subtitle: 'KGEC Robotics Society Official Insignia',
-      lightFile: 'krs-logo-light.(png/jpg/svg/webp)',
-      darkFile: 'krs-logo-dark.(png/jpg/svg/webp)',
-      supportedExts: '.png, .jpg, .jpeg, .svg, .webp',
+      recommendedFilename: 'krs-logo.(png / jpg / svg / webp)',
+      description: 'Unified society insignia used in navbar, footer, and brand showcases.',
     },
   ];
 
@@ -47,22 +43,22 @@ export const LogoThemeEditor: React.FC = () => {
         <FolderTree className="w-5 h-5 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
         <div className="space-y-1.5">
           <p className="font-semibold text-emerald-900 dark:text-emerald-200 text-sm">
-            Multi-Format Static Logo Support (PNG, JPG, JPEG, SVG, WebP)
+            Unified 2-Logo Static Architecture (/logos/)
           </p>
           <p className="text-[#3F543C] dark:text-[#CBD7C7] text-xs leading-relaxed">
-            Logos are loaded directly from the <code className="px-1.5 py-0.5 rounded bg-emerald-500/20 font-mono text-[11px] text-emerald-800 dark:text-emerald-200">/logos/</code> directory.
-            You can use <strong>.png</strong>, <strong>.jpg</strong>, <strong>.jpeg</strong>, <strong>.svg</strong>, or <strong>.webp</strong> formats interchangeably. The website automatically falls back and renders whichever format you upload.
+            You only need <strong>2 logo files total</strong> (1 for KGEC and 1 for KRS) in the <code className="px-1.5 py-0.5 rounded bg-emerald-500/20 font-mono text-[11px] text-emerald-800 dark:text-emerald-200">public/logos/</code> folder.
+            The site supports <strong>.png</strong>, <strong>.jpg</strong>, <strong>.jpeg</strong>, <strong>.svg</strong>, or <strong>.webp</strong> formats and automatically renders them identically in both Light and Dark modes.
           </p>
         </div>
       </div>
 
-      {/* Unified Live Preview Bar */}
+      {/* Unified Live Simulation Bar */}
       <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
             <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E]">
-              Live Simulation ({previewTheme.toUpperCase()} MODE)
+              Theme Simulation ({previewTheme.toUpperCase()} MODE)
             </span>
           </div>
 
@@ -136,97 +132,97 @@ export const LogoThemeEditor: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 text-xs font-medium border border-emerald-500/20">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Active across Navbar, Hero &amp; Footer
+              Unified across Navbar &amp; Footer
             </span>
           </div>
         </div>
       </div>
 
-      {/* Directory File Reference Cards */}
+      {/* 2 Unified Logo Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {logosConfig.map((item) => (
           <div
             key={item.id}
             className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-3"
           >
-            <div>
-              <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
+              <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white">
                   {item.name}
                 </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-medium">
-                  PNG / JPG / SVG
-                </span>
+                <p className="text-[11px] text-[#657351] dark:text-[#A3B59E]">
+                  {item.subtitle}
+                </p>
               </div>
-              <p className="text-[11px] text-[#657351] dark:text-[#A3B59E]">
-                {item.subtitle}
-              </p>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-medium shrink-0">
+                Unified Logo
+              </span>
             </div>
 
-            {/* Two Theme Badges */}
+            {/* Live Dual Theme Preview Boxes */}
             <div className="grid grid-cols-2 gap-2.5 pt-1">
-              {/* Light Theme File */}
+              {/* Light Mode Appearance */}
               <div className="p-3 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-semibold flex items-center gap-1 text-amber-800 dark:text-amber-300">
                     <Sun className="w-3 h-3 text-amber-500" />
-                    Light Mode
+                    In Light Mode
                   </span>
-                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">Ready</span>
                 </div>
-                <div className="w-12 h-12 mx-auto rounded-lg bg-white border border-neutral-200 dark:border-white/20 p-1 flex items-center justify-center shadow-xs">
+                <div className="w-14 h-14 mx-auto rounded-full bg-white border border-neutral-200 dark:border-white/20 p-1.5 flex items-center justify-center shadow-xs">
                   <ThemedLogo type={item.id} isDark={false} alt={`${item.name} (Light)`} className="w-full h-full object-contain" />
-                </div>
-                <div className="text-center">
-                  <p className="font-mono text-[10px] text-emerald-800 dark:text-emerald-300 font-medium truncate" title={item.lightFile}>
-                    /logos/{item.id}-logo-light.(png/jpg/svg)
-                  </p>
                 </div>
               </div>
 
-              {/* Dark Theme File */}
+              {/* Dark Mode Appearance */}
               <div className="p-3 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-semibold flex items-center gap-1 text-emerald-800 dark:text-emerald-300">
                     <Moon className="w-3 h-3 text-emerald-400" />
-                    Dark Mode
+                    In Dark Mode
                   </span>
-                  <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400">Ready</span>
                 </div>
-                <div className="w-12 h-12 mx-auto rounded-lg bg-[#0d140e] border border-neutral-700 dark:border-white/20 p-1 flex items-center justify-center shadow-xs">
+                <div className="w-14 h-14 mx-auto rounded-full bg-white dark:bg-black/90 border border-neutral-700 dark:border-white/20 p-1.5 flex items-center justify-center shadow-xs">
                   <ThemedLogo type={item.id} isDark={true} alt={`${item.name} (Dark)`} className="w-full h-full object-contain" />
                 </div>
-                <div className="text-center">
-                  <p className="font-mono text-[10px] text-emerald-800 dark:text-emerald-300 font-medium truncate" title={item.darkFile}>
-                    /logos/{item.id}-logo-dark.(png/jpg/svg)
-                  </p>
-                </div>
               </div>
+            </div>
+
+            {/* File Path info */}
+            <div className="p-2.5 rounded-lg bg-[#243324]/5 dark:bg-white/5 border border-[#243324]/10 dark:border-white/10 text-center">
+              <p className="text-[10px] text-[#657351] dark:text-[#A3B59E]">Drop or replace file in:</p>
+              <p className="font-mono text-xs text-emerald-800 dark:text-emerald-300 font-bold mt-0.5">
+                /public/logos/{item.id}-logo.png <span className="font-normal text-[10px] text-neutral-500">(or .jpg / .svg)</span>
+              </p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Supported formats checklist */}
+      {/* Accepted File Formats & Naming Card */}
       <div className="p-4 rounded-xl bg-[#FAF7F0] dark:bg-[#131E12] border border-[#243324]/10 dark:border-white/10 text-xs space-y-3">
         <h4 className="font-semibold text-xs text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
           <FileCheck2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-          <span>Accepted File Formats &amp; Naming Conventions:</span>
+          <span>Simple 2-File Naming Guide:</span>
         </h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-[#4A5D44] dark:text-[#CBD7C7]">
-          <div className="p-2.5 rounded-lg bg-white/60 dark:bg-black/20 border border-[#243324]/5 dark:border-white/5 space-y-1">
-            <p className="font-bold text-[#1F2B1D] dark:text-white">KGEC College Emblem:</p>
-            <ul className="space-y-0.5 font-mono text-[10.5px]">
-              <li>• <code className="text-emerald-700 dark:text-emerald-300">kgec-logo-light.png</code> / <code className="text-emerald-700 dark:text-emerald-300">.jpg</code> / <code className="text-emerald-700 dark:text-emerald-300">.svg</code></li>
-              <li>• <code className="text-emerald-700 dark:text-emerald-300">kgec-logo-dark.png</code> / <code className="text-emerald-700 dark:text-emerald-300">.jpg</code> / <code className="text-emerald-700 dark:text-emerald-300">.svg</code></li>
-            </ul>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] text-[#4A5D44] dark:text-[#CBD7C7]">
+          <div className="p-3 rounded-lg bg-white/70 dark:bg-black/20 border border-[#243324]/5 dark:border-white/5 space-y-1.5">
+            <p className="font-bold text-[#1F2B1D] dark:text-white">Logo 1 — College (KGEC):</p>
+            <p className="font-mono text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
+              public/logos/kgec-logo.png
+            </p>
+            <p className="text-[10.5px] text-[#657351] dark:text-[#A3B59E]">
+              Also accepts: <code className="font-mono">kgec-logo.jpg</code>, <code className="font-mono">kgec-logo.svg</code>, <code className="font-mono">kgec.png</code>
+            </p>
           </div>
-          <div className="p-2.5 rounded-lg bg-white/60 dark:bg-black/20 border border-[#243324]/5 dark:border-white/5 space-y-1">
-            <p className="font-bold text-[#1F2B1D] dark:text-white">KRS Society Insignia:</p>
-            <ul className="space-y-0.5 font-mono text-[10.5px]">
-              <li>• <code className="text-emerald-700 dark:text-emerald-300">krs-logo-light.png</code> / <code className="text-emerald-700 dark:text-emerald-300">.jpg</code> / <code className="text-emerald-700 dark:text-emerald-300">.svg</code></li>
-              <li>• <code className="text-emerald-700 dark:text-emerald-300">krs-logo-dark.png</code> / <code className="text-emerald-700 dark:text-emerald-300">.jpg</code> / <code className="text-emerald-700 dark:text-emerald-300">.svg</code></li>
-            </ul>
+          <div className="p-3 rounded-lg bg-white/70 dark:bg-black/20 border border-[#243324]/5 dark:border-white/5 space-y-1.5">
+            <p className="font-bold text-[#1F2B1D] dark:text-white">Logo 2 — Society (KRS):</p>
+            <p className="font-mono text-xs text-emerald-700 dark:text-emerald-300 font-semibold">
+              public/logos/krs-logo.png
+            </p>
+            <p className="text-[10.5px] text-[#657351] dark:text-[#A3B59E]">
+              Also accepts: <code className="font-mono">krs-logo.jpg</code>, <code className="font-mono">krs-logo.svg</code>, <code className="font-mono">krs.png</code>
+            </p>
           </div>
         </div>
       </div>

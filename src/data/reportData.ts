@@ -6,13 +6,13 @@ import {
   SocietyMetadata,
 } from '../types';
 
-export const DEFAULT_KGEC_LOGO_DARK = '/logos/kgec-logo-dark.svg';
-export const DEFAULT_KGEC_LOGO_LIGHT = '/logos/kgec-logo-light.svg';
-export const DEFAULT_KGEC_LOGO = DEFAULT_KGEC_LOGO_DARK;
+export const DEFAULT_KGEC_LOGO = '/logos/kgec-logo.svg';
+export const DEFAULT_KGEC_LOGO_DARK = '/logos/kgec-logo.svg';
+export const DEFAULT_KGEC_LOGO_LIGHT = '/logos/kgec-logo.svg';
 
-export const DEFAULT_KRS_LOGO_DARK = '/logos/krs-logo-dark.svg';
-export const DEFAULT_KRS_LOGO_LIGHT = '/logos/krs-logo-light.svg';
-export const DEFAULT_KRS_LOGO = DEFAULT_KRS_LOGO_DARK;
+export const DEFAULT_KRS_LOGO = '/logos/krs-logo.svg';
+export const DEFAULT_KRS_LOGO_DARK = '/logos/krs-logo.svg';
+export const DEFAULT_KRS_LOGO_LIGHT = '/logos/krs-logo.svg';
 
 export const REPORT_METADATA: SocietyMetadata = {
   academicYear: '2025 - 2026',
@@ -37,14 +37,14 @@ export const REPORT_METADATA: SocietyMetadata = {
   sponsoredFundsInr: 1850000,
   stemKitsDistributed: 1250,
   schoolStudentsMentored: 3800,
-  logo1: DEFAULT_KGEC_LOGO_DARK,
-  logo2: DEFAULT_KRS_LOGO_DARK,
-  logo1Light: DEFAULT_KGEC_LOGO_LIGHT,
-  logo1Dark: DEFAULT_KGEC_LOGO_DARK,
-  logo2Light: DEFAULT_KRS_LOGO_LIGHT,
-  logo2Dark: DEFAULT_KRS_LOGO_DARK,
-  footerLogoLight: DEFAULT_KRS_LOGO_LIGHT,
-  footerLogoDark: DEFAULT_KRS_LOGO_DARK,
+  logo1: DEFAULT_KGEC_LOGO,
+  logo2: DEFAULT_KRS_LOGO,
+  logo1Light: DEFAULT_KGEC_LOGO,
+  logo1Dark: DEFAULT_KGEC_LOGO,
+  logo2Light: DEFAULT_KRS_LOGO,
+  logo2Dark: DEFAULT_KRS_LOGO,
+  footerLogoLight: DEFAULT_KRS_LOGO,
+  footerLogoDark: DEFAULT_KRS_LOGO,
   logo1Alt: 'Kalyani Government Engineering College Emblem',
   logo2Alt: 'KGEC Robotics Society Official Emblem',
 
