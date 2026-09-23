@@ -51,7 +51,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ member, index }) => {
   const roleString = member.post || (member as any).role || (member as any).designation || 'Member';
   const shortRole = formatRoleText(roleString);
   const fallbackUrl = DEFAULT_AVATARS[member.category] || DEFAULT_AVATARS.student;
-  const initialUrl = member.avatarUrl || fallbackUrl;
+  const initialUrl = (member.avatarUrl && member.avatarUrl.trim()) ? member.avatarUrl.trim() : fallbackUrl;
 
   const [currentImgSrc, setCurrentImgSrc] = useState<string>(initialUrl);
   const [hasError, setHasError] = useState<boolean>(false);
