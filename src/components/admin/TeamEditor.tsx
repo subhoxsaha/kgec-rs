@@ -16,10 +16,16 @@ import {
   Check,
   Building2,
   Sparkles,
+  Copy,
+  Download,
+  RefreshCw,
+  FolderTree,
+  FileJson,
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
 import { TeamCategory, TeamMember } from '../../types';
 import { compressImageFile } from '../../utils/imageUtils';
+import { fetchStaticTeamMembers } from '../../utils/teamUtils';
 
 const CATEGORY_CONFIG: Record<
   TeamCategory,
@@ -106,12 +112,15 @@ export const TeamEditor: React.FC = () => {
     deleteTeamMember,
     reorderTeamMember,
     resetTeamToDefaults,
+    showToast,
   } = useReportData();
 
   const [activeCategory, setActiveCategory] = useState<TeamCategory | 'all'>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [copiedJson, setCopiedJson] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   // New member form state
   const [newMember, setNewMember] = useState<Partial<TeamMember>>({
@@ -149,6 +158,51 @@ export const TeamEditor: React.FC = () => {
   const leadCount = teamMembers.filter((m) => m.category === 'lead').length;
   const alumniCount = teamMembers.filter((m) => m.category === 'alumni').length;
 
+  const handleCopyJson = () => {
+    const jsonStr = JSON.stringify(teamMembers, null, 2);
+    navigator.clipboard.writeText(jsonStr);
+    setCopiedJson(true);
+    showToast('Copied team.json to clipboard!');
+    setTimeout(() => setCopiedJson(false), 2500);
+  };
+
+  const handleDownloadJson = () => {
+    const jsonStr = JSON.stringify(teamMembers, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'team.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded team.json');
+  };
+
+  const handleSyncFromStatic = async () => {
+    setIsSyncing(true);
+    try {
+      const staticList = await fetchStaticTeamMembers();
+      if (staticList && staticList.length > 0) {
+        // Reset or set team members to file on disk
+        staticList.forEach((item) => {
+          const exists = teamMembers.some((m) => m.id === item.id);
+          if (exists) {
+            updateTeamMember(item.id, item);
+          } else {
+            addTeamMember(item);
+          }
+        });
+        showToast(`Synced ${staticList.length} members from /public/data/team.json`);
+      }
+    } catch {
+      showToast('Could not reload from /public/data/team.json');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>, isForNew = true) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -180,7 +234,8 @@ export const TeamEditor: React.FC = () => {
     e.preventDefault();
     if (!newMember.name?.trim() || !newMember.post?.trim()) return;
 
-    const memberCategory = (newMember.category as TeamCategory) || (activeCategory !== 'all' ? activeCategory : 'student');
+    const memberCategory =
+      (newMember.category as TeamCategory) || (activeCategory !== 'all' ? activeCategory : 'student');
     const created: TeamMember = {
       id: `member-${Date.now()}`,
       category: memberCategory,
@@ -227,15 +282,50 @@ export const TeamEditor: React.FC = () => {
         className="hidden"
       />
 
-      {/* Header & Stats Strip */}
+      {/* Header & Stats Strip with Static File Integration */}
       <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/12 dark:border-white/10 shadow-2xs space-y-3">
-        {/* Independence Note Banner */}
-        <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 flex items-center justify-between gap-2 text-xs text-emerald-900 dark:text-emerald-200">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>
-              <strong>Public Showcase Roster:</strong> Members created here appear on the website&apos;s public Leadership &amp; Team cards. This list is managed completely independently from website user account registrations in the <em>User Applications &amp; Roles</em> tab.
-            </span>
+        {/* Static Architecture Banner */}
+        <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-emerald-950 dark:text-emerald-200">
+          <div className="flex items-start gap-2.5">
+            <FolderTree className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="space-y-0.5">
+              <p className="font-bold">
+                File-Based Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/team.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/team/</code>
+              </p>
+              <p className="text-[11px] text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
+                You can edit text directly in <code className="font-mono">team.json</code> or drop pictures in <code className="font-mono">public/team/</code>. The CMS below edits live state and lets you export or copy the synced JSON instantly.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+            <button
+              type="button"
+              onClick={handleSyncFromStatic}
+              disabled={isSyncing}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white dark:bg-[#20301F] border border-emerald-500/40 hover:bg-emerald-50 text-[11px] font-semibold text-emerald-900 dark:text-emerald-200 cursor-pointer shadow-2xs"
+              title="Reload data from /public/data/team.json"
+            >
+              <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>Reload file</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCopyJson}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-[11px] font-semibold text-white cursor-pointer shadow-2xs"
+              title="Copy JSON configuration for public/data/team.json"
+            >
+              {copiedJson ? <Check className="w-3 h-3 text-emerald-300" /> : <Copy className="w-3 h-3" />}
+              <span>{copiedJson ? 'Copied' : 'Copy JSON'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleDownloadJson}
+              className="p-1 rounded bg-white dark:bg-[#20301F] border border-emerald-500/40 hover:bg-emerald-50 text-emerald-900 dark:text-emerald-200 cursor-pointer"
+              title="Download team.json"
+            >
+              <Download className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
@@ -584,7 +674,7 @@ export const TeamEditor: React.FC = () => {
             {/* Avatar URL & Upload */}
             <div className="sm:col-span-2">
               <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Profile Portrait Image URL / Upload
+                Profile Portrait Image URL / Local path (/team/...) / Upload
               </label>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#243324]/20 shrink-0 bg-neutral-900">
@@ -597,7 +687,7 @@ export const TeamEditor: React.FC = () => {
                 </div>
                 <input
                   type="text"
-                  placeholder="https://images.unsplash.com/... or upload"
+                  placeholder="/team/name.jpg, URL, or upload"
                   value={newMember.avatarUrl || ''}
                   onChange={(e) => setNewMember({ ...newMember, avatarUrl: e.target.value })}
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-mono"
@@ -924,7 +1014,7 @@ export const TeamEditor: React.FC = () => {
 
                       <div>
                         <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Avatar Image URL
+                          Avatar Image URL / Local path (/team/...)
                         </label>
                         <div className="flex gap-1.5">
                           <input
