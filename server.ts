@@ -198,6 +198,7 @@ async function startServer() {
         host: HOST,
         port: PORT,
         strictPort: true,
+        hmr: false,
       },
       appType: 'spa',
     });

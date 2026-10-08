@@ -42,13 +42,6 @@ const formatRoleText = (post?: string): string => {
   return words.slice(0, 2).join(' ') || post;
 };
 
-const DEFAULT_AVATARS: Record<string, string> = {
-  teacher: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-  student: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80',
-  lead: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-  alumni: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
-};
-
 const ProfileCard: React.FC<ProfileCardProps> = ({ member, index }) => {
   const roleString = member.post || (member as any).role || (member as any).designation || 'Member';
   const shortRole = formatRoleText(roleString);
@@ -59,8 +52,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ member, index }) => {
     return subscribeToMediaManifest(() => setManifestTick((t) => t + 1));
   }, []);
 
-  // Compute all candidate URLs (by member ID, explicit avatarUrl, dropped filenames, and fallbacks)
-  const candidates = useMemo(() => getTeamMemberImageCandidates(member), [member, manifestTick]);
+  // Compute candidates: strictly auto-resolved by member ID only
+  const candidates = useMemo(() => getTeamMemberImageCandidates(member.id), [member.id, manifestTick]);
 
   return (
     <motion.div
@@ -175,7 +168,7 @@ export const TeamDirectorySection: React.FC = () => {
   // Background pre-warm top image candidates
   useEffect(() => {
     if (teamMembers && teamMembers.length > 0) {
-      const urls = teamMembers.map((m) => getTeamMemberImageCandidates(m)[0]).filter(Boolean);
+      const urls = teamMembers.map((m) => getTeamMemberImageCandidates(m.id)[0]).filter(Boolean);
       prewarmImages(urls);
     }
   }, [teamMembers]);

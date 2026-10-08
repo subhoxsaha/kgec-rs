@@ -29,12 +29,12 @@ import { fetchStaticTeamMembers, getTeamMemberImageCandidates } from '../../util
 import { OptimizedImage } from '../common/OptimizedImage';
 
 const TeamEditorAvatar: React.FC<{ member: TeamMember }> = ({ member }) => {
-  const candidates = React.useMemo(() => getTeamMemberImageCandidates(member), [member]);
+  const candidates = React.useMemo(() => getTeamMemberImageCandidates(member.id), [member.id]);
   return (
     <OptimizedImage
       src={candidates[0]}
       candidates={candidates}
-      fallbackSrc={candidates[candidates.length - 1]}
+      fallbackSrc="/team/default-avatar.svg"
       alt={member.name}
       loading="lazy"
       className="w-full h-full object-cover"
@@ -104,21 +104,6 @@ const SUGGESTED_ROLES: Record<TeamCategory, string[]> = {
   ],
 };
 
-const SAMPLE_AVATARS = [
-  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=600&q=80',
-  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80',
-];
-
 export const TeamEditor: React.FC = () => {
   const {
     teamMembers,
@@ -143,7 +128,7 @@ export const TeamEditor: React.FC = () => {
     name: '',
     post: '',
     departmentOrBatch: '',
-    avatarUrl: SAMPLE_AVATARS[0],
+    avatarUrl: '',
     email: '',
     linkedinUrl: '',
     githubUrl: '',
@@ -257,7 +242,7 @@ export const TeamEditor: React.FC = () => {
       name: newMember.name.trim(),
       post: newMember.post.trim(),
       departmentOrBatch: newMember.departmentOrBatch?.trim() || '',
-      avatarUrl: newMember.avatarUrl?.trim() || SAMPLE_AVATARS[0],
+      avatarUrl: newMember.avatarUrl?.trim() || '',
       email: newMember.email?.trim() || '',
       linkedinUrl: newMember.linkedinUrl?.trim() || '',
       githubUrl: newMember.githubUrl?.trim() || '',
@@ -271,7 +256,7 @@ export const TeamEditor: React.FC = () => {
       name: '',
       post: '',
       departmentOrBatch: '',
-      avatarUrl: SAMPLE_AVATARS[Math.floor(Math.random() * SAMPLE_AVATARS.length)],
+      avatarUrl: '',
       email: '',
       linkedinUrl: '',
       githubUrl: '',
@@ -694,9 +679,9 @@ export const TeamEditor: React.FC = () => {
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#243324]/20 shrink-0 bg-neutral-900">
                   <OptimizedImage
-                    src={newMember.avatarUrl || getTeamMemberImageCandidates(newMember)[0]}
-                    candidates={getTeamMemberImageCandidates(newMember)}
-                    fallbackSrc={SAMPLE_AVATARS[0]}
+                    src={getTeamMemberImageCandidates(newMember.id)[0]}
+                    candidates={getTeamMemberImageCandidates(newMember.id)}
+                    fallbackSrc="/team/default-avatar.svg"
                     alt="Preview"
                     className="w-full h-full object-cover"
                   />

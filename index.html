@@ -3,6 +3,36 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Gracefully ignore WebSocket / Vite HMR transport disconnections in AI Studio iframe environment
+      window.addEventListener('unhandledrejection', function (e) {
+        if (e && e.reason) {
+          var msg = (e.reason.message || '') + '';
+          var stack = (e.reason.stack || '') + '';
+          if (
+            msg.indexOf('WebSocket') !== -1 ||
+            msg.indexOf('vite') !== -1 ||
+            stack.indexOf('@vite/client') !== -1 ||
+            stack.indexOf('createWebSocketModuleRunnerTransport') !== -1
+          ) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }
+      }, true);
+      window.addEventListener('error', function (e) {
+        var msg = (e.message || '') + '';
+        var filename = (e.filename || '') + '';
+        if (
+          msg.indexOf('WebSocket') !== -1 ||
+          msg.indexOf('vite') !== -1 ||
+          filename.indexOf('@vite/client') !== -1
+        ) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+        }
+      }, true);
+    </script>
     <title>KGEC Robotics Society (KRS) - Official Annual Report & Technical Portal</title>
     <meta name="description" content="Interactive technical showcase and annual report portal for KGEC Robotics Society (KRS), highlighting 48+ national podiums, 8 engineering wings, combat robot fleet, URC rover systems, precision hardware benchmarking, and STEM outreach." />
     <meta property="og:title" content="KGEC Robotics Society (KRS) - Official Annual Report & Technical Portal" />

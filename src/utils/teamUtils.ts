@@ -22,6 +22,10 @@ export interface MediaManifest {
 // In-memory cache of files detected in public directories
 let cachedMediaManifest: MediaManifest = {
   team: [
+    'tb-1.webp',
+    'tb-4.png',
+    'sb-2.jpg',
+    'sb-3.jpg',
     'Anirban_Mukherjee.jpg',
     'dr-sourabh-kumar-das-principal.webp',
     'IMG_20260921_123259.jpg',
@@ -94,87 +98,55 @@ function safeJsonParse<T>(text: string, fallback: T): T {
 }
 
 /**
- * Computes an ordered list of candidate URLs for a team member's portrait.
- * Optimized for performance:
- * 1. Exact ID file verified in /team/ (e.g. /team/ld-3.jpg, /team/ld-3.png)
- * 2. Explicit avatarUrl (e.g. /team/treasurer.png)
- * 3. Matched dropped local filenames in /public/team/ (e.g. Anirban_Mukherjee.jpg)
- * 4. General ID patterns in /team/
- * 5. High-fidelity default fallback avatar
+ * Computes image candidate URLs for a team member's portrait.
+ * REQUIREMENT: "in team section pfp keep only auto get by id no other method, proper that method"
+ *
+ * Exclusively retrieves profile pictures by member ID:
+ * 1. Matches file stem in /public/team/ directly against member ID (case-insensitive)
+ * 2. Generates prospective file extension paths (/team/{id}.webp, .jpg, .png, .jpeg, .svg)
+ * 3. Falls back to neutral SVG default placeholder (/team/default-avatar.svg)
+ *
+ * Absolutely NO name matching, NO role matching, and NO external random stock photos.
  */
-export function getTeamMemberImageCandidates(member: Partial<TeamMember>): string[] {
+export function getTeamMemberImageCandidates(memberOrId?: Partial<TeamMember> | string | null): string[] {
   const candidates: string[] = [];
-  const id = (member.id || '').trim().toLowerCase();
-  const nameNorm = (member.name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-  const roleNorm = (member.post || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const rawId = typeof memberOrId === 'string' ? memberOrId : memberOrId?.id;
+  const cleanId = (rawId || '').trim().toLowerCase();
 
   const knownTeamFiles = cachedMediaManifest.team || [];
 
-  // 1. Direct ID matches in manifest (Requested: "images are auto get by name of id 'id': 'ld-3'")
-  if (id) {
-    const matchedIdFile = knownTeamFiles.find((f) => {
-      const stem = f.substring(0, f.lastIndexOf('.')).toLowerCase();
-      return stem === id;
+  if (cleanId) {
+    // 1. Exact ID file verified in /team/ manifest (e.g. /team/ld-3.jpg, /team/tb-1.webp, /team/sb-2.jpg)
+    const matchedIdFiles = knownTeamFiles.filter((f) => {
+      const stem = f.substring(0, f.lastIndexOf('.')).trim().toLowerCase();
+      return stem === cleanId;
     });
-    if (matchedIdFile) {
-      candidates.push(`/team/${matchedIdFile}`);
-    }
-  }
 
-  // 2. Explicit avatarUrl if set
-  if (member.avatarUrl && typeof member.avatarUrl === 'string' && member.avatarUrl.trim()) {
-    candidates.push(member.avatarUrl.trim());
-  }
-
-  // 3. Known dropped image mappings in /public/team/
-  if (nameNorm.includes('sourav') || nameNorm.includes('sourabh') || roleNorm.includes('principal')) {
-    candidates.push('/team/dr-sourabh-kumar-das-principal.webp');
-  }
-  if (nameNorm.includes('anirban') && nameNorm.includes('mukherjee')) {
-    candidates.push('/team/Anirban_Mukherjee.jpg');
-  }
-  if ((nameNorm.includes('tanmay') || nameNorm.includes('tanmoy')) && nameNorm.includes('debnath')) {
-    candidates.push('/team/Tanmoy_Debnath.jpg');
-  }
-  if (roleNorm.includes('treasurer')) {
-    candidates.push('/team/treasurer.png');
-  }
-
-  // Check if member name has an exact file in the folder (e.g. "Anirban_Mukherjee.jpg")
-  if (member.name) {
-    const trimmed = member.name.trim();
-    const underscore = trimmed.replace(/\s+/g, '_').toLowerCase();
-    const dash = trimmed.replace(/\s+/g, '-').toLowerCase();
-
-    const matchedNameFile = knownTeamFiles.find((f) => {
-      const stem = f.substring(0, f.lastIndexOf('.')).toLowerCase();
-      return stem === underscore || stem === dash || stem === nameNorm;
+    matchedIdFiles.forEach((file) => {
+      candidates.push(`/team/${file}`);
     });
-    if (matchedNameFile) {
-      candidates.push(`/team/${matchedNameFile}`);
-    }
+
+    // 2. Prospective ID patterns in /team/ if manifest is still loading or static
+    candidates.push(`/team/${cleanId}.webp`);
+    candidates.push(`/team/${cleanId}.jpg`);
+    candidates.push(`/team/${cleanId}.png`);
+    candidates.push(`/team/${cleanId}.jpeg`);
+    candidates.push(`/team/${cleanId}.svg`);
   }
 
-  // 4. Prospective ID patterns if not matched in manifest
-  if (id) {
-    candidates.push(`/team/${id}.jpg`);
-    candidates.push(`/team/${id}.png`);
-    candidates.push(`/team/${id}.webp`);
-    candidates.push(`/team/${id}.jpeg`);
-  }
+  // 3. Fallback placeholder (clean default vector silhouette avatar)
+  candidates.push('/team/default-avatar.svg');
 
-  // 5. Default reliable fallback
-  const fallback =
-    member.category === 'teacher'
-      ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'
-      : member.category === 'lead'
-      ? 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80'
-      : 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80';
-
-  candidates.push(fallback);
-
-  // Return deduplicated list
+  // Deduplicate and filter empty strings
   return Array.from(new Set(candidates.filter(Boolean)));
+}
+
+/**
+ * Convenience helper to get the primary photo URL for a team member ID.
+ */
+export function getTeamMemberImageUrl(id: string): string {
+  const candidates = getTeamMemberImageCandidates(id);
+  return candidates[0] || '/team/default-avatar.svg';
 }
 
 /**

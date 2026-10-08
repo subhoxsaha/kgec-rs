@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 500" width="400" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#141E15" />
+      <stop offset="100%" stop-color="#233524" />
+    </linearGradient>
+    <linearGradient id="avatar" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3A533C" />
+      <stop offset="100%" stop-color="#2B3E2D" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981" stop-opacity="0.25" />
+      <stop offset="100%" stop-color="#059669" stop-opacity="0.05" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="500" fill="url(#bg)" />
+  <circle cx="200" cy="210" r="130" fill="url(#accent)" />
+  <!-- Head -->
+  <circle cx="200" cy="180" r="62" fill="url(#avatar)" stroke="#4A6B4D" stroke-width="2" />
+  <!-- Shoulders / Torso -->
+  <path d="M96 390 C96 300 144 268 200 268 C256 268 304 300 304 390 Z" fill="url(#avatar)" stroke="#4A6B4D" stroke-width="2" />
+</svg>

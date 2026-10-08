@@ -308,10 +308,7 @@ export const sanitizeLoadedTeamMembers = (members: any[]): TeamMember[] => {
     name: m.name || 'KGEC Member',
     post: m.post || m.role || m.designation || 'Robotics Member',
     departmentOrBatch: m.departmentOrBatch || m.department || m.batch || '',
-    avatarUrl:
-      m.avatarUrl ||
-      m.image ||
-      `https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80`,
+    avatarUrl: m.avatarUrl || m.image || '',
     email: m.email || '',
     linkedinUrl: m.linkedinUrl || m.linkedin || '',
     scholarUrl: m.scholarUrl || '',
