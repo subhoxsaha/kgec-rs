@@ -8,6 +8,23 @@ import {
   DEFAULT_OTHER_ACTIVITIES_PHOTOS,
   DEFAULT_HACKATHON_PHOTOS,
 } from '../data/eventsData';
+import { getEventImageCandidates } from '../utils/teamUtils';
+import { OptimizedImage } from './common/OptimizedImage';
+
+const StreamPhotoImg: React.FC<{ item: EventPhoto }> = ({ item }) => {
+  const candidates = React.useMemo(() => getEventImageCandidates(item.id, item.imageUrl), [item.id, item.imageUrl]);
+
+  return (
+    <OptimizedImage
+      src={candidates[0]}
+      candidates={candidates}
+      fallbackSrc={item.imageUrl}
+      alt={item.title}
+      loading="lazy"
+      className="w-full h-full object-cover object-center block"
+    />
+  );
+};
 
 interface StreamRowProps {
   photos: EventPhoto[];
@@ -41,13 +58,7 @@ const StreamRow: React.FC<StreamRowProps> = ({
               onClick={() => onTogglePhoto(item)}
               className="relative w-48 sm:w-64 lg:w-72 h-32 sm:h-44 lg:h-52 shrink-0 overflow-hidden cursor-pointer transition-all duration-300 hover:brightness-105"
             >
-              <img
-                src={item.imageUrl}
-                alt=""
-                referrerPolicy="no-referrer"
-                loading="lazy"
-                className="w-full h-full object-cover object-center block"
-              />
+              <StreamPhotoImg item={item} />
 
               {/* Clean Bottom Text Overlay on Click (No blur, no green border, full text in small size) */}
               <AnimatePresence>

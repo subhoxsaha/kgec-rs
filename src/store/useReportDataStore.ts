@@ -12,7 +12,12 @@ import {
   DEFAULT_HACKATHON_PHOTOS as INITIAL_HACKATHON_PHOTOS,
 } from '../data/eventsData';
 import { INITIAL_TEAM_MEMBERS } from '../data/teamData';
-import { fetchStaticTeamMembers } from '../utils/teamUtils';
+import {
+  fetchStaticTeamMembers,
+  fetchStaticEventsData,
+  fetchStaticProjectsData,
+  fetchStaticSiteContent,
+} from '../utils/teamUtils';
 import { TECHTIX_ZYRO_EVENTS, FestEvent } from '../data/techtixZyroEventsData';
 import {
   RoboticsWing,
@@ -1816,18 +1821,49 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
   },
 }));
 
-// Asynchronously hydrate from static team.json, IndexedDB, and remote MongoDB
+// Asynchronously hydrate from static JSON files (/public/data/*.json), IndexedDB, and remote MongoDB
 if (typeof window !== 'undefined') {
-  // 1. Fetch static team.json to ensure filesystem edits reflect instantly
-  fetchStaticTeamMembers()
-    .then((staticMembers) => {
+  // 1. Primary Source of Truth: Fetch all static JSON files directly from /public/data/
+  Promise.all([
+    fetchStaticTeamMembers(),
+    fetchStaticEventsData(),
+    fetchStaticProjectsData(),
+    fetchStaticSiteContent(),
+  ])
+    .then(([staticMembers, staticEvents, staticProjects, staticSite]) => {
+      const updates: any = {};
       if (Array.isArray(staticMembers) && staticMembers.length > 0) {
-        useReportDataStore.setState({ teamMembers: staticMembers });
+        updates.teamMembers = staticMembers;
+      }
+      if (staticEvents && typeof staticEvents === 'object') {
+        if (Array.isArray(staticEvents.festEvents) && staticEvents.festEvents.length > 0) {
+          updates.festEvents = staticEvents.festEvents;
+        }
+        if (Array.isArray(staticEvents.techfestPhotos) && staticEvents.techfestPhotos.length > 0) {
+          updates.techfestPhotos = staticEvents.techfestPhotos;
+        }
+        if (Array.isArray(staticEvents.activityPhotos) && staticEvents.activityPhotos.length > 0) {
+          updates.activityPhotos = staticEvents.activityPhotos;
+        }
+        if (Array.isArray(staticEvents.hackathonPhotos) && staticEvents.hackathonPhotos.length > 0) {
+          updates.hackathonPhotos = staticEvents.hackathonPhotos;
+        }
+      }
+      if (Array.isArray(staticProjects) && staticProjects.length > 0) {
+        updates.botProjects = staticProjects;
+      }
+      if (staticSite && typeof staticSite === 'object') {
+        if (staticSite.metadata) updates.metadata = { ...useReportDataStore.getState().metadata, ...staticSite.metadata };
+        if (staticSite.sectionTexts) updates.sectionTexts = { ...useReportDataStore.getState().sectionTexts, ...staticSite.sectionTexts };
+      }
+
+      if (Object.keys(updates).length > 0) {
+        useReportDataStore.setState(updates);
       }
     })
     .catch(() => {});
 
-  // 2. Load cached user state & preferences
+  // 2. Load cached user state & session preferences
   loadFromIndexedDB<any>()
     .then((idbData) => {
       if (idbData && typeof idbData === 'object') {
@@ -1836,17 +1872,9 @@ if (typeof window !== 'undefined') {
         if (incomingTime >= (cur.lastUpdated || 0)) {
           useReportDataStore.setState((prev) => ({
             lastUpdated: incomingTime || prev.lastUpdated,
-            metadata: idbData.metadata ? { ...prev.metadata, ...idbData.metadata } : prev.metadata,
-            sectionTexts: idbData.sectionTexts ? { ...prev.sectionTexts, ...idbData.sectionTexts } : prev.sectionTexts,
             wings: Array.isArray(idbData.wings) && idbData.wings.length > 0 ? idbData.wings : prev.wings,
             boroughs: Array.isArray(idbData.wings) && idbData.wings.length > 0 ? idbData.wings : prev.boroughs,
             roadmap: Array.isArray(idbData.roadmap) && idbData.roadmap.length > 0 ? idbData.roadmap : prev.roadmap,
-            botProjects: Array.isArray(idbData.botProjects) && idbData.botProjects.length > 0 ? sanitizeLoadedBotProjects(idbData.botProjects) : prev.botProjects,
-            techfestPhotos: Array.isArray(idbData.techfestPhotos) && idbData.techfestPhotos.length > 0 ? idbData.techfestPhotos : prev.techfestPhotos,
-            activityPhotos: Array.isArray(idbData.activityPhotos) && idbData.activityPhotos.length > 0 ? idbData.activityPhotos : prev.activityPhotos,
-            hackathonPhotos: Array.isArray(idbData.hackathonPhotos) && idbData.hackathonPhotos.length > 0 ? idbData.hackathonPhotos : prev.hackathonPhotos,
-            teamMembers: Array.isArray(idbData.teamMembers) && idbData.teamMembers.length > 0 ? sanitizeLoadedTeamMembers(idbData.teamMembers) : prev.teamMembers,
-            festEvents: Array.isArray(idbData.festEvents) && idbData.festEvents.length > 0 ? idbData.festEvents : prev.festEvents,
             festPhases: Array.isArray(idbData.festPhases) && idbData.festPhases.length > 0 ? idbData.festPhases : prev.festPhases,
             trackPassages: idbData.trackPassages ? { ...prev.trackPassages, ...idbData.trackPassages } : prev.trackPassages,
           }));
@@ -1863,17 +1891,9 @@ if (typeof window !== 'undefined') {
             if (incomingTime > (cur.lastUpdated || 0)) {
               useReportDataStore.setState((prev) => ({
                 lastUpdated: incomingTime,
-                metadata: dbData.metadata ? { ...prev.metadata, ...dbData.metadata } : prev.metadata,
-                sectionTexts: dbData.sectionTexts ? { ...prev.sectionTexts, ...dbData.sectionTexts } : prev.sectionTexts,
                 wings: Array.isArray(dbData.wings) && dbData.wings.length > 0 ? dbData.wings : prev.wings,
                 boroughs: Array.isArray(dbData.wings) && dbData.wings.length > 0 ? dbData.wings : prev.boroughs,
                 roadmap: Array.isArray(dbData.roadmap) && dbData.roadmap.length > 0 ? dbData.roadmap : prev.roadmap,
-                botProjects: Array.isArray(dbData.botProjects) && dbData.botProjects.length > 0 ? sanitizeLoadedBotProjects(dbData.botProjects) : prev.botProjects,
-                techfestPhotos: Array.isArray(dbData.techfestPhotos) && dbData.techfestPhotos.length > 0 ? dbData.techfestPhotos : prev.techfestPhotos,
-                activityPhotos: Array.isArray(dbData.activityPhotos) && dbData.activityPhotos.length > 0 ? dbData.activityPhotos : prev.activityPhotos,
-                hackathonPhotos: Array.isArray(dbData.hackathonPhotos) && dbData.hackathonPhotos.length > 0 ? dbData.hackathonPhotos : prev.hackathonPhotos,
-                teamMembers: Array.isArray(dbData.teamMembers) && dbData.teamMembers.length > 0 ? sanitizeLoadedTeamMembers(dbData.teamMembers) : prev.teamMembers,
-                festEvents: Array.isArray(dbData.festEvents) && dbData.festEvents.length > 0 ? dbData.festEvents : prev.festEvents,
                 festPhases: Array.isArray(dbData.festPhases) && dbData.festPhases.length > 0 ? dbData.festPhases : prev.festPhases,
                 trackPassages: dbData.trackPassages ? { ...prev.trackPassages, ...dbData.trackPassages } : prev.trackPassages,
               }));

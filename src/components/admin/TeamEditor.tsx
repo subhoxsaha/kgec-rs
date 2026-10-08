@@ -25,7 +25,22 @@ import {
 import { useReportData } from '../../context/ReportDataContext';
 import { TeamCategory, TeamMember } from '../../types';
 import { compressImageFile } from '../../utils/imageUtils';
-import { fetchStaticTeamMembers } from '../../utils/teamUtils';
+import { fetchStaticTeamMembers, getTeamMemberImageCandidates } from '../../utils/teamUtils';
+import { OptimizedImage } from '../common/OptimizedImage';
+
+const TeamEditorAvatar: React.FC<{ member: TeamMember }> = ({ member }) => {
+  const candidates = React.useMemo(() => getTeamMemberImageCandidates(member), [member]);
+  return (
+    <OptimizedImage
+      src={candidates[0]}
+      candidates={candidates}
+      fallbackSrc={candidates[candidates.length - 1]}
+      alt={member.name}
+      loading="lazy"
+      className="w-full h-full object-cover"
+    />
+  );
+};
 
 const CATEGORY_CONFIG: Record<
   TeamCategory,
@@ -678,10 +693,11 @@ export const TeamEditor: React.FC = () => {
               </label>
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#243324]/20 shrink-0 bg-neutral-900">
-                  <img
-                    src={newMember.avatarUrl || SAMPLE_AVATARS[0]}
+                  <OptimizedImage
+                    src={newMember.avatarUrl || getTeamMemberImageCandidates(newMember)[0]}
+                    candidates={getTeamMemberImageCandidates(newMember)}
+                    fallbackSrc={SAMPLE_AVATARS[0]}
                     alt="Preview"
-                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -770,12 +786,7 @@ export const TeamEditor: React.FC = () => {
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Avatar Portrait with Quick Upload Overlay */}
                     <div className="relative group w-12 h-14 sm:w-14 sm:h-16 rounded-lg overflow-hidden shrink-0 border border-[#243324]/15 bg-neutral-900 shadow-2xs">
-                      <img
-                        src={member.avatarUrl}
-                        alt={member.name}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                      />
+                      <TeamEditorAvatar member={member} />
                       <button
                         type="button"
                         onClick={() => {

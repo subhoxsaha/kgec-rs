@@ -1,0 +1,225 @@
+{
+  "festEvents": [
+    {
+      "id": "tt-robowars-heavy",
+      "fest": "TECHTIX",
+      "title": "ROBO-CLASH: Heavyweight Robowars",
+      "tagline": "Extreme Mechatronics Combat in 60kg Steel Cage",
+      "category": "Combat Mechatronics",
+      "arenaOrTrack": "Reinforced 8mm Polycarbonate & Steel Arena with Pneumatic Hazards",
+      "prizePool": "₹60,000+",
+      "teamSize": "3–6 Engineers",
+      "duration": "3 Elimination Rounds",
+      "description": "The crowning jewel of TECHTIX. Custom armor plates, high-tensile hardened S7 steel spinning drums, high-torque brushless drive systems, and pneumatic flippers clash in an enclosed bulletproof arena to determine the supreme combat machine.",
+      "rulesHighlights": [
+        "Maximum weight cap: 60.0 kg (including weapon batteries)",
+        "Failsafe wireless RC cutoffs with high-current isolation link required",
+        "Active weapon mandatory (Spinning bar, vertical disc, pneumatic flipper, lifter)",
+        "3-minute match duration with active pit-fall trap at 90 seconds mark"
+      ],
+      "specsRequirements": [
+        "Voltage limit: 48V DC max",
+        "S7/Hardox 500 armor plating allowed",
+        "Dual optical & hardware RF link verification"
+      ],
+      "bannerUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+      "images": [
+        "/events/tt-robowars-heavy.jpg",
+        "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
+        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"
+      ]
+    },
+    {
+      "id": "tt-robowars-feather",
+      "fest": "TECHTIX",
+      "title": "SPARK-ARENA: Featherweight 15kg",
+      "tagline": "High-RPM Vertical Spinners & Rapid Wedge Combat",
+      "category": "Combat Mechatronics",
+      "arenaOrTrack": "Standard 4m x 4m Combat Ring with Pit Trap & Floor Grinders",
+      "prizePool": "₹35,000+",
+      "teamSize": "2–4 Members",
+      "duration": "Double Elimination Bracket",
+      "description": "Lightning agility meets destructive impact. High-RPM spinning blades, invertible wedge bots, and pneumatic lifters battle at breakneck speed across high-hazard steel terrain.",
+      "rulesHighlights": [
+        "Weight cap: 15.0 kg (+5% leeway for walking/shuffling mechanisms)",
+        "Single-fault dropouts: 10-second count out on total loss of mobility",
+        "Modular battery casing with flame-retardant silicone insulation"
+      ],
+      "specsRequirements": [
+        "Max 6S LiPo (25.2V)",
+        "Mechanical master switch easily accessible on rear hull",
+        "Weapon lock safety pins strictly enforced outside pit cage"
+      ],
+      "bannerUrl": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80",
+      "images": [
+        "/events/tt-robowars-feather.jpg",
+        "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"
+      ]
+    },
+    {
+      "id": "tt-lfr-pro",
+      "fest": "TECHTIX",
+      "title": "VELOCITY-LINE: High-Speed Autonomous LFR",
+      "tagline": "PID Micro-Controller Racing on High-Traction Hairpins",
+      "category": "Autonomous Track",
+      "arenaOrTrack": "Modular 30mm White Line on Non-Reflective Black Matte Polymer with 90° Acute Hairpins, Inverted Loops, and Speed Gaps",
+      "prizePool": "₹25,000+",
+      "teamSize": "1–3 Members",
+      "duration": "3 Time-Trial Runs (Best lap counts)",
+      "description": "Ultra-fast optical sensor micro-mouse rovers navigating high-speed tracks with acute angled hairpins and dead-reckoning bridge hops.",
+      "rulesHighlights": [
+        "Completely autonomous; zero teleoperation or wireless control during active run",
+        "Time penalized (+5s) for track skips or manual recalibrations",
+        "Micro-fans for downward vacuum downforce permitted"
+      ],
+      "specsRequirements": [
+        "Max dimensions: 250 x 250 mm footprint",
+        "Max operating voltage: 12.6V (3S LiPo)",
+        "Onboard optical array: minimum 8 phototransistors recommended"
+      ],
+      "bannerUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
+      "images": [
+        "/events/tt-lfr-pro.jpg",
+        "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80"
+      ]
+    },
+    {
+      "id": "zr-slam-hackathon",
+      "fest": "ZYRO",
+      "title": "NEURAL-BOT: 36H Hardware & Edge Vision Hackathon",
+      "tagline": "Continuous 36-Hour Autonomous ROS2 & Edge AI Prototyping",
+      "category": "Edge AI & ROS2 Hackathon",
+      "arenaOrTrack": "KGEC Mechatronics Prototyping Hub & Hardware Workbench Floor",
+      "prizePool": "₹50,000 + Hardware Accelerator Grants",
+      "teamSize": "3–5 Engineers",
+      "duration": "36 Consecutive Hours",
+      "description": "KGEC Robotics Society’s flagship hackathon where software meets steel. Teams build end-to-end edge robotics applications deploying computer vision, SLAM navigation, and real-time sensor processing.",
+      "rulesHighlights": [
+        "All code repositories must be initiated at the opening sprint bell",
+        "Mandatory physical hardware prototype demonstration before the jury panel",
+        "Open-source libraries permitted with proper architecture disclosure"
+      ],
+      "specsRequirements": [
+        "Jetson Orin Nano, Raspberry Pi 5, or STM32 platforms supported",
+        "Benchtop 3D printing and SMD soldering stations provided",
+        "2.4/5GHz low-latency local test network available"
+      ],
+      "bannerUrl": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
+      "images": [
+        "/events/zr-slam-hackathon.jpg",
+        "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80"
+      ]
+    }
+  ],
+  "techfestPhotos": [
+    {
+      "id": "tt-1",
+      "title": "Robo-Soccer Agility Match",
+      "category": "Arena Combat & Sport",
+      "imageUrl": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80",
+      "description": "High-torque differential drive robots battling for ball possession on the stadium pitch."
+    },
+    {
+      "id": "tt-2",
+      "title": "Precision Soldering & Chassis Fab",
+      "category": "Hardware Prototyping",
+      "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+      "description": "Angle grinder sparks, custom chassis welding, and PCB component soldering during maker trials."
+    },
+    {
+      "id": "tt-3",
+      "title": "Competitive Coding & Algorithmic Chess",
+      "category": "Mind Sports & Logic",
+      "imageUrl": "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80",
+      "description": "Developers tackling algorithmic optimization problems and strategic blitz chess matches."
+    },
+    {
+      "id": "tt-4",
+      "title": "Water Rocketry Field Launch",
+      "category": "Aerodynamics Trial",
+      "imageUrl": "https://images.unsplash.com/photo-1517976487502-d5952f551576?auto=format&fit=crop&w=800&q=80",
+      "description": "Pneumatic pressurized water rocket launches measuring max apogee and parachute deployment."
+    },
+    {
+      "id": "tt-5",
+      "title": "Speedcubing Championship",
+      "category": "Dexterity Championship",
+      "imageUrl": "https://images.unsplash.com/photo-1563770660941-20978e870e26?auto=format&fit=crop&w=800&q=80",
+      "description": "Sub-15 second CFOP method Rubik’s cube speedsolving showdowns before a cheering crowd."
+    },
+    {
+      "id": "tt-6",
+      "title": "Line Follower & Micro-Maze Racing",
+      "category": "Autonomous Track",
+      "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+      "description": "Ultra-fast optical sensor micro-mouse rovers navigating high-speed hairpin turns."
+    }
+  ],
+  "activityPhotos": [
+    {
+      "id": "ot-1",
+      "title": "Hands-on Arduino & Robotics Bootcamp",
+      "category": "Workshops & Training",
+      "imageUrl": "https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80",
+      "description": "Freshmen and junior engineers wiring microcontrollers, motor drivers, and ultrasonic sensors."
+    },
+    {
+      "id": "ot-2",
+      "title": "3D CAD & Carbon Chassis Fabrication",
+      "category": "Makerspace R&D",
+      "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+      "description": "Rapid additive manufacturing, laser cutting acrylic mounts, and CNC milling lightweight robot frames."
+    },
+    {
+      "id": "ot-3",
+      "title": "Drone FPV Tuning & Waypoint Trials",
+      "category": "Aeromodelling & Flight",
+      "imageUrl": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=800&q=80",
+      "description": "Tuning PID coefficients, ESC telemetry, and telemetry links on carbon-fiber quadcopters."
+    },
+    {
+      "id": "ot-4",
+      "title": "Electronics Lab & Oscilloscope Signal Tuning",
+      "category": "Circuit Diagnostics",
+      "imageUrl": "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?auto=format&fit=crop&w=800&q=80",
+      "description": "Analyzing PWM waveforms, ripple noise filtering, and power supply stabilization for motor rails."
+    },
+    {
+      "id": "ot-5",
+      "title": "School STEM Outreach & Maker Demos",
+      "category": "Community & Mentorship",
+      "imageUrl": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
+      "description": "Inspiring young school students through live robot demos, rocketry fundamentals, and coding games."
+    },
+    {
+      "id": "ot-6",
+      "title": "Collaborative Open-Source Sprint",
+      "category": "Software & ROS Labs",
+      "imageUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
+      "description": "Collaborative pair programming on ROS2 nodes, simulation in Gazebo, and Git workflow reviews."
+    }
+  ],
+  "hackathonPhotos": [
+    {
+      "id": "zr-1",
+      "title": "36-Hour Robotics & AI Sprint",
+      "category": "Non-Stop Hackathon",
+      "imageUrl": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=800&q=80",
+      "description": "Full-stack engineering teams developing computer vision models and robot firmware under the clock."
+    },
+    {
+      "id": "zr-2",
+      "title": "Autonomous Waypoint Challenge",
+      "category": "Track Benchmark",
+      "imageUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=800&q=80",
+      "description": "Testing SLAM algorithms and 360-degree LiDAR avoidance in randomized indoor obstacle mazes."
+    },
+    {
+      "id": "zr-3",
+      "title": "Jury Demo & Working Prototype Pitch",
+      "category": "Final Evaluation",
+      "imageUrl": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=800&q=80",
+      "description": "Presenting working robotic prototypes, BOM cost estimates, and real-time sensor dashboards to expert industry judges."
+    }
+  ]
+}

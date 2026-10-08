@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import fs from 'fs';
 import dotenv from 'dotenv';
 import { createServer as createViteServer } from 'vite';
 import {
@@ -32,6 +33,28 @@ async function startServer() {
   // Health check
   app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', time: new Date().toISOString() });
+  });
+
+  // Media files manifest (Instant background detection of dropped images in public folders)
+  app.get('/api/media/files', (req, res) => {
+    try {
+      const publicDir = path.join(process.cwd(), 'public');
+      const getFiles = (sub: string) => {
+        const dir = path.join(publicDir, sub);
+        if (!fs.existsSync(dir)) return [];
+        return fs.readdirSync(dir).filter(
+          (f) => !f.startsWith('.') && f !== 'README.txt' && !f.endsWith('.txt')
+        );
+      };
+      res.json({
+        team: getFiles('team'),
+        events: getFiles('events'),
+        projects: getFiles('projects'),
+        logos: getFiles('logos'),
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to list media files' });
+    }
   });
 
   // MongoDB Status & Diagnostics

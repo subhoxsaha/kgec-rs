@@ -16,10 +16,15 @@ import {
   Search,
   ChevronDown,
   ChevronUp,
+  Copy,
+  Download,
+  RefreshCw,
+  FolderTree,
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
 import { FestEvent } from '../../data/techtixZyroEventsData';
 import { PhaseItem } from '../ZyroSection';
+import { fetchStaticEventsData } from '../../utils/teamUtils';
 
 export const FestEventsEditor: React.FC = () => {
   const {
@@ -57,6 +62,56 @@ export const FestEventsEditor: React.FC = () => {
     rulesHighlights: [],
     specsRequirements: [],
   });
+
+  const [copiedEventsJson, setCopiedEventsJson] = useState(false);
+  const [isSyncingEvents, setIsSyncingEvents] = useState(false);
+
+  const handleCopyEventsJson = () => {
+    const fullObj = {
+      festEvents,
+      festPhases,
+      trackPassages,
+    };
+    navigator.clipboard.writeText(JSON.stringify(fullObj, null, 2));
+    setCopiedEventsJson(true);
+    showToast('Copied events configuration to clipboard!');
+    setTimeout(() => setCopiedEventsJson(false), 2500);
+  };
+
+  const handleDownloadEventsJson = () => {
+    const fullObj = {
+      festEvents,
+      festPhases,
+      trackPassages,
+    };
+    const blob = new Blob([JSON.stringify(fullObj, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'events.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded events.json');
+  };
+
+  const handleReloadEventsFile = async () => {
+    setIsSyncingEvents(true);
+    try {
+      const data = await fetchStaticEventsData();
+      if (data && Array.isArray(data.festEvents) && data.festEvents.length > 0) {
+        data.festEvents.forEach((ev: FestEvent) => {
+          updateFestEvent(ev.id, ev);
+        });
+        showToast(`Synced ${data.festEvents.length} events from /public/data/events.json`);
+      }
+    } catch {
+      showToast('Could not reload from /public/data/events.json');
+    } finally {
+      setIsSyncingEvents(false);
+    }
+  };
 
   const handleStartEditEvent = (event: FestEvent) => {
     setEditingEventId(event.id);
@@ -122,12 +177,57 @@ export const FestEventsEditor: React.FC = () => {
 
   return (
     <div className="space-y-4 text-[#243324] dark:text-[#F4EFE6]">
-      {/* Banner */}
+      {/* Static File Architecture Banner */}
+      <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-emerald-950 dark:text-emerald-200">
+        <div className="flex items-start gap-2.5">
+          <FolderTree className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <p className="font-bold">
+              File-Based Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/events.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/events/</code>
+            </p>
+            <p className="text-[11px] text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
+              Drop event photos in <code className="font-mono">/public/events/</code> or edit text directly in <code className="font-mono">events.json</code>. Changes sync seamlessly.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+          <button
+            type="button"
+            onClick={handleReloadEventsFile}
+            disabled={isSyncingEvents}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white dark:bg-[#20301F] border border-emerald-500/40 hover:bg-emerald-50 text-[11px] font-semibold text-emerald-900 dark:text-emerald-200 cursor-pointer shadow-2xs"
+            title="Reload data from /public/data/events.json"
+          >
+            <RefreshCw className={`w-3 h-3 ${isSyncingEvents ? 'animate-spin' : ''}`} />
+            <span>Reload file</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyEventsJson}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-[11px] font-semibold text-white cursor-pointer shadow-2xs"
+            title="Copy JSON configuration for public/data/events.json"
+          >
+            {copiedEventsJson ? <Check className="w-3 h-3 text-emerald-300" /> : <Copy className="w-3 h-3" />}
+            <span>{copiedEventsJson ? 'Copied' : 'Copy JSON'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadEventsJson}
+            className="p-1 rounded bg-white dark:bg-[#20301F] border border-emerald-500/40 hover:bg-emerald-50 text-emerald-900 dark:text-emerald-200 cursor-pointer"
+            title="Download events.json"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Controls Strip */}
       <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-center justify-between gap-2.5">
         <div className="flex items-start gap-2">
           <Sparkles className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
           <p className="text-emerald-950 dark:text-emerald-200 font-medium">
-            Full CMS Control for TECHTIX & ZYRO: Edit tracks, square card passages, sprint timeline, and event rules.
+            Full CMS Control for TECHTIX &amp; ZYRO: Edit tracks, square card passages, sprint timeline, and event rules.
           </p>
         </div>
         <button

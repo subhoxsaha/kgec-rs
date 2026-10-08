@@ -15,11 +15,16 @@ import {
   Wrench,
   Search,
   Upload,
+  Copy,
+  Download,
+  RefreshCw,
+  FolderTree,
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
 import { BotProject } from '../../types';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { compressImageFile } from '../../utils/imageUtils';
+import { fetchStaticProjectsData } from '../../utils/teamUtils';
 
 export const ProjectsEditor: React.FC = () => {
   const { botProjects, addBotProject, updateBotProject, deleteBotProject, showToast } =
@@ -34,6 +39,45 @@ export const ProjectsEditor: React.FC = () => {
   const editProjectFileInputRef = useRef<HTMLInputElement>(null);
   const [activeUploadProjectId, setActiveUploadProjectId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [copiedProjectsJson, setCopiedProjectsJson] = useState(false);
+  const [isSyncingProjects, setIsSyncingProjects] = useState(false);
+
+  const handleCopyProjectsJson = () => {
+    navigator.clipboard.writeText(JSON.stringify(botProjects, null, 2));
+    setCopiedProjectsJson(true);
+    showToast('Copied projects configuration to clipboard!');
+    setTimeout(() => setCopiedProjectsJson(false), 2500);
+  };
+
+  const handleDownloadProjectsJson = () => {
+    const blob = new Blob([JSON.stringify(botProjects, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'projects.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Downloaded projects.json');
+  };
+
+  const handleReloadProjectsFile = async () => {
+    setIsSyncingProjects(true);
+    try {
+      const data = await fetchStaticProjectsData();
+      if (Array.isArray(data) && data.length > 0) {
+        data.forEach((p) => {
+          updateBotProject(p.id, p);
+        });
+        showToast(`Synced ${data.length} projects from /public/data/projects.json`);
+      }
+    } catch {
+      showToast('Could not reload from /public/data/projects.json');
+    } finally {
+      setIsSyncingProjects(false);
+    }
+  };
 
   const handleUploadNewImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -216,6 +260,51 @@ export const ProjectsEditor: React.FC = () => {
         }}
         onCancel={() => setDeleteConfirmId(null)}
       />
+
+      {/* Static File Architecture Banner */}
+      <div className="p-3 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-emerald-950 dark:text-emerald-200">
+        <div className="flex items-start gap-2.5">
+          <FolderTree className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+          <div className="space-y-0.5">
+            <p className="font-bold">
+              File-Based Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/projects.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/projects/</code>
+            </p>
+            <p className="text-[11px] text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
+              Drop robot project photos in <code className="font-mono">/public/projects/</code> or edit specs in <code className="font-mono">projects.json</code>. Changes sync seamlessly.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-center">
+          <button
+            type="button"
+            onClick={handleReloadProjectsFile}
+            disabled={isSyncingProjects}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-white dark:bg-[#20301F] border border-emerald-500/40 hover:bg-emerald-50 text-[11px] font-semibold text-emerald-900 dark:text-emerald-200 cursor-pointer shadow-2xs"
+            title="Reload data from /public/data/projects.json"
+          >
+            <RefreshCw className={`w-3 h-3 ${isSyncingProjects ? 'animate-spin' : ''}`} />
+            <span>Reload file</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleCopyProjectsJson}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-800 hover:bg-emerald-700 text-[11px] font-semibold text-white cursor-pointer shadow-2xs"
+            title="Copy JSON configuration for public/data/projects.json"
+          >
+            {copiedProjectsJson ? <Check className="w-3 h-3 text-emerald-300" /> : <Copy className="w-3 h-3" />}
+            <span>{copiedProjectsJson ? 'Copied' : 'Copy JSON'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleDownloadProjectsJson}
+            className="p-1 rounded bg-white dark:bg-[#20301F] border border-emerald-500/40 hover:bg-emerald-50 text-emerald-900 dark:text-emerald-200 cursor-pointer"
+            title="Download projects.json"
+          >
+            <Download className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
 
       {/* Top Banner & Action Controls */}
       <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">

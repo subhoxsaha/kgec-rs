@@ -108,10 +108,11 @@ const AutoScrollPhotoWindow: React.FC<AutoScrollPhotoWindowProps> = ({
             src={currentPhoto.imageUrl}
             alt={currentPhoto.title}
             referrerPolicy="no-referrer"
-            initial={{ opacity: 0, scale: 1.04 }}
-            animate={{ opacity: 1, scale: 1 }}
+            decoding="async"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
+            transition={{ duration: 0.25, ease: 'linear' }}
             className="w-full h-full object-cover"
           />
         </AnimatePresence>
@@ -621,6 +622,7 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
                             className="w-full h-full object-cover object-center cursor-pointer transition-transform duration-700 hover:scale-103"
                             onClick={() => setSelectedGalleryPhoto(imgUrl)}
                             referrerPolicy="no-referrer"
+                            decoding="async"
                             loading={imgIdx === 0 ? 'eager' : 'lazy'}
                           />
                         </div>

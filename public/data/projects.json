@@ -1,0 +1,134 @@
+[
+  {
+    "id": "vajra-30",
+    "name": "Vajra-30",
+    "codename": "Project Thunderstrike",
+    "tagline": "30kg Heavyweight Arena Combat Titan with High-Kinetic Weapon Drum",
+    "imageUrl": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1000&q=80",
+    "imageAlt": "Vajra-30 Heavyweight Combat Battlebot Prototype Chassis",
+    "wingId": "combat",
+    "wingName": "Combat Robotics (RoboWars)",
+    "category": "Combat RoboWars",
+    "weightClass": "Heavyweight (30 kg)",
+    "status": "Active Champion",
+    "podiumsCount": 18,
+    "featuredAward": "1st Place National Champion (IIT Kshitij & Techfest)",
+    "description": "Machined from aerospace-grade alloy billets and enclosed in welded 6mm Hardox 500 armor. Vajra-30 is designed to withstand violent pneumatic flips and catastrophic disc strikes while delivering 18.5 kJ kinetic energy blows.",
+    "specs": {
+      "dimensions": "650 × 520 × 240 mm",
+      "weight": "29.8 kg",
+      "speed": "24 km/h",
+      "power": "8S LiPo (29.6V 5000mAh 120C) with Castle 120A ESC",
+      "controller": "Dual 2.4GHz FHSS with hardware optical kill switch",
+      "actuatorsOrWeapon": "Single-tooth Hardox 500 rotary drum @ 14,200 RPM",
+      "chassisMaterial": "6mm Hardox 500 hull + 7075-T6 billet wheel hubs"
+    },
+    "keyFeatures": [
+      "Stores 18.5 kJ kinetic energy in high-speed spinning mass",
+      "Continuous Hardox 500 unibody armor plate weldments",
+      "Dual-receiver fail-safe with 5ms link loss cut-off",
+      "Custom urethane drive wheels with high-traction tread"
+    ],
+    "architectureSummary": "The drivetrain combines dual 750W brushless hub motors geared down to deliver explosive pushing torque. The weapon sub-assembly utilizes a balanced asymmetric drum supported by sealed ceramic angular-contact bearings to absorb direct radial shocks.",
+    "iconName": "ShieldAlert"
+  },
+  {
+    "id": "apex-rover-v3",
+    "name": "Apex-Rover v3",
+    "codename": "Project Pathfinder",
+    "tagline": "Autonomous Mobile Robot with 3D LiDAR SLAM & Neural Edge Vision",
+    "imageUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80",
+    "imageAlt": "Apex-Rover v3 Autonomous Mobile Robot with LiDAR Navigation",
+    "wingId": "autonomous-ai",
+    "wingName": "Autonomous Systems & Computer Vision",
+    "category": "Autonomous Mobile Robot (AMR)",
+    "weightClass": "Medium Autonomous (26 kg)",
+    "status": "Active Research",
+    "podiumsCount": 11,
+    "featuredAward": "Best Autonomous Navigation Architecture (National Robotics Summit)",
+    "description": "Engineered for industrial warehouse transport and GPS-denied indoor mapping. Apex-Rover v3 continuously builds dense 3D point-clouds, maps unknown floor plans, and avoids dynamic human obstacles in real time.",
+    "specs": {
+      "dimensions": "580 × 480 × 380 mm",
+      "weight": "26.4 kg",
+      "speed": "1.8 m/s",
+      "power": "24V 20Ah LiFePO4 battery pack with active smart BMS",
+      "controller": "NVIDIA Jetson Orin Nano (40 TOPS) + STM32 RTOS core",
+      "actuatorsOrWeapon": "Dual planetary brushless hub drives + active suspension",
+      "chassisMaterial": "Laser-cut 5052 aluminum internal skeleton + carbon panels"
+    },
+    "keyFeatures": [
+      "Real-time 3D RTAB-Map SLAM running locally on ROS2 Humble",
+      "Dynamic obstacle avoidance latency under 35 milliseconds",
+      "Hot-swappable battery dock with battery balancing telemetry",
+      "IP54 dust-resistant modular electronics compartment"
+    ],
+    "architectureSummary": "High-level perception runs on Jetson Orin Nano using TensorRT accelerated YOLOv8 object detection. Odometry is computed through dual magnetic wheel encoders fused with an industrial 9-axis IMU via an Extended Kalman Filter (EKF).",
+    "iconName": "Navigation"
+  },
+  {
+    "id": "krs-agastya",
+    "name": "KRS Agastya",
+    "codename": "Mars Rover Prototype",
+    "tagline": "University Rover Challenge (URC) Planetary Explorer with 6-DOF Manipulator",
+    "imageUrl": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1000&q=80",
+    "imageAlt": "KRS Agastya Planetary Mars Rover Prototype",
+    "wingId": "rovers-space",
+    "wingName": "Planetary & Terrestrial Rovers",
+    "category": "Planetary Exploration Rover",
+    "weightClass": "Heavy Explorer (48 kg)",
+    "status": "URC Qualification",
+    "podiumsCount": 5,
+    "featuredAward": "Outstanding System Engineering & Arm Kinematics (URC Regional Selection)",
+    "description": "KRS Agastya features an advanced 6-wheel rocker-bogie suspension designed to traverse 45-degree rock scree slopes and extreme desert terrain without chassis tipping.",
+    "specs": {
+      "dimensions": "1150 × 980 × 740 mm",
+      "weight": "47.2 kg",
+      "speed": "1.2 m/s",
+      "power": "6S 22.2V 30,000mAh High-Density Solid-State LiPo Pack",
+      "controller": "Custom STM32H7 Dual-Core Master + Raspberry Pi 5 Node",
+      "actuatorsOrWeapon": "6-DOF Harmonic Drive Manipulator Arm with interchangeable end-effector",
+      "chassisMaterial": "Continuous carbon fiber square tubing + titanium hinge pins"
+    },
+    "keyFeatures": [
+      "True rocker-bogie differential mechanical linkage",
+      "Interchangeable soil auger drill with micro-spectrometry module",
+      "1.5km non-line-of-sight 915MHz telemetry link + 5.8GHz video stream",
+      "Real-time inverse kinematics solver running on embedded ROS2"
+    ],
+    "architectureSummary": "The arm kinematics utilize cycloidal speed reducers machined in-house for zero backlash. A custom CAN bus network links all 6 joint driver nodes back to the central STM32H7 processor.",
+    "iconName": "Radio"
+  },
+  {
+    "id": "garuda-uav-x",
+    "name": "Garuda-UAV X",
+    "codename": "Project Skyward",
+    "tagline": "Autonomous Search & Rescue Drone with Optical Flow & Thermal Payload",
+    "imageUrl": "https://images.unsplash.com/photo-1527977966376-1c8408f9f108?auto=format&fit=crop&w=1000&q=80",
+    "imageAlt": "Garuda-UAV X Autonomous Search and Rescue Drone Prototype",
+    "wingId": "aeromodelling-uav",
+    "wingName": "Aeromodelling, Drones & Aerial Robotics",
+    "category": "Aerial Autonomous UAV",
+    "weightClass": "Medium Quadplane (3.4 kg)",
+    "status": "Active Deployment",
+    "podiumsCount": 8,
+    "featuredAward": "1st Place Autonomous Aerial Delivery (Aero-Design Challenge)",
+    "description": "Carbon unibody quadplane drone engineered for beyond-visual-line-of-sight (BVLOS) emergency medicine delivery and thermal survivor tracking.",
+    "specs": {
+      "dimensions": "850 mm motor-to-motor diagonal span",
+      "weight": "3.35 kg (payload ready)",
+      "speed": "68 km/h max cruise",
+      "power": "6S 10,000mAh Semi-Solid State Li-Ion pack (42 min flight time)",
+      "controller": "Pixhawk 6X Pro Autopilot running PX4 + Raspberry Pi CM4",
+      "actuatorsOrWeapon": "T-Motor U8 High-Efficiency Brushless with 18-inch folding carbon props",
+      "chassisMaterial": "3K Twill Carbon fiber monocoque plate with CNC alloy motor mounts"
+    },
+    "keyFeatures": [
+      "42-minute endurance under real-world 12 m/s headwind conditions",
+      "Down-facing optical flow sensor for GPS-denied indoor hovering",
+      "Dual-sensor FLIR thermal + 4K EO gimbal payload with edge object tracking",
+      "Pneumatic cargo release mechanism for precision medical airdrops"
+    ],
+    "architectureSummary": "Garuda-UAV X integrates PX4 autopilot with companion onboard compute running companion MAVLink telemetry. Failsafe return-to-launch (RTL) triggers automatically on battery drop or radio signal degradation.",
+    "iconName": "Compass"
+  }
+]

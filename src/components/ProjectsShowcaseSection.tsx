@@ -13,11 +13,37 @@ import {
 import { FLAGSHIP_PROJECTS } from '../data/projectsData';
 import { BotProject } from '../types';
 import { useReportData } from '../context/ReportDataContext';
+import { getProjectImageCandidates } from '../utils/teamUtils';
+import { OptimizedImage, prewarmImages } from './common/OptimizedImage';
+
+const BotCardImage: React.FC<{ bot: BotProject }> = ({ bot }) => {
+  const fallback = bot.imageUrl || 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80';
+  const candidates = React.useMemo(() => getProjectImageCandidates(bot.id, fallback), [bot.id, fallback]);
+
+  return (
+    <OptimizedImage
+      src={candidates[0]}
+      candidates={candidates}
+      fallbackSrc={fallback}
+      alt={bot.imageAlt || bot.name}
+      loading="lazy"
+      className="w-full h-full object-cover object-center group-hover:scale-106 transition-transform duration-700 ease-out"
+    />
+  );
+};
 
 export const ProjectsShowcaseSection: React.FC = () => {
   const { botProjects, isAdminLoggedIn, openEditor } = useReportData();
   const projects = botProjects && botProjects.length > 0 ? botProjects : FLAGSHIP_PROJECTS;
   const [selectedProject, setSelectedProject] = useState<BotProject | null>(null);
+
+  // Pre-warm project images in background
+  useEffect(() => {
+    if (projects && projects.length > 0) {
+      const urls = projects.map((p) => getProjectImageCandidates(p.id, p.imageUrl)[0]).filter(Boolean);
+      prewarmImages(urls);
+    }
+  }, [projects]);
 
   // Responsive Visible Cards Count (1 on mobile, 2 on tablet, 3 on desktop)
   const [visibleCount, setVisibleCount] = useState<number>(() => {
@@ -180,21 +206,7 @@ export const ProjectsShowcaseSection: React.FC = () => {
                       >
                         {/* Featured Image with Vignette Gradient & Title */}
                         <div className="relative w-full h-48 sm:h-52 lg:h-56 overflow-hidden bg-neutral-900 shrink-0">
-                          {bot.imageUrl ? (
-                            <img
-                              src={bot.imageUrl}
-                              alt={bot.imageAlt || bot.name}
-                              referrerPolicy="no-referrer"
-                              loading="lazy"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).src =
-                                  'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=800&q=80';
-                              }}
-                              className="w-full h-full object-cover object-center group-hover:scale-106 transition-transform duration-700 ease-out"
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-[#1A2819] to-[#0B120A]" />
-                          )}
+                          <BotCardImage bot={bot} />
                           {/* Smooth Bottom Vignette for High Text Contrast */}
                           <div className="absolute inset-x-0 bottom-0 h-3/4 pointer-events-none bg-gradient-to-t from-black/95 via-black/60 to-transparent" />
 
@@ -301,16 +313,16 @@ export const ProjectsShowcaseSection: React.FC = () => {
               </button>
 
               {/* Modal Project Image */}
-              {selectedProject.imageUrl && (
-                <div className="relative w-full h-52 sm:h-72 overflow-hidden rounded-2xl bg-neutral-900 shadow-md">
-                  <img
-                    src={selectedProject.imageUrl}
-                    alt={selectedProject.imageAlt || selectedProject.name}
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover object-center"
-                  />
-                </div>
-              )}
+              <div className="relative w-full h-52 sm:h-72 overflow-hidden rounded-2xl bg-neutral-900 shadow-md">
+                <OptimizedImage
+                  src={getProjectImageCandidates(selectedProject.id, selectedProject.imageUrl)[0]}
+                  candidates={getProjectImageCandidates(selectedProject.id, selectedProject.imageUrl)}
+                  fallbackSrc={selectedProject.imageUrl}
+                  alt={selectedProject.imageAlt || selectedProject.name}
+                  loading="eager"
+                  className="w-full h-full object-cover object-center"
+                />
+              </div>
 
               {/* Modal Header */}
               <div className="space-y-2 border-b border-[#243324]/10 dark:border-white/10 pb-5 pr-10">

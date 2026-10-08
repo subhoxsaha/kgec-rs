@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Linkedin, Github, GraduationCap, Edit3, Plus, User } from 'lucide-react';
 import { useReportData } from '../context/ReportDataContext';
 import { TeamMember } from '../types';
+import { getTeamMemberImageCandidates, subscribeToMediaManifest } from '../utils/teamUtils';
+import { OptimizedImage, prewarmImages } from './common/OptimizedImage';
 
 interface ProfileCardProps {
   member: TeamMember;
@@ -50,18 +52,15 @@ const DEFAULT_AVATARS: Record<string, string> = {
 const ProfileCard: React.FC<ProfileCardProps> = ({ member, index }) => {
   const roleString = member.post || (member as any).role || (member as any).designation || 'Member';
   const shortRole = formatRoleText(roleString);
-  const fallbackUrl = DEFAULT_AVATARS[member.category] || DEFAULT_AVATARS.student;
-  const initialUrl = (member.avatarUrl && member.avatarUrl.trim()) ? member.avatarUrl.trim() : fallbackUrl;
 
-  const [currentImgSrc, setCurrentImgSrc] = useState<string>(initialUrl);
-  const [hasError, setHasError] = useState<boolean>(false);
+  // Re-evaluate candidates when manifest updates (e.g. dropped files detected)
+  const [manifestTick, setManifestTick] = useState(0);
+  useEffect(() => {
+    return subscribeToMediaManifest(() => setManifestTick((t) => t + 1));
+  }, []);
 
-  const handleImageError = () => {
-    if (!hasError) {
-      setHasError(true);
-      setCurrentImgSrc(fallbackUrl);
-    }
-  };
+  // Compute all candidate URLs (by member ID, explicit avatarUrl, dropped filenames, and fallbacks)
+  const candidates = useMemo(() => getTeamMemberImageCandidates(member), [member, manifestTick]);
 
   return (
     <motion.div
@@ -73,12 +72,13 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ member, index }) => {
     >
       {/* Top: Portrait Image with Vignette & Inside Overlays (Role on top, Name/Info on bottom) */}
       <div className="relative w-full aspect-[4/5] overflow-hidden bg-neutral-900 shrink-0">
-        <img
-          src={currentImgSrc}
+        <OptimizedImage
+          src={candidates[0]}
+          candidates={candidates}
+          fallbackSrc={candidates[candidates.length - 1]}
           alt={member.name || 'Team Member'}
-          referrerPolicy="no-referrer"
-          loading="lazy"
-          onError={handleImageError}
+          loading={index < 4 ? 'eager' : 'lazy'}
+          priority={index < 2}
           className="w-full h-full object-cover object-top sm:object-center group-hover:scale-105 transition-transform duration-500 ease-out block"
         />
 
@@ -171,6 +171,14 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ member, index }) => {
 
 export const TeamDirectorySection: React.FC = () => {
   const { teamMembers, isAdminLoggedIn, openEditor } = useReportData();
+
+  // Background pre-warm top image candidates
+  useEffect(() => {
+    if (teamMembers && teamMembers.length > 0) {
+      const urls = teamMembers.map((m) => getTeamMemberImageCandidates(m)[0]).filter(Boolean);
+      prewarmImages(urls);
+    }
+  }, [teamMembers]);
 
   const teachers = teamMembers.filter((m) => m.category === 'teacher');
   const students = teamMembers.filter((m) => m.category === 'student');

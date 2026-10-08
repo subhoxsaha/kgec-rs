@@ -18,24 +18,32 @@ export function getLogoCandidateUrls(type: LogoType, _isDark?: boolean): string[
 
   const candidates: string[] = [];
 
-  // 1. Unified file names with each extension (png, jpg, jpeg, svg, webp)
-  // e.g. /logos/kgec-logo.png, /logos/kgec-logo.jpg, /logos/kgec-logo.svg
+  // 1. Direct verified files first to eliminate network 404s
+  if (type === 'kgec') {
+    candidates.push('/logos/kgec-logo.svg');
+    candidates.push('/logos/kgec-logo.png');
+  } else {
+    candidates.push('/logos/krs-logo.png');
+    candidates.push('/logos/krs-logo.svg');
+  }
+
+  // 2. Unified file names with each extension (png, jpg, jpeg, svg, webp)
   SUPPORTED_EXTENSIONS.forEach((ext) => {
     candidates.push(`/logos/${prefix}.${ext}`);
   });
 
-  // 2. Short prefix unified file names (e.g. /logos/kgec.png, /logos/krs.jpg)
+  // 3. Short prefix unified file names (e.g. /logos/kgec.png, /logos/krs.jpg)
   SUPPORTED_EXTENSIONS.forEach((ext) => {
     candidates.push(`/logos/${shortPrefix}.${ext}`);
   });
 
-  // 3. Fallbacks to theme-specific files if unified file isn't uploaded yet
+  // 4. Fallbacks to theme-specific files if unified file isn't uploaded yet
   SUPPORTED_EXTENSIONS.forEach((ext) => {
     candidates.push(`/logos/${prefix}-dark.${ext}`);
     candidates.push(`/logos/${prefix}-light.${ext}`);
   });
 
-  return candidates;
+  return Array.from(new Set(candidates));
 }
 
 export const STATIC_LOGOS = {
@@ -45,9 +53,9 @@ export const STATIC_LOGOS = {
     light: '/logos/kgec-logo.svg',
   },
   krs: {
-    unified: '/logos/krs-logo.svg',
-    dark: '/logos/krs-logo.svg',
-    light: '/logos/krs-logo.svg',
+    unified: '/logos/krs-logo.png',
+    dark: '/logos/krs-logo.png',
+    light: '/logos/krs-logo.png',
   },
 } as const;
 

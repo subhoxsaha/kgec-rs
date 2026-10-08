@@ -37,6 +37,8 @@ export const ThemedLogo: React.FC<ThemedLogoProps> = ({
       className={className}
       onError={handleError}
       loading="eager"
+      decoding="async"
+      fetchPriority="high"
     />
   );
 };
