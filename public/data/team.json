@@ -47,6 +47,7 @@
     "name": "Dr. Aritra Acharya",
     "post": "Treasurer",
     "departmentOrBatch": "Dept. of Electronics & Communication Engg.",
+
     "avatarUrl": "",
     "email": "",
     "linkedinUrl": "",
@@ -61,12 +62,12 @@
     "name": "Deep Rudra",
     "post": "Joint Secretary",
     "departmentOrBatch": "KGEC Robotics Society",
-    "avatarUrl": "",
-    "email": "",
+    "avatarUrl": "/team/deep-rudra.jpg",
+    "email": "subhoxsaha@gmail.com",
     "linkedinUrl": "",
     "scholarUrl": "",
     "githubUrl": "",
-    "bio": "",
+    "bio": "god",
     "order": 1
   },
   {
