@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, useScroll, useSpring } from 'motion/react';
+import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from './context/ThemeContext';
 import { ReportDataProvider } from './context/ReportDataContext';
 import { Navbar } from './components/Navbar';
@@ -139,6 +140,7 @@ export default function App() {
     <ThemeProvider>
       <ReportDataProvider>
         <MainContent />
+        <Analytics />
       </ReportDataProvider>
     </ThemeProvider>
   );
