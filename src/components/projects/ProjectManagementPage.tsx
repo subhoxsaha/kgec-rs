@@ -125,6 +125,10 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
 
+  // Inline Banner Alerts
+  const [workspaceError, setWorkspaceError] = useState<string | null>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
+
   // Modals & Panels
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<RoboticsProject | null>(null);
@@ -206,6 +210,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
   const fetchProjects = async () => {
     if (!isAcceptedUser || !activeActor.id) return;
     setLoading(true);
+    setWorkspaceError(null);
     try {
       const res = await fetch('/api/pm/projects', {
         headers: {
@@ -219,9 +224,14 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
         setProjects(data.projects || []);
       } else if (res.status === 401) {
         setProjects([]);
+        setWorkspaceError('Unauthorized access: Project Management is available only for accepted KGEC Robotics society members.');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setWorkspaceError(data.error || `Unable to load projects (HTTP ${res.status}).`);
       }
     } catch (err) {
       console.error('Error fetching projects:', err);
+      setWorkspaceError('Server connection issue. Could not load projects workspace.');
     } finally {
       setLoading(false);
     }
@@ -293,7 +303,9 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
   // 1. Admin Create Project
   const handleCreateProject = async (e: React.FormEvent) => {
     e.preventDefault();
+    setModalError(null);
     if (!newProjectForm.title.trim()) {
+      setModalError('Please enter a project title');
       showToast('Please enter a project title');
       return;
     }
@@ -308,10 +320,11 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
         },
         body: JSON.stringify(newProjectForm),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ error: 'Invalid response from server' }));
       if (res.ok && data.success) {
         showToast('Project created successfully with 3 sequential phases initialized.');
         setIsCreateModalOpen(false);
+        setModalError(null);
         setNewProjectForm({
           title: '',
           description: '',
@@ -323,14 +336,17 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
           setSelectedProjectId(data.project.id);
         }
       } else {
-        showToast(data.error || 'Failed to create project');
+        const errMsg = data.error || 'Failed to create project';
+        setModalError(errMsg);
+        showToast(errMsg);
       }
     } catch {
+      setModalError('Server connection failed');
       showToast('Server connection failed');
     }
   };
 
-  // 2. Mentor Edit Project Details
+  // 2. Mentor / Admin Edit Project Details
   const handleSaveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProject) return;
@@ -345,20 +361,23 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
         },
         body: JSON.stringify(editDetailsForm),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ error: 'Invalid response from server' }));
       if (res.ok && data.success) {
         showToast('Project details updated successfully');
         setIsEditingDetails(false);
         await fetchProjects();
       } else {
-        showToast(data.error || 'Failed to update details');
+        const errMsg = data.error || 'Failed to update details';
+        setWorkspaceError(errMsg);
+        showToast(errMsg);
       }
     } catch {
+      setWorkspaceError('Server connection failed');
       showToast('Server connection failed');
     }
   };
 
-  // 3. Mentor Update Team Assignments
+  // 3. Mentor / Admin Update Team Assignments
   const handleUpdateTeam = async (mentorIds: string[], memberIds: string[]) => {
     if (!selectedProject) return;
     try {
@@ -372,14 +391,17 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
         },
         body: JSON.stringify({ mentorIds, memberIds }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({ error: 'Invalid response from server' }));
       if (res.ok && data.success) {
         showToast('Team roster updated successfully');
         await fetchProjects();
       } else {
-        showToast(data.error || 'Failed to update team assignments');
+        const errMsg = data.error || 'Failed to update team assignments';
+        setWorkspaceError(errMsg);
+        showToast(errMsg);
       }
     } catch {
+      setWorkspaceError('Server connection failed');
       showToast('Server connection failed');
     }
   };
@@ -656,8 +678,39 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
       </div>
 
       {/* Main Page Workspace Layout */}
-      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col lg:flex-row gap-6">
-        {/* Left Column: Projects Catalog List */}
+      <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-4">
+        {/* Inline Error Banner Alert */}
+        {workspaceError && (
+          <div className="bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 px-4 py-3 rounded-xl flex items-center justify-between gap-3 text-xs shadow-xs animate-in fade-in">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+              <span className="font-semibold text-[#1F2B1D] dark:text-red-200">{workspaceError}</span>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => {
+                  setWorkspaceError(null);
+                  fetchProjects();
+                }}
+                className="px-2.5 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold text-[11px] transition-colors cursor-pointer"
+              >
+                Retry
+              </button>
+              <button
+                type="button"
+                onClick={() => setWorkspaceError(null)}
+                className="p-1 rounded-md hover:bg-red-500/20 text-red-700 dark:text-red-300 cursor-pointer"
+                aria-label="Dismiss error banner"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="flex flex-col lg:flex-row gap-6 flex-1">
+          {/* Left Column: Projects Catalog List */}
         <div className="w-full lg:w-84 shrink-0 flex flex-col gap-4">
           <div className="p-4 rounded-xl bg-white dark:bg-[#162114] border border-[#243324]/12 dark:border-white/10 shadow-2xs space-y-3">
             <div className="flex items-center justify-between">
@@ -820,7 +873,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
 
                   {/* Actions for Authorized Roles */}
                   <div className="flex items-center gap-2 shrink-0">
-                    {isAssignedMentor && (
+                    {(isAdmin || isAssignedMentor) && (
                       <>
                         <button
                           type="button"
@@ -1007,8 +1060,8 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                           )}
                         </div>
 
-                        {/* Mentor Configure Button */}
-                        {isAssignedMentor && !isApproved && (
+                        {/* Mentor / Admin Configure Button */}
+                        {(isAdmin || isAssignedMentor) && !isApproved && (
                           <div className="pt-2 border-t border-[#243324]/10 dark:border-white/10">
                             <button
                               type="button"
@@ -1074,8 +1127,8 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                       </div>
                     )}
 
-                    {/* TEAM MEMBER SUBMISSION WORKSPACE */}
-                    {isAssignedMember && (currentPhase.status === 'in_progress' || currentPhase.status === 'changes_requested') && (
+                    {/* WORKSPACE SUBMISSION CONSOLE */}
+                    {(isAdmin || isAssignedMentor || isAssignedMember) && (currentPhase.status === 'in_progress' || currentPhase.status === 'changes_requested') && (
                       <form
                         onSubmit={(e) => handleSubmitDeliverables(currentPhase.id, e)}
                         className="p-4 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/12 dark:border-white/10 space-y-3.5"
@@ -1159,8 +1212,8 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                       </form>
                     )}
 
-                    {/* MENTOR REVIEW CONSOLE */}
-                    {isAssignedMentor && currentPhase.status === 'submitted' && latestSubmission && (
+                    {/* MENTOR / ADMIN REVIEW CONSOLE */}
+                    {(isAdmin || isAssignedMentor) && currentPhase.status === 'submitted' && latestSubmission && (
                       <div className="p-4 rounded-xl bg-blue-50/70 dark:bg-blue-950/20 border-2 border-blue-500/30 space-y-3.5 text-xs">
                         <div className="flex items-center justify-between">
                           <span className="font-bold text-blue-950 dark:text-blue-200 text-xs flex items-center gap-1.5">
@@ -1421,6 +1474,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
           )}
         </div>
       </div>
+    </div>
 
       {/* MODAL 1: ADMIN CREATE PROJECT */}
       {isCreateModalOpen && (
@@ -1445,6 +1499,22 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
             </div>
 
             <form onSubmit={handleCreateProject} className="space-y-4 text-xs">
+              {modalError && (
+                <div className="bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 p-3 rounded-lg flex items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    <span className="font-semibold">{modalError}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setModalError(null)}
+                    className="p-1 rounded hover:bg-red-500/20 text-red-700 dark:text-red-300 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="font-semibold block text-[#526340] dark:text-[#A3B59E]">
                   Project Title *
@@ -1474,12 +1544,15 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
 
               {/* Mentors Selection */}
               <div className="space-y-1.5">
-                <label className="font-semibold block text-[#526340] dark:text-[#A3B59E]">
-                  Assign Lead Mentors (Faculty / Wing Leads):
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold block text-[#526340] dark:text-[#A3B59E]">
+                    Assign Lead Mentors (Faculty / Wing Leads):
+                  </label>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Optional</span>
+                </div>
                 <div className="space-y-1 max-h-32 overflow-y-auto p-2 rounded-lg bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10">
                   {eligibleMentors.length === 0 ? (
-                    <span className="text-[11px] text-[#526340] italic">No approved mentors in system</span>
+                    <span className="text-[11px] text-[#526340] italic">No approved mentors in system (Can be added later)</span>
                   ) : (
                     eligibleMentors.map((m) => {
                       const isChecked = newProjectForm.mentorIds.includes(m.id);
@@ -1510,9 +1583,12 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
 
               {/* Members Selection */}
               <div className="space-y-1.5">
-                <label className="font-semibold block text-[#526340] dark:text-[#A3B59E]">
-                  Assign Team Members (Engineers / Interns):
-                </label>
+                <div className="flex items-center justify-between">
+                  <label className="font-semibold block text-[#526340] dark:text-[#A3B59E]">
+                    Assign Team Members (Engineers / Interns):
+                  </label>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Optional</span>
+                </div>
                 <div className="space-y-1 max-h-32 overflow-y-auto p-2 rounded-lg bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10">
                   {eligibleMembers.length === 0 ? (
                     <span className="text-[11px] text-[#526340] italic">No approved members in system</span>

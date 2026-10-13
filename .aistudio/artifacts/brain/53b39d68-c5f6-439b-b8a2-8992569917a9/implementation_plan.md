@@ -1,106 +1,109 @@
-# Project Management Workspace Refinement & Full Lifecycle Integration
+# Project Management Workspace Bug Removal & Stability Implementation Plan
 
-A production-ready, deployment-safe Project Management page for the KGEC Robotics Society web portal. This update refines full lifecycle project execution—including project creation, phase transitions, task tracking, team/mentor assignments, and role-based action controls—while maintaining clean access controls so guest visitors only see member features when authenticated.
+Enhance the Project Management module by eliminating existing runtime bugs, ensuring robust project creation stability without strict mentor/member prerequisites, introducing inline error banners for clear diagnostic feedback, and hardening API error handling across all full-lifecycle operations.
 
-> [!IMPORTANT] Confirmed Decisions
-> - **Confirmed Scope**: Full lifecycle management covering project creation, phase progression, task tracking, and team/mentor assignments.
-> - **Confirmed Access Control**: Admins maintain full project authority (creation, deletion, team assignment, phase override), while assigned members and mentors get task & phase update capabilities. Guest/unverified visitors are kept seamlessly in guest mode with public project showcases only.
-> - **Zero Mock Data Policy**: All state is driven by live API and backend DB routes (`/api/pm/projects`, `/api/pm/tasks`, `/api/pm/team`), with clean error handling and zero fake/stub data.
+---
+
+## User Review & Critical Decisions
+
+> [!IMPORTANT]
+> The following decisions were confirmed during Phase 1 clarification:
+> - **Primary Focus**: Project creation stability and API error handling.
+> - **Flexible Setup**: Admin can create projects without selecting mentors or members upfront. Team assignments can be adjusted anytime afterwards.
+> - **Error Presentation**: Inline banner alerts displayed directly above the workspace (with retry capabilities) rather than transient toasts or modals.
+> - **Scope Discipline**: Zero UI redesign. Retain existing workspace visual theme, tabs, modals, dark/light posture, and workflow structure.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: Provides a dedicated, full-screen Project Management page (`/projects/manage` or dedicated workspace route) where verified society members and admins manage sequential engineering workflows (R&D, Prototyping, Documentation, Testing).
-- **Target Audience / Persona**: KGEC Robotics Society admins, team leads, mentors, and accepted student engineers.
-- **Key Value**: Streamlines sequential engineering workflows with real-time status updates, task assignment, phase sign-offs, and team composition tracking—strictly protected behind member authentication.
+- **What It Does**: Hardens the KGEC Robotics Project Management module to guarantee seamless project creation, phase progression tracking, deliverable submissions, and team management without unexpected 404/401 API failures or blocking modal validation.
+- **Target Audience / Persona**: Society Admins (full project control & creation), Mentors (project guidance, phase updates, work reviews), and Members (assigned task execution, deliverable submissions).
+- **Key Value**: Provides a smooth, error-resilient workspace experience with real-time inline status banners so members and admins can track and manage robotics projects with complete clarity.
 
 ---
 
 ## 2. User Experience & Visual Design
 
-- **Key User Flows**:
-  1. **Workspace Navigation**: Verified users click "Project Management" in the navigation drawer or top bar to navigate directly to the dedicated workspace page. Unauthenticated visitors see public project showcases and registration triggers.
-  2. **Project Lifecycle Execution**:
-     - Admins click "Create Project" (title mandatory; mentors and team members optional at creation time).
-     - Admins, assigned mentors, and team members view project cards with sequential engineering phase indicators (R&D -> Prototyping -> Testing -> Documentation -> Complete).
-     - Users interact with phase progress controls, task creation, status toggles, and team assignment dialogs.
-  3. **Task & Team Management**:
-     - Expand project details to view active task boards (To Do, In Progress, Completed).
-     - Add tasks, assign team members, update progress, and attach repository/documentation links.
-- **Visual Identity & Theme**:
-  - *Aesthetic Direction*: Dark slate industrial precision theme matching the KGEC Robotics brand (`#0F172A` neutral canvas with `#1E293B` structural surfaces and cobalt blue / emerald accent tokens).
-  - *Typography*: Clean display sans headings (`Plus Jakarta Sans`) paired with readable body text (`DM Sans`), with tabular numeric formatting (`font-mono tabular-nums`) for timestamps, task counts, and phase progress percentages.
-  - *Component Styling*: Flat single-elevation cards with subtle 1px hairline borders (`border-slate-800`), unboxed typographic metadata separators (`·`), and responsive action toolbars.
-- **Interactive Feedback & State Handling**:
-  - Instant optimistic updates on task check-offs and phase changes with subtle status toasts.
-  - Skeletons for initial API loads and inline error alerts with retry triggers if a network request fails.
+- **Inline Banner Alert Area**:
+  - Positioned directly below the Project Management workspace header and above the main content tabs/cards.
+  - *Types*:
+    - **Error Banner**: Soft red background (`bg-red-500/10 border-red-500/20 text-red-400`), warning icon, descriptive message, and an inline "Retry" button.
+    - **Warning / Auth Banner**: Amber background (`bg-amber-500/10 border-amber-500/20 text-amber-400`), lock/shield icon, explaining missing role permissions or session expiration with a direct action button.
+    - **Success Banner**: Emerald background (`bg-emerald-500/10 border-emerald-500/20 text-emerald-400`), check icon, auto-dismissible after 5 seconds.
+
+- **Flexible Project Creation Modal**:
+  - Modal title remains "Create New Robotics Project".
+  - Mentor and Member multi-select dropdowns become optional fields with helpful micro-copy ("Optional: You can assign mentors and members now or later from project settings").
+  - Submit button enables as long as "Project Title" is non-empty.
+
+- **Workspace Continuity & Theme**:
+  - Preserves exact existing dark (`#0B0F19`) / light UI styling, status pill badges (Active, Completed, In Progress, Locked), phase progression bars, and tab panels.
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Full Page Workspace over Popup Modals**
-  - *Chosen Approach*: Render Project Management as its own dedicated route/page with clean full-screen layout.
-  - *Why*: Eliminates modal overflow, provides space for detailed task lists and team rosters, and improves deep-linking/bookmarking for members.
-  - *Alternatives Considered*: Nested modals inside cards (rejected due to cramped UI and poor mobile ergonomics).
+- **Decision 1: Flexible Team Assignments at Creation**
+  - *Chosen Approach*: Allow Admins to create a project with only a Title and optional Description. Mentors and Members can be assigned later.
+  - *Why*: Admins frequently initiate new R&D or competition project shells before final team allocation. Requiring upfront assignments blocked workflow execution.
+  - *Alternatives Considered*: Requiring at least one mentor. Passed over because it causes creation failures when member lists are loading or empty.
 
-- **Decision 2: Flexible Team & Mentor Selection on Project Creation**
-  - *Chosen Approach*: Project Title is the only strictly required field during project creation; mentor/member lists default to empty arrays `[]` and can be assigned later anytime.
-  - *Why*: Allows admins to quick-bootstrap new project ideas before team rosters are finalized.
+- **Decision 2: Inline Error Banners vs. Toast Notifications**
+  - *Chosen Approach*: Persistent inline banners above the workspace with explicit error messages and retry actions.
+  - *Why*: Inline banners keep context visible while the user troubleshoots or retries an action, unlike transient toasts that disappear quickly.
 
-- **Decision 3: Server & Vercel API Route Normalization**
-  - *Chosen Approach*: Maintain URL normalization middleware in `api/index.ts` and `server.ts` to ensure `/api/pm/projects` and related POST/GET endpoints resolve seamlessly across local dev and Vercel serverless environments.
-  - *Why*: Prevents 404/308 redirects caused by serverless route prefix stripping.
+- **Decision 3: Server & Client Header Synchronization**
+  - *Chosen Approach*: Explicitly pass `x-user-id`, `x-user-role`, and `x-user-name` headers on all client-side `fetch` calls to `/api/pm/*`, backed by defensive fallbacks in `server.ts`.
+  - *Why*: Fixes intermittent 401/404 errors caused by missing actor context during serverless or proxy rewrites.
 
 ---
 
 ## 4. Technical Architecture & Data Strategy
 
 ```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                          KGEC Robotics Web App                          │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-           ┌─────────────────────────┴─────────────────────────┐
-           ▼                                                   ▼
-┌─────────────────────────┐                         ┌─────────────────────┐
-│  Navbar & Drawer Nav    │                         │  Auth Context       │
-│  (Member-Only Button)   │                         │  (Role & Token)     │
-└──────────┬──────────────┘                         └──────────┬──────────┘
-           │                                                   │
-           ▼                                                   │
-┌──────────────────────────────────────────────────────────────▼──────────┐
-│                     ProjectManagementPage Component                     │
-│ ┌─────────────────────────────────────────────────────────────────────┐ │
-│ │ Header & Filter Bar (All / My Projects / Phase Filter / Search)    │ │
-│ ├─────────────────────────────────────────────────────────────────────┤ │
-│ │ Project Grid (Cards with Phase Steppers, Task Counters, Team Badges)│ │
-│ ├─────────────────────────────────────────────────────────────────────┤ │
-│ │ Drawer / Modal Dialogs (Create Project, Manage Team, Task Board)    │ │
-│ └─────────────────────────────────────────────────────────────────────┘ │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │ API Requests (Bearer Token)
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                   Express API Router / Vercel Serverless                │
-│  GET /api/pm/projects  │  POST /api/pm/projects  │  PUT /api/pm/projects  │
-│  POST /api/pm/tasks    │  PUT /api/pm/tasks      │  GET /api/pm/members   │
-└────────────────────────────────────┬────────────────────────────────────┘
-                                     │
-                                     ▼
-┌─────────────────────────────────────────────────────────────────────────┐
-│                      Persistent Database Store                          │
-│               (Projects, Phases, Tasks, Member Roles)                   │
-└─────────────────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        ProjectManagementPage                           │
+│                                                                        │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │                    Inline Banner Alert System                    │  │
+│  │  [Icon] Error / Status Message            [Retry]  [Dismiss X]   │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+│                                                                        │
+│  ┌────────────────────────┐         ┌───────────────────────────────┐  │
+│  │  Project List / Search │         │  Project Detail & Phase Tabs  │  │
+│  │  - Active Filter       │         │  - Phase Tracker (R&D, Proto) │  │
+│  │  - Admin Create Modal  │         │  - Deliverables & Submissions │  │
+│  └───────────┬────────────┘         └───────────────┬───────────────┘  │
+└──────────────┼──────────────────────────────────────┼──────────────────┘
+               │                                      │
+               │ HTTP GET / POST / PUT / DELETE        │
+               │ Headers: x-user-id, x-user-role       │
+               ▼                                      ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                          Express App (server.ts)                       │
+│  - /api/pm/projects             (GET all, POST create)               │
+│  - /api/pm/projects/:id         (GET single, PUT details, DELETE)    │
+│  - /api/pm/projects/:id/team    (PUT team assignments)               │
+│  - /api/pm/projects/:id/phases  (PUT phase requirements)            │
+│  - /api/pm/projects/:id/submit  (POST submission)                    │
+│  - /api/pm/projects/:id/review  (POST review)                        │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      Project Management Store                          │
+│                      (src/server/projectsDb.ts)                        │
+│  - inMemoryProjects / projects_pm.json                                 │
+│  - inMemoryPhases   / phases_pm.json                                   │
+│  - inMemoryActivities / activities_pm.json                            │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-- **Data Models & State Mapping**:
-  - `RoboticsProject`: `id`, `title`, `description`, `domain`, `phase` (R&D | Prototyping | Testing | Documentation | Complete), `mentorIds`, `memberIds`, `repoUrl`, `docUrl`, `createdAt`, `updatedAt`.
-  - `ProjectTask`: `id`, `projectId`, `title`, `status` (todo | in_progress | completed), `assigneeId`, `priority`, `dueDate`.
-  - `MemberProfile`: `id`, `name`, `email`, `role` (admin | mentor | member), `avatarUrl`.
-- **Interactive Component & State Mapping**:
-  - `ProjectManagementPage`: Controls project fetch, search, filter state, and active project selection.
-  - `CreateProjectModal`: Simple form validating title input and sending `POST /api/pm/projects`.
-  - `TaskBoardModal`: Live list of tasks with checkbox state mutation sending `PUT /api/pm/tasks/:id`.
-  - `TeamAssignmentModal`: Multi-select checkbox dropdown for assigned members/mentors sending `PUT /api/pm/projects/:id`.
+### Data Model & State Updates
+- **Client State**:
+  - `bannerAlert`: `{ type: 'error' | 'warning' | 'success'; message: string; action?: { label: string; onClick: () => void } } | null`
+  - `isCreatingProject`: boolean loader state during POST.
+  - `projects`: `RoboticsProject[]` state with optimistic UI updates and server fallback reconciliation.
+- **Server Store (`projectsDb.ts`)**:
+  - `createProject`: Accepts `title` (required), `description` (optional), `mentorIds` (defaults to `[]`), `memberIds` (defaults to `[]`). Automatically initializes standard 3 phases (R&D, Prototyping, Documentation).

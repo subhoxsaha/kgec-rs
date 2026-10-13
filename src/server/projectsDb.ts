@@ -296,7 +296,7 @@ export function createProject(
 }
 
 /**
- * 4. Mentor edits project details (Title & Description)
+ * 4. Mentor or Admin edits project details (Title & Description)
  */
 export function updateProjectDetails(
   projectId: string,
@@ -306,9 +306,9 @@ export function updateProjectDetails(
   const project = inMemoryProjects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: 'Project not found.' };
 
-  const isAssignedMentor = project.mentorIds.includes(actor.id);
-  if (!isAssignedMentor) {
-    return { success: false, error: 'Unauthorized: Only an assigned mentor can edit project details.' };
+  const isAuthorized = actor.role === 'admin' || project.mentorIds.includes(actor.id);
+  if (!isAuthorized) {
+    return { success: false, error: 'Unauthorized: Only an assigned mentor or administrator can edit project details.' };
   }
 
   if (payload.title && payload.title.trim()) {
@@ -319,14 +319,14 @@ export function updateProjectDetails(
   }
   project.updatedAt = new Date().toISOString();
 
-  logProjectActivity(projectId, actor.id, actor.name, 'details_updated', `Project details updated by mentor ${actor.name}`);
+  logProjectActivity(projectId, actor.id, actor.name, 'details_updated', `Project details updated by ${actor.role === 'admin' ? 'Admin' : 'Mentor'} ${actor.name}`);
   persistAllToDisk();
 
   return { success: true, project: populateProject(project) };
 }
 
 /**
- * 5. Mentor manages team assignments (Add/remove mentors or members)
+ * 5. Mentor or Admin manages team assignments (Add/remove mentors or members)
  */
 export function updateProjectTeam(
   projectId: string,
@@ -336,9 +336,9 @@ export function updateProjectTeam(
   const project = inMemoryProjects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: 'Project not found.' };
 
-  const isAssignedMentor = project.mentorIds.includes(actor.id) || actor.role === 'admin';
-  if (!isAssignedMentor) {
-    return { success: false, error: 'Unauthorized: Only an assigned mentor or admin can update project team members.' };
+  const isAuthorized = actor.role === 'admin' || project.mentorIds.includes(actor.id);
+  if (!isAuthorized) {
+    return { success: false, error: 'Unauthorized: Only an assigned mentor or administrator can update project team members.' };
   }
 
   if (Array.isArray(payload.mentorIds)) {
@@ -356,7 +356,7 @@ export function updateProjectTeam(
 }
 
 /**
- * 6. Mentor updates phase configuration (Deadline & Requirements)
+ * 6. Mentor or Admin updates phase configuration (Deadline & Requirements)
  */
 export function updatePhaseConfig(
   projectId: string,
@@ -367,9 +367,9 @@ export function updatePhaseConfig(
   const project = inMemoryProjects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: 'Project not found.' };
 
-  const isAssignedMentor = project.mentorIds.includes(actor.id);
-  if (!isAssignedMentor) {
-    return { success: false, error: 'Unauthorized: Only an assigned mentor can update phase deadlines and requirements.' };
+  const isAuthorized = actor.role === 'admin' || project.mentorIds.includes(actor.id);
+  if (!isAuthorized) {
+    return { success: false, error: 'Unauthorized: Only an assigned mentor or administrator can update phase deadlines and requirements.' };
   }
 
   const phase = inMemoryPhases.find((p) => p.id === phaseId && p.projectId === projectId);
@@ -390,7 +390,7 @@ export function updatePhaseConfig(
 }
 
 /**
- * 7. Team member submits work (Drive URL, Git URL, Notes)
+ * 7. Team member, mentor, or admin submits work (Drive URL, Git URL, Notes)
  */
 export function submitPhaseWork(
   projectId: string,
@@ -401,9 +401,13 @@ export function submitPhaseWork(
   const project = inMemoryProjects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: 'Project not found.' };
 
-  const isAssignedMember = project.memberIds.includes(actor.id);
-  if (!isAssignedMember) {
-    return { success: false, error: 'Unauthorized: Only assigned team members can submit work for this project.' };
+  const isAuthorizedMember =
+    actor.role === 'admin' ||
+    project.memberIds.includes(actor.id) ||
+    project.mentorIds.includes(actor.id);
+
+  if (!isAuthorizedMember) {
+    return { success: false, error: 'Unauthorized: Only assigned team members or project administrators can submit work.' };
   }
 
   const phase = inMemoryPhases.find((p) => p.id === phaseId && p.projectId === projectId);
@@ -464,7 +468,7 @@ export function submitPhaseWork(
 }
 
 /**
- * 8. Mentor reviews submission (Approve or Request Changes)
+ * 8. Mentor or Admin reviews submission (Approve or Request Changes)
  */
 export function reviewPhaseSubmission(
   projectId: string,
@@ -476,9 +480,9 @@ export function reviewPhaseSubmission(
   const project = inMemoryProjects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: 'Project not found.' };
 
-  const isAssignedMentor = project.mentorIds.includes(actor.id);
-  if (!isAssignedMentor) {
-    return { success: false, error: 'Unauthorized: Only an assigned mentor can review submissions and approve phases.' };
+  const isAuthorized = actor.role === 'admin' || project.mentorIds.includes(actor.id);
+  if (!isAuthorized) {
+    return { success: false, error: 'Unauthorized: Only an assigned mentor or administrator can review submissions and approve phases.' };
   }
 
   const phase = inMemoryPhases.find((p) => p.id === phaseId && p.projectId === projectId);
