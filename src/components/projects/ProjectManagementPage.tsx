@@ -29,6 +29,7 @@ import {
   Sun,
   Moon,
   LogOut,
+  Filter,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useReportData } from '../../context/ReportDataContext';
@@ -62,7 +63,6 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
     users,
     showToast,
     logoutAdmin,
-    refreshUserProfile,
   } = useReportData();
 
   // 1. Strict Access Control: Accepted Users Only
@@ -114,8 +114,11 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed'>('all');
 
-  // Inline Banner Alerts
-  const [workspaceError, setWorkspaceError] = useState<string | null>(null);
+  // Audit log filter
+  const [auditFilter, setAuditFilter] = useState<'all' | 'submissions' | 'team' | 'reviews'>('all');
+
+  // Inline Banner Alerts & Workspace Error List
+  const [workspaceErrors, setWorkspaceErrors] = useState<string[]>([]);
   const [modalError, setModalError] = useState<string | null>(null);
 
   // Selected stage view state
@@ -132,6 +135,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
   const [deleteConfirmationInput, setDeleteConfirmationInput] = useState('');
   const [isEditingDetails, setIsEditingDetails] = useState(false);
   const [isManagingTeam, setIsManagingTeam] = useState(false);
+  const [isSavingTeam, setIsSavingTeam] = useState(false);
 
   // Forms
   const [newProjectForm, setNewProjectForm] = useState({
@@ -145,6 +149,10 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
     title: '',
     description: '',
   });
+
+  // Local state for Manage Team modal to avoid async race conditions
+  const [tempMentorIds, setTempMentorIds] = useState<string[]>([]);
+  const [tempMemberIds, setTempMemberIds] = useState<string[]>([]);
 
   // Fetch real registered users from backend for dynamic team assignment
   const [systemUsers, setSystemUsers] = useState<UserApplicationProfile[]>([]);
@@ -162,22 +170,22 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
       });
   }, [isAcceptedUser, users]);
 
-  // Filter approved users for mentor and member roles
+  // Filter all approved users for mentor and member assignment options
   const eligibleMentors = useMemo(() => {
-    return systemUsers.filter(
-      (u) =>
-        u.status === 'approved' &&
-        (u.role === 'admin' || u.role === 'lead' || u.role === 'teacherBody')
-    );
-  }, [systemUsers]);
+    const list = systemUsers.filter((u) => u.status === 'approved');
+    if (list.length === 0 && activeActor.id) {
+      return [{ id: activeActor.id, name: activeActor.name, role: activeActor.role, status: 'approved' as const, email: activeActor.email, phone: '', department: 'Robotics', yearOfStudy: 'Final Year', motivation: '', idCardUrl: '', createdAt: '' }];
+    }
+    return list;
+  }, [systemUsers, activeActor]);
 
   const eligibleMembers = useMemo(() => {
-    return systemUsers.filter(
-      (u) =>
-        u.status === 'approved' &&
-        (u.role === 'member' || u.role === 'intern' || u.role === 'studentBody')
-    );
-  }, [systemUsers]);
+    const list = systemUsers.filter((u) => u.status === 'approved');
+    if (list.length === 0 && activeActor.id) {
+      return [{ id: activeActor.id, name: activeActor.name, role: activeActor.role, status: 'approved' as const, email: activeActor.email, phone: '', department: 'Robotics', yearOfStudy: 'Final Year', motivation: '', idCardUrl: '', createdAt: '' }];
+    }
+    return list;
+  }, [systemUsers, activeActor]);
 
   const resolveUserName = (userId: string) => {
     const match = systemUsers.find((u) => u.id === userId);
@@ -186,11 +194,19 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
     return userId.replace(/^user-/, '');
   };
 
+  const addWorkspaceError = (err: string) => {
+    setWorkspaceErrors((prev) => (prev.includes(err) ? prev : [...prev, err]));
+  };
+
+  const clearWorkspaceErrors = () => {
+    setWorkspaceErrors([]);
+  };
+
   // Fetch projects from server
   const fetchProjects = async () => {
     if (!isAcceptedUser || !activeActor.id) return;
     setLoading(true);
-    setWorkspaceError(null);
+    clearWorkspaceErrors();
     try {
       const res = await fetch('/api/pm/projects', {
         headers: {
@@ -204,14 +220,14 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
         setProjects(data.projects || []);
       } else if (res.status === 401) {
         setProjects([]);
-        setWorkspaceError('Unauthorized access: Project Management is available only for accepted KGEC Robotics society members.');
+        addWorkspaceError('Unauthorized access: Project Management is available only for accepted KGEC Robotics society members.');
       } else {
         const data = await res.json().catch(() => ({}));
-        setWorkspaceError(data.error || `Unable to load projects (HTTP ${res.status}).`);
+        addWorkspaceError(data.error || `Unable to load projects (HTTP ${res.status}).`);
       }
     } catch (err) {
       console.error('Error fetching projects:', err);
-      setWorkspaceError('Server connection issue. Could not load projects workspace.');
+      addWorkspaceError('Server connection issue. Could not load projects workspace.');
     } finally {
       setLoading(false);
     }
@@ -244,6 +260,11 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
 
   // Permissions relative to selected project
   const isAdmin = activeActor.role === 'admin';
+  const isCreator = useMemo(() => {
+    if (!selectedProject) return false;
+    return selectedProject.createdBy === activeActor.id;
+  }, [selectedProject, activeActor.id]);
+
   const isAssignedMentor = useMemo(() => {
     if (!selectedProject) return false;
     return selectedProject.mentorIds.includes(activeActor.id);
@@ -284,6 +305,14 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
     setTargetPhaseForDrawer(phase);
     setDrawerMode('configure');
     setDrawerOpen(true);
+  };
+
+  // Open Manage Team Modal
+  const handleOpenManageTeamModal = () => {
+    if (!selectedProject) return;
+    setTempMentorIds([...selectedProject.mentorIds]);
+    setTempMemberIds([...selectedProject.memberIds]);
+    setIsManagingTeam(true);
   };
 
   // --- ACTIONS ---
@@ -334,10 +363,15 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
     }
   };
 
-  // 2. Mentor / Admin Edit Project Details
+  // 2. Creator / Mentor / Admin Edit Project Details
   const handleSaveDetails = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedProject) return;
+    setModalError(null);
+    if (!editDetailsForm.title.trim()) {
+      setModalError('Project title cannot be empty.');
+      return;
+    }
     try {
       const res = await fetch(`/api/pm/projects/${selectedProject.id}`, {
         method: 'PUT',
@@ -351,23 +385,27 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
       });
       const data = await res.json().catch(() => ({ error: 'Invalid response from server' }));
       if (res.ok && data.success) {
-        showToast('Project details updated successfully');
+        showToast('Project title and description updated successfully.');
         setIsEditingDetails(false);
+        setModalError(null);
         await fetchProjects();
       } else {
-        const errMsg = data.error || 'Failed to update details';
-        setWorkspaceError(errMsg);
+        const errMsg = data.error || 'Failed to update project details';
+        setModalError(errMsg);
+        addWorkspaceError(errMsg);
         showToast(errMsg);
       }
     } catch {
-      setWorkspaceError('Server connection failed');
+      setModalError('Server connection failed');
+      addWorkspaceError('Server connection failed during project update.');
       showToast('Server connection failed');
     }
   };
 
-  // 3. Mentor / Admin Update Team Assignments
-  const handleUpdateTeam = async (mentorIds: string[], memberIds: string[]) => {
+  // 3. Creator / Mentor / Admin Save Team Assignments
+  const handleSaveTeamAssignments = async () => {
     if (!selectedProject) return;
+    setIsSavingTeam(true);
     try {
       const res = await fetch(`/api/pm/projects/${selectedProject.id}/team`, {
         method: 'PUT',
@@ -377,20 +415,23 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
           'x-user-role': activeActor.role,
           'x-user-name': activeActor.name,
         },
-        body: JSON.stringify({ mentorIds, memberIds }),
+        body: JSON.stringify({ mentorIds: tempMentorIds, memberIds: tempMemberIds }),
       });
       const data = await res.json().catch(() => ({ error: 'Invalid response from server' }));
       if (res.ok && data.success) {
-        showToast('Team roster updated successfully');
+        showToast('Team roster updated successfully!');
+        setIsManagingTeam(false);
         await fetchProjects();
       } else {
         const errMsg = data.error || 'Failed to update team assignments';
-        setWorkspaceError(errMsg);
+        addWorkspaceError(errMsg);
         showToast(errMsg);
       }
     } catch {
-      setWorkspaceError('Server connection failed');
-      showToast('Server connection failed');
+      addWorkspaceError('Server connection error while saving team members.');
+      showToast('Server connection error');
+    } finally {
+      setIsSavingTeam(false);
     }
   };
 
@@ -502,6 +543,18 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
     }
   };
 
+  // Audit Logs Filtered
+  const filteredAuditLogs = useMemo(() => {
+    if (!selectedProject || !selectedProject.activities) return [];
+    return selectedProject.activities.filter((act) => {
+      if (auditFilter === 'all') return true;
+      if (auditFilter === 'submissions') return act.action.includes('submitted');
+      if (auditFilter === 'team') return act.action.includes('team') || act.action.includes('details');
+      if (auditFilter === 'reviews') return act.action.includes('approved') || act.action.includes('changes');
+      return true;
+    });
+  }, [selectedProject, auditFilter]);
+
   // Redirect non-accepted users/guests immediately back to home view
   useEffect(() => {
     if (!isAcceptedUser) {
@@ -578,33 +631,40 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
 
       {/* Main Page Workspace Layout */}
       <div className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col gap-4">
-        {/* Inline Error Banner Alert */}
-        {workspaceError && (
-          <div className="bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 px-4 py-3 rounded-xl flex items-center justify-between gap-3 text-xs shadow-xs">
-            <div className="flex items-center gap-2.5 min-w-0">
-              <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
-              <span className="font-semibold text-[#1F2B1D] dark:text-red-200">{workspaceError}</span>
+        {/* EXPLICIT WORKSPACE ERROR LIST BANNER */}
+        {workspaceErrors.length > 0 && (
+          <div className="bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 px-4 py-3 rounded-xl space-y-2 shadow-xs">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
+                <span className="font-bold text-xs text-[#1F2B1D] dark:text-red-200">
+                  Project Management System Issues Encountered ({workspaceErrors.length})
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={fetchProjects}
+                  className="px-2.5 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold text-[11px] transition-colors cursor-pointer"
+                >
+                  Retry Connection
+                </button>
+                <button
+                  type="button"
+                  onClick={clearWorkspaceErrors}
+                  className="p-1 rounded-md hover:bg-red-500/20 text-red-700 dark:text-red-300 cursor-pointer"
+                  aria-label="Dismiss errors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => {
-                  setWorkspaceError(null);
-                  fetchProjects();
-                }}
-                className="px-2.5 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white font-semibold text-[11px] transition-colors cursor-pointer"
-              >
-                Retry
-              </button>
-              <button
-                type="button"
-                onClick={() => setWorkspaceError(null)}
-                className="p-1 rounded-md hover:bg-red-500/20 text-red-700 dark:text-red-300 cursor-pointer"
-                aria-label="Dismiss error banner"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
+
+            <ul className="list-disc list-inside space-y-1 text-xs pl-1 text-red-800 dark:text-red-300">
+              {workspaceErrors.map((err, idx) => (
+                <li key={idx}>{err}</li>
+              ))}
+            </ul>
           </div>
         )}
 
@@ -746,21 +806,22 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                       </h2>
 
                       <p className="text-xs sm:text-sm text-[#4A5D44] dark:text-[#CBD7C7] leading-relaxed">
-                        {selectedProject.description}
+                        {selectedProject.description || 'No description provided.'}
                       </p>
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 shrink-0">
-                      {(isAdmin || isAssignedMentor) && (
+                      {(isAdmin || isCreator || isAssignedMentor) && (
                         <>
                           <button
                             type="button"
                             onClick={() => {
                               setEditDetailsForm({
                                 title: selectedProject.title,
-                                description: selectedProject.description,
+                                description: selectedProject.description || '',
                               });
+                              setModalError(null);
                               setIsEditingDetails(true);
                             }}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-xs font-semibold cursor-pointer"
@@ -771,7 +832,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
 
                           <button
                             type="button"
-                            onClick={() => setIsManagingTeam(true)}
+                            onClick={handleOpenManageTeamModal}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-xs font-semibold cursor-pointer"
                           >
                             <Users className="w-3.5 h-3.5 text-purple-500" />
@@ -808,7 +869,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                           <span className="text-[11px] text-[#526340] italic">No mentors assigned</span>
                         ) : (
                           selectedProject.mentorIds.map((mId) => (
-                            <span key={mId} className="text-xs font-medium text-blue-900 dark:text-blue-300">
+                            <span key={mId} className="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-900 dark:text-blue-300 font-semibold text-xs border border-blue-500/20">
                               {resolveUserName(mId)}
                             </span>
                           ))
@@ -826,7 +887,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                           <span className="text-[11px] text-[#526340] italic">No members assigned</span>
                         ) : (
                           selectedProject.memberIds.map((mId) => (
-                            <span key={mId} className="text-xs font-medium text-emerald-900 dark:text-emerald-300">
+                            <span key={mId} className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-900 dark:text-emerald-300 font-semibold text-xs border border-emerald-500/20">
                               {resolveUserName(mId)}
                             </span>
                           ))
@@ -874,39 +935,78 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                         onOpenSubmitDrawer={openSubmitDrawer}
                         onOpenReviewDrawer={openReviewDrawer}
                         onOpenConfigureDrawer={openConfigureDrawer}
+                        onSubmitWork={handleSubmitDeliverables}
                       />
                     ))}
                   </div>
                 </div>
 
-                {/* AUDIT & ACTIVITY LOG */}
-                <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#162114] border border-[#243324]/12 dark:border-white/10 shadow-2xs space-y-3 text-xs">
-                  <div className="flex items-center justify-between pb-1.5 border-b border-[#243324]/10 dark:border-white/10">
-                    <h3 className="font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
-                      <Clock className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Project Audit Trail</span>
+                {/* AUDIT & ACTIVITY LOG TRAIL */}
+                <div className="p-5 sm:p-6 rounded-2xl bg-white dark:bg-[#162114] border border-[#243324]/12 dark:border-white/10 shadow-2xs space-y-4 text-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-[#243324]/10 dark:border-white/10">
+                    <h3 className="font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5 text-xs">
+                      <Clock className="w-4 h-4 text-emerald-600" />
+                      <span>Project Activity Audit Trail ({filteredAuditLogs.length})</span>
                     </h3>
+
+                    {/* Audit Filter Pills */}
+                    <div className="flex items-center gap-1 p-0.5 rounded-lg bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10 dark:border-white/10 text-[11px]">
+                      {(['all', 'submissions', 'team', 'reviews'] as const).map((filter) => (
+                        <button
+                          key={filter}
+                          type="button"
+                          onClick={() => setAuditFilter(filter)}
+                          className={`px-2.5 py-0.5 rounded-md font-semibold capitalize cursor-pointer transition-colors ${
+                            auditFilter === filter
+                              ? 'bg-emerald-700 text-white shadow-2xs'
+                              : 'text-[#526340] hover:text-[#1F2B1D] dark:text-[#A3B59E]'
+                          }`}
+                        >
+                          {filter}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
-                    {(selectedProject.activities || []).length === 0 ? (
-                      <p className="text-xs text-[#526340] py-2">No activity logged yet.</p>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {filteredAuditLogs.length === 0 ? (
+                      <p className="text-xs text-[#526340] py-3 text-center italic">No audit records match the selected filter.</p>
                     ) : (
-                      (selectedProject.activities || []).map((act) => (
+                      filteredAuditLogs.map((act) => (
                         <div
                           key={act.id}
-                          className="p-2.5 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/8 dark:border-white/8 flex items-start justify-between gap-3 text-[11px]"
+                          className="p-3 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/8 dark:border-white/8 flex items-start justify-between gap-3 text-[11px]"
                         >
-                          <div className="space-y-0.5">
-                            <span className="font-semibold text-[#1F2B1D] dark:text-white">
-                              {act.details}
-                            </span>
-                            <span className="text-[#526340] dark:text-[#8E9F89] block text-[10px]">
-                              Actor: {act.actorName || resolveUserName(act.actorId)}
+                          <div className="space-y-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`px-2 py-0.5 rounded font-mono font-bold text-[9.5px] uppercase border ${
+                                  act.action.includes('submitted')
+                                    ? 'bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-500/30'
+                                    : act.action.includes('approved')
+                                    ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30'
+                                    : act.action.includes('team') || act.action.includes('details')
+                                    ? 'bg-purple-500/15 text-purple-800 dark:text-purple-300 border-purple-500/30'
+                                    : 'bg-neutral-500/15 text-neutral-800 dark:text-neutral-300 border-neutral-500/20'
+                                }`}
+                              >
+                                {act.action.replace('_', ' ')}
+                              </span>
+                              <span className="font-semibold text-[#1F2B1D] dark:text-white truncate">
+                                {act.details}
+                              </span>
+                            </div>
+                            <span className="text-[#526340] dark:text-[#8E9F89] block text-[10.5px]">
+                              Actor: <strong>{act.actorName || resolveUserName(act.actorId)}</strong>
                             </span>
                           </div>
                           <span className="text-[10px] font-mono text-[#526340] dark:text-[#A3B59E] shrink-0">
-                            {new Date(act.createdAt).toLocaleDateString()}
+                            {new Date(act.createdAt).toLocaleString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
                           </span>
                         </div>
                       ))
@@ -1037,7 +1137,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                 </div>
                 <div className="space-y-1 max-h-32 overflow-y-auto p-2 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10">
                   {eligibleMentors.length === 0 ? (
-                    <span className="text-[11px] text-[#526340] italic">No approved mentors in system</span>
+                    <span className="text-[11px] text-[#526340] italic">No registered system users</span>
                   ) : (
                     eligibleMentors.map((m) => {
                       const isChecked = newProjectForm.mentorIds.includes(m.id);
@@ -1076,7 +1176,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                 </div>
                 <div className="space-y-1 max-h-32 overflow-y-auto p-2 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10">
                   {eligibleMembers.length === 0 ? (
-                    <span className="text-[11px] text-[#526340] italic">No approved members in system</span>
+                    <span className="text-[11px] text-[#526340] italic">No registered system users</span>
                   ) : (
                     eligibleMembers.map((m) => {
                       const isChecked = newProjectForm.memberIds.includes(m.id);
@@ -1202,9 +1302,25 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
             </div>
 
             <form onSubmit={handleSaveDetails} className="space-y-3.5 text-xs">
+              {modalError && (
+                <div className="bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 p-2.5 rounded-lg flex items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                    <span className="font-semibold">{modalError}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setModalError(null)}
+                    className="p-1 rounded hover:bg-red-500/20 text-red-700 dark:text-red-300 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
               <div className="space-y-1">
                 <label className="font-semibold block text-[#526340] dark:text-[#A3B59E]">
-                  Project Title
+                  Project Title *
                 </label>
                 <input
                   type="text"
@@ -1258,7 +1374,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
             <div className="flex items-center justify-between pb-2 border-b border-[#243324]/10">
               <h3 className="font-bold text-sm flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-purple-500" />
-                <span>Manage Team Assignments</span>
+                <span>Manage Team Roster</span>
               </h3>
               <button
                 type="button"
@@ -1270,67 +1386,95 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
             </div>
 
             <div className="space-y-4 text-xs">
+              {/* Mentors Selection */}
               <div className="space-y-1.5">
                 <span className="font-semibold block text-[#526340] dark:text-[#A3B59E]">
-                  Mentors:
+                  Assign Mentors ({tempMentorIds.length}):
                 </span>
                 <div className="space-y-1 max-h-36 overflow-y-auto p-2 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10">
-                  {eligibleMentors.map((m) => {
-                    const isAssigned = selectedProject.mentorIds.includes(m.id);
-                    return (
-                      <label key={m.id} className="flex items-center gap-2 cursor-pointer text-xs py-0.5">
-                        <input
-                          type="checkbox"
-                          checked={isAssigned}
-                          onChange={(e) => {
-                            const next = e.target.checked
-                              ? [...selectedProject.mentorIds, m.id]
-                              : selectedProject.mentorIds.filter((id) => id !== m.id);
-                            handleUpdateTeam(next, selectedProject.memberIds);
-                          }}
-                          className="rounded text-blue-600"
-                        />
-                        <span>{m.name} ({m.department || m.role})</span>
-                      </label>
-                    );
-                  })}
+                  {eligibleMentors.length === 0 ? (
+                    <p className="text-[11px] text-[#526340] italic py-1">No registered users available</p>
+                  ) : (
+                    eligibleMentors.map((m) => {
+                      const isAssigned = tempMentorIds.includes(m.id);
+                      return (
+                        <label key={m.id} className="flex items-center gap-2 cursor-pointer text-xs py-0.5">
+                          <input
+                            type="checkbox"
+                            checked={isAssigned}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setTempMentorIds((prev) => [...prev, m.id]);
+                              } else {
+                                setTempMentorIds((prev) => prev.filter((id) => id !== m.id));
+                              }
+                            }}
+                            className="rounded text-blue-600"
+                          />
+                          <span>{m.name} ({m.department || m.role})</span>
+                        </label>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
+              {/* Members Selection */}
               <div className="space-y-1.5">
                 <span className="font-semibold block text-[#526340] dark:text-[#A3B59E]">
-                  Team Members:
+                  Assign Team Members ({tempMemberIds.length}):
                 </span>
                 <div className="space-y-1 max-h-36 overflow-y-auto p-2 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10">
-                  {eligibleMembers.map((m) => {
-                    const isAssigned = selectedProject.memberIds.includes(m.id);
-                    return (
-                      <label key={m.id} className="flex items-center gap-2 cursor-pointer text-xs py-0.5">
-                        <input
-                          type="checkbox"
-                          checked={isAssigned}
-                          onChange={(e) => {
-                            const next = e.target.checked
-                              ? [...selectedProject.memberIds, m.id]
-                              : selectedProject.memberIds.filter((id) => id !== m.id);
-                            handleUpdateTeam(selectedProject.mentorIds, next);
-                          }}
-                          className="rounded text-emerald-600"
-                        />
-                        <span>{m.name} ({m.department || m.role})</span>
-                      </label>
-                    );
-                  })}
+                  {eligibleMembers.length === 0 ? (
+                    <p className="text-[11px] text-[#526340] italic py-1">No registered users available</p>
+                  ) : (
+                    eligibleMembers.map((m) => {
+                      const isAssigned = tempMemberIds.includes(m.id);
+                      return (
+                        <label key={m.id} className="flex items-center gap-2 cursor-pointer text-xs py-0.5">
+                          <input
+                            type="checkbox"
+                            checked={isAssigned}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setTempMemberIds((prev) => [...prev, m.id]);
+                              } else {
+                                setTempMemberIds((prev) => prev.filter((id) => id !== m.id));
+                              }
+                            }}
+                            className="rounded text-emerald-600"
+                          />
+                          <span>{m.name} ({m.department || m.role})</span>
+                        </label>
+                      );
+                    })
+                  )}
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end border-t border-[#243324]/10">
+              <div className="pt-2 flex justify-end gap-2 border-t border-[#243324]/10">
                 <button
                   type="button"
                   onClick={() => setIsManagingTeam(false)}
-                  className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl border border-[#243324]/15 hover:bg-[#243324]/10 text-xs font-semibold cursor-pointer"
                 >
-                  Done
+                  Cancel
+                </button>
+
+                <button
+                  type="button"
+                  disabled={isSavingTeam}
+                  onClick={handleSaveTeamAssignments}
+                  className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs cursor-pointer shadow-xs flex items-center gap-1.5"
+                >
+                  {isSavingTeam ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving Roster...</span>
+                    </>
+                  ) : (
+                    <span>Save Team Assignments</span>
+                  )}
                 </button>
               </div>
             </div>

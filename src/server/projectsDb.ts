@@ -306,9 +306,9 @@ export function updateProjectDetails(
   const project = inMemoryProjects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: 'Project not found.' };
 
-  const isAuthorized = actor.role === 'admin' || project.mentorIds.includes(actor.id);
+  const isAuthorized = actor.role === 'admin' || project.mentorIds.includes(actor.id) || project.createdBy === actor.id;
   if (!isAuthorized) {
-    return { success: false, error: 'Unauthorized: Only an assigned mentor or administrator can edit project details.' };
+    return { success: false, error: 'Unauthorized: Only an assigned mentor, creator, or administrator can edit project details.' };
   }
 
   if (payload.title && payload.title.trim()) {
@@ -326,7 +326,7 @@ export function updateProjectDetails(
 }
 
 /**
- * 5. Mentor or Admin manages team assignments (Add/remove mentors or members)
+ * 5. Mentor, Creator, or Admin manages team assignments (Add/remove mentors or members)
  */
 export function updateProjectTeam(
   projectId: string,
@@ -336,9 +336,9 @@ export function updateProjectTeam(
   const project = inMemoryProjects.find((p) => p.id === projectId);
   if (!project) return { success: false, error: 'Project not found.' };
 
-  const isAuthorized = actor.role === 'admin' || project.mentorIds.includes(actor.id);
+  const isAuthorized = actor.role === 'admin' || project.mentorIds.includes(actor.id) || project.createdBy === actor.id;
   if (!isAuthorized) {
-    return { success: false, error: 'Unauthorized: Only an assigned mentor or administrator can update project team members.' };
+    return { success: false, error: 'Unauthorized: Only an assigned mentor, creator, or administrator can update project team members.' };
   }
 
   if (Array.isArray(payload.mentorIds)) {
