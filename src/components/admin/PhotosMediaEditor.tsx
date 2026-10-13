@@ -244,6 +244,21 @@ export const PhotosMediaEditor: React.FC = () => {
         </button>
       </div>
 
+      {/* Dedicated Folder Location Indicator */}
+      <div className="px-3 py-1.5 rounded-lg bg-[#EFECE4] dark:bg-[#152014] border border-[#243324]/10 dark:border-white/10 text-[11px] text-[#4A5D44] dark:text-[#A3B59E] flex items-center justify-between">
+        <span>
+          Local folder:{' '}
+          <code className="font-mono font-semibold text-emerald-800 dark:text-emerald-300">
+            {activeSubTab === 'techfest'
+              ? '/public/events/techfest/'
+              : activeSubTab === 'hackathon'
+              ? '/public/events/hackathon/'
+              : '/public/events/workshop/'}
+          </code>
+        </span>
+        <span className="text-[10px] opacity-75">Images named by ID auto-load</span>
+      </div>
+
       {/* Add New Photo Form Drawer */}
       {isAddingPhoto && (
         <form

@@ -1,23 +1,20 @@
 ===========================================================
 KGEC ROBOTICS SOCIETY - EVENTS & FESTIVAL MEDIA STORAGE
 ===========================================================
-Drop festival, event, and workshop images directly into this folder:
-/public/events/
+Event images are organized into 3 dedicated folders:
 
-HOW IMAGES ARE MATCHED AUTOMATICALLY:
--------------------------------------
-1. By Event ID:
-   Save your image with the event ID, for example:
-   - tt-robowars-heavy.jpg
-   - tt-robowars-feather.png
-   - tt-lfr-pro.webp
-   - zr-slam-hackathon.jpg
-   - tt-1.jpg, tt-2.jpg, ot-1.jpg, zr-1.jpg, etc.
-   The website will automatically load and display it for that event!
+1. /public/events/hackathon/
+   - For ZYRO Hackathons, SLAM sprints, and hardware prototyping
+   - Examples: zr-1.jpg, zr-2.jpg, zr-3.jpg, zr-slam-hackathon.jpg
 
-2. Supported formats:
-   .jpg, .jpeg, .png, .webp, .svg
+2. /public/events/techfest/
+   - For TECHTIX Techfest arena battles, robowars, and track competitions
+   - Examples: tt-1.jpg, tt-2.jpg, tt-robowars-heavy.jpg, tt-lfr-pro.jpg
 
-3. Direct JSON edits:
-   You can also edit /public/data/events.json directly.
+3. /public/events/workshop/
+   - For Bootcamps, Arduino training, CAD fab, and outreach sessions
+   - Examples: ot-1.jpg, ot-2.jpg, ot-3.jpg, ot-4.jpg, ot-5.jpg, ot-6.jpg
+
+Supported formats: .jpg, .jpeg, .png, .webp, .svg
+Images are automatically resolved and matched by event ID.
 ===========================================================

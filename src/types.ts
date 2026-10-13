@@ -133,6 +133,7 @@ export interface SocietyMetadata {
   footerLogoDark?: string;
   logo1Alt?: string;
   logo2Alt?: string;
+  favicon?: string;
   
   // Legacy aliases for seamless backwards-compatibility
   totalBees?: number;

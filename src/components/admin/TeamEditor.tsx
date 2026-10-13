@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   Users,
   Plus,
@@ -10,7 +10,6 @@ import {
   Linkedin,
   Github,
   GraduationCap,
-  Upload,
   Search,
   RotateCcw,
   Check,
@@ -24,7 +23,6 @@ import {
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
 import { TeamCategory, TeamMember } from '../../types';
-import { compressImageFile } from '../../utils/imageUtils';
 import { fetchStaticTeamMembers, getTeamMemberImageCandidates } from '../../utils/teamUtils';
 import { OptimizedImage } from '../common/OptimizedImage';
 
@@ -122,8 +120,15 @@ export const TeamEditor: React.FC = () => {
   const [copiedJson, setCopiedJson] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
+  const getSuggestedId = (cat: TeamCategory) => {
+    const prefix = cat === 'teacher' ? 'tb' : cat === 'lead' ? 'ld' : cat === 'alumni' ? 'al' : 'sb';
+    const count = teamMembers.filter((m) => m.category === cat).length;
+    return `${prefix}-${count + 1}`;
+  };
+
   // New member form state
   const [newMember, setNewMember] = useState<Partial<TeamMember>>({
+    id: '',
     category: 'student',
     name: '',
     post: '',
@@ -134,10 +139,6 @@ export const TeamEditor: React.FC = () => {
     githubUrl: '',
     scholarUrl: '',
   });
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const editFileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadTargetId, setUploadTargetId] = useState<string | null>(null);
 
   // Filter members by category and query
   const filteredMembers = teamMembers.filter((member) => {
@@ -203,46 +204,21 @@ export const TeamEditor: React.FC = () => {
     }
   };
 
-  const handleImageFileChange = async (e: React.ChangeEvent<HTMLInputElement>, isForNew = true) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const dataUrl = await compressImageFile(file, 500, 500, 0.85);
-      if (isForNew) {
-        setNewMember((prev) => ({ ...prev, avatarUrl: dataUrl }));
-      } else if (uploadTargetId) {
-        updateTeamMember(uploadTargetId, { avatarUrl: dataUrl });
-        setUploadTargetId(null);
-      }
-    } catch {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const dataUrl = event.target?.result as string;
-        if (isForNew) {
-          setNewMember((prev) => ({ ...prev, avatarUrl: dataUrl }));
-        } else if (uploadTargetId) {
-          updateTeamMember(uploadTargetId, { avatarUrl: dataUrl });
-          setUploadTargetId(null);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleCreateMember = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMember.name?.trim() || !newMember.post?.trim()) return;
 
     const memberCategory =
       (newMember.category as TeamCategory) || (activeCategory !== 'all' ? activeCategory : 'student');
+    const assignedId = (newMember.id?.trim() || getSuggestedId(memberCategory)).toLowerCase();
+
     const created: TeamMember = {
-      id: `member-${Date.now()}`,
+      id: assignedId,
       category: memberCategory,
       name: newMember.name.trim(),
       post: newMember.post.trim(),
       departmentOrBatch: newMember.departmentOrBatch?.trim() || '',
-      avatarUrl: newMember.avatarUrl?.trim() || '',
+      avatarUrl: '', // Auto-resolved strictly by member ID (/public/team/[id].*)
       email: newMember.email?.trim() || '',
       linkedinUrl: newMember.linkedinUrl?.trim() || '',
       githubUrl: newMember.githubUrl?.trim() || '',
@@ -252,6 +228,7 @@ export const TeamEditor: React.FC = () => {
     addTeamMember(created);
     setIsAdding(false);
     setNewMember({
+      id: '',
       category: memberCategory,
       name: '',
       post: '',
@@ -266,21 +243,6 @@ export const TeamEditor: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Hidden File Inputs for Local Image Uploads */}
-      <input
-        type="file"
-        ref={fileInputRef}
-        onChange={(e) => handleImageFileChange(e, true)}
-        accept="image/*"
-        className="hidden"
-      />
-      <input
-        type="file"
-        ref={editFileInputRef}
-        onChange={(e) => handleImageFileChange(e, false)}
-        accept="image/*"
-        className="hidden"
-      />
 
       {/* Header & Stats Strip with Static File Integration */}
       <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/12 dark:border-white/10 shadow-2xs space-y-3">
@@ -671,49 +633,46 @@ export const TeamEditor: React.FC = () => {
               </div>
             )}
 
-            {/* Avatar URL & Upload */}
+            {/* Member ID (Auto-links portrait in /public/team/[id].*) */}
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
+                Member ID (Links /public/team/[id].*) *
+              </label>
+              <input
+                type="text"
+                placeholder={getSuggestedId(newMember.category || 'student')}
+                value={newMember.id || ''}
+                onChange={(e) => setNewMember({ ...newMember, id: e.target.value.toLowerCase().trim() })}
+                className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-mono"
+              />
+              <p className="text-[10px] text-[#526340] dark:text-[#A3B59E] mt-1">
+                Suggested: <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{getSuggestedId(newMember.category || 'student')}</span>
+              </p>
+            </div>
+
+            {/* Live ID Portrait Resolution Preview */}
             <div className="sm:col-span-2">
               <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Profile Portrait Image URL / Local path (/team/...) / Upload
+                Profile Portrait (Auto-resolved strictly by ID)
               </label>
-              <div className="flex items-center gap-2">
-                <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#243324]/20 shrink-0 bg-neutral-900">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15">
+                <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#243324]/20 shrink-0 bg-neutral-900 shadow-2xs">
                   <OptimizedImage
-                    src={getTeamMemberImageCandidates(newMember.id)[0]}
-                    candidates={getTeamMemberImageCandidates(newMember.id)}
+                    src={getTeamMemberImageCandidates(newMember.id || getSuggestedId(newMember.category || 'student'))[0]}
+                    candidates={getTeamMemberImageCandidates(newMember.id || getSuggestedId(newMember.category || 'student'))}
                     fallbackSrc="/team/default-avatar.svg"
                     alt="Preview"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <input
-                  type="text"
-                  placeholder="/team/name.jpg, URL, or upload"
-                  value={newMember.avatarUrl || ''}
-                  onChange={(e) => setNewMember({ ...newMember, avatarUrl: e.target.value })}
-                  className="flex-1 px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-mono"
-                />
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="px-2.5 py-1.5 rounded-lg bg-[#243324]/10 dark:bg-white/10 hover:bg-[#243324]/20 dark:hover:bg-white/20 text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0"
-                >
-                  <Upload className="w-3.5 h-3.5" />
-                  <span>Upload</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const identifier = newMember.email || newMember.name || 'Member';
-                    const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(identifier)}&background=0D9488&color=ffffff&bold=true&size=256`;
-                    setNewMember({ ...newMember, avatarUrl: avatar });
-                  }}
-                  className="px-2.5 py-1.5 rounded-lg bg-teal-500/15 text-teal-800 dark:text-teal-300 hover:bg-teal-500/25 border border-teal-500/30 text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0"
-                  title="Generate avatar from email or name"
-                >
-                  <Mail className="w-3.5 h-3.5" />
-                  <span>Email PFP</span>
-                </button>
+                <div className="min-w-0">
+                  <p className="font-mono text-xs font-bold text-emerald-800 dark:text-emerald-300 truncate">
+                    /public/team/{newMember.id || getSuggestedId(newMember.category || 'student')}.*
+                  </p>
+                  <p className="text-[10px] text-[#526340] dark:text-[#A3B59E] mt-0.5">
+                    Automatically matched from /public/team/ by ID (.webp, .jpg, .png, .svg)
+                  </p>
+                </div>
               </div>
             </div>
           </div>
@@ -769,21 +728,9 @@ export const TeamEditor: React.FC = () => {
                 {/* Header Row */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    {/* Avatar Portrait with Quick Upload Overlay */}
-                    <div className="relative group w-12 h-14 sm:w-14 sm:h-16 rounded-lg overflow-hidden shrink-0 border border-[#243324]/15 bg-neutral-900 shadow-2xs">
+                    {/* Avatar Portrait: Strictly Auto-resolved by Member ID */}
+                    <div className="relative w-12 h-14 sm:w-14 sm:h-16 rounded-lg overflow-hidden shrink-0 border border-[#243324]/15 bg-neutral-900 shadow-2xs">
                       <TeamEditorAvatar member={member} />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setUploadTargetId(member.id);
-                          editFileInputRef.current?.click();
-                        }}
-                        title="Upload new photo"
-                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-white text-[9px] font-semibold transition-opacity cursor-pointer"
-                      >
-                        <Upload className="w-3.5 h-3.5 mb-0.5" />
-                        <span>Change</span>
-                      </button>
                     </div>
 
                     {/* Basic info */}
@@ -797,6 +744,9 @@ export const TeamEditor: React.FC = () => {
                         >
                           <CatIcon className="w-3 h-3" />
                           <span>{catInfo.singular}</span>
+                        </span>
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 text-[#526340] dark:text-[#A3B59E]">
+                          ID: {member.id}
                         </span>
                       </div>
 
@@ -1010,38 +960,20 @@ export const TeamEditor: React.FC = () => {
 
                       <div>
                         <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Avatar Image URL / Local path (/team/...)
+                          Profile Portrait (Auto by ID)
                         </label>
-                        <div className="flex gap-1.5">
-                          <input
-                            type="text"
-                            value={member.avatarUrl || ''}
-                            onChange={(e) => updateTeamMember(member.id, { avatarUrl: e.target.value })}
-                            className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15 font-mono"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setUploadTargetId(member.id);
-                              editFileInputRef.current?.click();
-                            }}
-                            className="p-1 rounded bg-[#243324]/10 dark:bg-white/10 hover:bg-[#243324]/20 cursor-pointer"
-                            title="Upload local photo"
-                          >
-                            <Upload className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const identifier = member.email || member.name || 'Member';
-                              const avatar = `https://ui-avatars.com/api/?name=${encodeURIComponent(identifier)}&background=0D9488&color=ffffff&bold=true&size=256`;
-                              updateTeamMember(member.id, { avatarUrl: avatar });
-                            }}
-                            className="p-1 rounded bg-teal-500/20 text-teal-800 dark:text-teal-300 hover:bg-teal-500/30 border border-teal-500/30 cursor-pointer"
-                            title="Generate Email PFP Avatar"
-                          >
-                            <Mail className="w-3.5 h-3.5" />
-                          </button>
+                        <div className="flex items-center gap-2 p-1.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[11px]">
+                          <div className="w-6 h-6 rounded overflow-hidden shrink-0 bg-neutral-900 border border-neutral-700">
+                            <TeamEditorAvatar member={member} />
+                          </div>
+                          <div className="min-w-0">
+                            <span className="font-mono font-bold text-emerald-800 dark:text-emerald-300 block truncate text-[11px]">
+                              /public/team/{member.id}.*
+                            </span>
+                            <span className="text-[9.5px] text-[#526340] dark:text-[#A3B59E]">
+                              Auto-matched by ID (.webp, .jpg, .png, .svg)
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>

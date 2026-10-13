@@ -24,7 +24,7 @@
       ],
       "bannerUrl": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
       "images": [
-        "/events/tt-robowars-heavy.jpg",
+        "/events/techfest/tt-robowars-heavy.jpg",
         "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1200&q=80",
         "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"
       ]
@@ -52,7 +52,7 @@
       ],
       "bannerUrl": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80",
       "images": [
-        "/events/tt-robowars-feather.jpg",
+        "/events/techfest/tt-robowars-feather.jpg",
         "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&w=1200&q=80"
       ]
     },
@@ -79,7 +79,7 @@
       ],
       "bannerUrl": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80",
       "images": [
-        "/events/tt-lfr-pro.jpg",
+        "/events/techfest/tt-lfr-pro.jpg",
         "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80"
       ]
     },
@@ -106,7 +106,7 @@
       ],
       "bannerUrl": "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80",
       "images": [
-        "/events/zr-slam-hackathon.jpg",
+        "/events/hackathon/zr-slam-hackathon.jpg",
         "https://images.unsplash.com/photo-1531482615713-2afd69097998?auto=format&fit=crop&w=1200&q=80"
       ]
     }

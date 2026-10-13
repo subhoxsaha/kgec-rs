@@ -183,10 +183,10 @@ export const FestEventsEditor: React.FC = () => {
           <FolderTree className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <p className="font-bold">
-              File-Based Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/events.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/events/</code>
+              File-Based Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/events.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/events/(hackathon|techfest|workshop)/</code>
             </p>
             <p className="text-[11px] text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
-              Drop event photos in <code className="font-mono">/public/events/</code> or edit text directly in <code className="font-mono">events.json</code>. Changes sync seamlessly.
+              Drop photos into <code className="font-mono">/public/events/hackathon/</code>, <code className="font-mono">techfest/</code>, or <code className="font-mono">workshop/</code>. Images auto-resolve by ID.
             </p>
           </div>
         </div>

@@ -46,9 +46,32 @@ async function startServer() {
           (f) => !f.startsWith('.') && f !== 'README.txt' && !f.endsWith('.txt')
         );
       };
+
+      const getEventFiles = () => {
+        const eventsDir = path.join(publicDir, 'events');
+        if (!fs.existsSync(eventsDir)) return [];
+        const results: string[] = [];
+        const subfolders = ['hackathon', 'techfest', 'workshop'];
+        for (const sub of subfolders) {
+          const subDir = path.join(eventsDir, sub);
+          if (fs.existsSync(subDir)) {
+            const files = fs.readdirSync(subDir).filter(
+              (f) => !f.startsWith('.') && !f.endsWith('.txt')
+            );
+            files.forEach((f) => results.push(`${sub}/${f}`));
+          }
+        }
+        // Also check any direct root files in events/
+        const rootFiles = fs.readdirSync(eventsDir).filter(
+          (f) => !f.startsWith('.') && !f.endsWith('.txt') && !subfolders.includes(f)
+        );
+        results.push(...rootFiles);
+        return results;
+      };
+
       res.json({
         team: getFiles('team'),
-        events: getFiles('events'),
+        events: getEventFiles(),
         projects: getFiles('projects'),
         logos: getFiles('logos'),
       });
