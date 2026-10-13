@@ -252,10 +252,10 @@ export const TeamEditor: React.FC = () => {
             <FolderTree className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <p className="font-bold">
-                File-Based Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/team.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/team/</code>
+                Hardcoded File-Based Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/team.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/team/</code>
               </p>
               <p className="text-[11px] text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
-                You can edit text directly in <code className="font-mono">team.json</code> or drop pictures in <code className="font-mono">public/team/</code>. The CMS below edits live state and lets you export or copy the synced JSON instantly.
+                All team members are loaded directly from the hardcoded source file. This view provides a read-only directory catalog with copy and export capabilities.
               </p>
             </div>
           </div>
@@ -295,41 +295,18 @@ export const TeamEditor: React.FC = () => {
           <div>
             <h4 className="text-sm font-bold text-[#1F2B1D] dark:text-[#F4EFE6] flex items-center gap-2">
               <Users className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
-              Leadership &amp; Mentorship Directory CMS
+              Leadership &amp; Mentorship Directory (Read-Only)
             </h4>
             <p className="text-xs text-[#526340] dark:text-[#A3B59E] mt-0.5">
-              Edit faculty mentors, elected student office bearers, domain technical leads, and alumni roster.
+              Inspect faculty mentors, elected student office bearers, domain technical leads, and alumni roster.
             </p>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm('Reset all team members to initial KGEC default roster?')) {
-                  resetTeamToDefaults();
-                }
-              }}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium text-[#657351] dark:text-[#9DAE9A] hover:bg-[#243324]/5 dark:hover:bg-white/5 border border-[#243324]/15 dark:border-white/15 cursor-pointer transition-colors"
-              title="Reset Team Roster"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Defaults</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsAdding(true);
-                if (activeCategory !== 'all') {
-                  setNewMember((prev) => ({ ...prev, category: activeCategory }));
-                }
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer transition-colors"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Add Member</span>
-            </button>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20">
+              <Sparkles className="w-3 h-3" />
+              <span>{teamMembers.length} Members Loaded</span>
+            </span>
           </div>
         </div>
 
@@ -478,224 +455,6 @@ export const TeamEditor: React.FC = () => {
         </div>
       </div>
 
-      {/* Add New Member Drawer / Form */}
-      {isAdding && (
-        <form
-          onSubmit={handleCreateMember}
-          className="p-4 sm:p-5 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border-2 border-emerald-500/30 space-y-4 shadow-sm"
-        >
-          <div className="flex items-center justify-between border-b border-emerald-900/10 dark:border-emerald-100/10 pb-2.5">
-            <h5 className="text-sm font-bold text-emerald-950 dark:text-emerald-300 flex items-center gap-2">
-              <Plus className="w-4 h-4" />
-              Add New Team Member
-            </h5>
-            <button
-              type="button"
-              onClick={() => setIsAdding(false)}
-              className="text-xs text-[#526340] dark:text-[#A3B59E] hover:underline cursor-pointer"
-            >
-              Cancel
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {/* Category selection */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Category / Section *
-              </label>
-              <select
-                value={newMember.category || 'student'}
-                onChange={(e) => setNewMember({ ...newMember, category: e.target.value as TeamCategory })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-semibold text-[#1F2B1D] dark:text-[#F4EFE6]"
-              >
-                <option value="teacher">Teacher Body (Mentors &amp; Faculty)</option>
-                <option value="student">Student Body (Leadership &amp; Office)</option>
-                <option value="lead">Domain &amp; Technical Leads</option>
-                <option value="alumni">Alumni Network</option>
-              </select>
-            </div>
-
-            {/* Name */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Full Name *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Dr. Arindam Mukherjee or Debojyoti Ray"
-                value={newMember.name || ''}
-                onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-              />
-            </div>
-
-            {/* Post / Designation */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Post / Designation *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. President, Autonomous Lead, Faculty Advisor"
-                value={newMember.post || ''}
-                onChange={(e) => setNewMember({ ...newMember, post: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-              />
-              {/* Quick suggestions for current category */}
-              {newMember.category && SUGGESTED_ROLES[newMember.category as TeamCategory] && (
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {SUGGESTED_ROLES[newMember.category as TeamCategory].slice(0, 3).map((r) => (
-                    <button
-                      type="button"
-                      key={r}
-                      onClick={() => setNewMember({ ...newMember, post: r })}
-                      className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-900 dark:text-emerald-300 hover:bg-emerald-500/20 truncate max-w-[140px] cursor-pointer"
-                      title={r}
-                    >
-                      {r}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Department / Batch */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Department / Batch / Organization
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Final Year ECE or Dept. of Mechanical Engg."
-                value={newMember.departmentOrBatch || ''}
-                onChange={(e) => setNewMember({ ...newMember, departmentOrBatch: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-              />
-            </div>
-
-            {/* Email */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Official Email
-              </label>
-              <input
-                type="email"
-                placeholder="name@krs-kgec.in or name@kgec.edu.in"
-                value={newMember.email || ''}
-                onChange={(e) => setNewMember({ ...newMember, email: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-              />
-            </div>
-
-            {/* LinkedIn Profile */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                LinkedIn Profile URL
-              </label>
-              <input
-                type="url"
-                placeholder="https://linkedin.com/in/username"
-                value={newMember.linkedinUrl || ''}
-                onChange={(e) => setNewMember({ ...newMember, linkedinUrl: e.target.value })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-              />
-            </div>
-
-            {/* GitHub or Scholar based on category */}
-            {newMember.category === 'teacher' ? (
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400 mb-1">
-                  Google Scholar URL (Teachers)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://scholar.google.com/citations?user=..."
-                  value={newMember.scholarUrl || ''}
-                  onChange={(e) => setNewMember({ ...newMember, scholarUrl: e.target.value })}
-                  className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-indigo-500/30"
-                />
-              </div>
-            ) : (
-              <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                  GitHub Profile URL
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://github.com/username"
-                  value={newMember.githubUrl || ''}
-                  onChange={(e) => setNewMember({ ...newMember, githubUrl: e.target.value })}
-                  className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-                />
-              </div>
-            )}
-
-            {/* Member ID (Auto-links portrait in /public/team/[id].*) */}
-            <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Member ID (Links /public/team/[id].*) *
-              </label>
-              <input
-                type="text"
-                placeholder={getSuggestedId(newMember.category || 'student')}
-                value={newMember.id || ''}
-                onChange={(e) => setNewMember({ ...newMember, id: e.target.value.toLowerCase().trim() })}
-                className="w-full px-2.5 py-1.5 text-xs rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-mono"
-              />
-              <p className="text-[10px] text-[#526340] dark:text-[#A3B59E] mt-1">
-                Suggested: <span className="font-mono text-emerald-700 dark:text-emerald-400 font-bold">{getSuggestedId(newMember.category || 'student')}</span>
-              </p>
-            </div>
-
-            {/* Live ID Portrait Resolution Preview */}
-            <div className="sm:col-span-2">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E] mb-1">
-                Profile Portrait (Auto-resolved strictly by ID)
-              </label>
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15">
-                <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#243324]/20 shrink-0 bg-neutral-900 shadow-2xs">
-                  <OptimizedImage
-                    src={getTeamMemberImageCandidates(newMember.id || getSuggestedId(newMember.category || 'student'))[0]}
-                    candidates={getTeamMemberImageCandidates(newMember.id || getSuggestedId(newMember.category || 'student'))}
-                    fallbackSrc="/team/default-avatar.svg"
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="font-mono text-xs font-bold text-emerald-800 dark:text-emerald-300 truncate">
-                    /public/team/{newMember.id || getSuggestedId(newMember.category || 'student')}.*
-                  </p>
-                  <p className="text-[10px] text-[#526340] dark:text-[#A3B59E] mt-0.5">
-                    Automatically matched from /public/team/ by ID (.webp, .jpg, .png, .svg)
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2 border-t border-emerald-900/10 dark:border-emerald-100/10">
-            <button
-              type="button"
-              onClick={() => setIsAdding(false)}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium text-[#526340] dark:text-[#A3B59E] hover:bg-[#243324]/5 cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-1.5 rounded-lg text-xs font-semibold bg-emerald-800 hover:bg-emerald-700 text-white shadow-2xs cursor-pointer flex items-center gap-1.5"
-            >
-              <Check className="w-3.5 h-3.5" />
-              <span>Save &amp; Add Member</span>
-            </button>
-          </div>
-        </form>
-      )}
-
       {/* Member Cards Grid */}
       <div className="space-y-3">
         {filteredMembers.length === 0 ? (
@@ -716,13 +475,12 @@ export const TeamEditor: React.FC = () => {
           </div>
         ) : (
           filteredMembers.map((member, idx) => {
-            const isEditing = editingId === member.id;
             const catInfo = CATEGORY_CONFIG[member.category] || CATEGORY_CONFIG.student;
             const CatIcon = catInfo.icon;
 
             return (
               <div
-                key={member.id}
+                key={`${member.id || 'member'}-${idx}`}
                 className="p-3.5 sm:p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/12 dark:border-white/10 shadow-2xs space-y-3 transition-all"
               >
                 {/* Header Row */}
@@ -762,50 +520,11 @@ export const TeamEditor: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Actions & Reorder buttons */}
+                  {/* Read-Only Badge */}
                   <div className="flex items-center gap-1 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => reorderTeamMember(member.id, 'up')}
-                      disabled={idx === 0}
-                      className="p-1 rounded text-[#526340] dark:text-[#A3B59E] hover:bg-[#243324]/10 dark:hover:bg-white/10 disabled:opacity-30 cursor-pointer"
-                      title="Move up"
-                    >
-                      <ChevronUp className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => reorderTeamMember(member.id, 'down')}
-                      disabled={idx === filteredMembers.length - 1}
-                      className="p-1 rounded text-[#526340] dark:text-[#A3B59E] hover:bg-[#243324]/10 dark:hover:bg-white/10 disabled:opacity-30 cursor-pointer"
-                      title="Move down"
-                    >
-                      <ChevronDown className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditingId(isEditing ? null : member.id)}
-                      className={`p-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                        isEditing
-                          ? 'bg-emerald-800 text-white'
-                          : 'bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 text-[#243324] dark:text-[#F4EFE6] hover:bg-[#243324]/10'
-                      }`}
-                      title={isEditing ? 'Close form' : 'Edit details'}
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (window.confirm(`Delete ${member.name} from the team roster?`)) {
-                          deleteTeamMember(member.id);
-                        }
-                      }}
-                      className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
-                      title="Delete member"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-semibold border border-emerald-500/20">
+                      #{idx + 1}
+                    </span>
                   </div>
                 </div>
 
@@ -851,144 +570,6 @@ export const TeamEditor: React.FC = () => {
                     </a>
                   )}
                 </div>
-
-                {/* Inline Editing Card */}
-                {isEditing && (
-                  <div className="pt-3 border-t border-dashed border-[#243324]/15 dark:border-white/15 space-y-3 bg-[#FAF7F0] dark:bg-[#111910] p-3.5 rounded-lg">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Category / Section
-                        </label>
-                        <select
-                          value={member.category || 'student'}
-                          onChange={(e) =>
-                            updateTeamMember(member.id, { category: e.target.value as TeamCategory })
-                          }
-                          className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15 font-semibold"
-                        >
-                          <option value="teacher">Teacher Body (Mentors)</option>
-                          <option value="student">Student Body (Leadership)</option>
-                          <option value="lead">Domain &amp; Tech Leads</option>
-                          <option value="alumni">Alumni Network</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Full Name
-                        </label>
-                        <input
-                          type="text"
-                          value={member.name}
-                          onChange={(e) => updateTeamMember(member.id, { name: e.target.value })}
-                          className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Post / Designation
-                        </label>
-                        <input
-                          type="text"
-                          value={member.post}
-                          onChange={(e) => updateTeamMember(member.id, { post: e.target.value })}
-                          className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Department / Batch
-                        </label>
-                        <input
-                          type="text"
-                          value={member.departmentOrBatch || ''}
-                          onChange={(e) => updateTeamMember(member.id, { departmentOrBatch: e.target.value })}
-                          className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Email Address
-                        </label>
-                        <input
-                          type="email"
-                          value={member.email || ''}
-                          onChange={(e) => updateTeamMember(member.id, { email: e.target.value })}
-                          className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          LinkedIn URL
-                        </label>
-                        <input
-                          type="url"
-                          value={member.linkedinUrl || ''}
-                          onChange={(e) => updateTeamMember(member.id, { linkedinUrl: e.target.value })}
-                          className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Google Scholar URL (Teachers)
-                        </label>
-                        <input
-                          type="url"
-                          value={member.scholarUrl || ''}
-                          onChange={(e) => updateTeamMember(member.id, { scholarUrl: e.target.value })}
-                          className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          GitHub URL (Students/Leads)
-                        </label>
-                        <input
-                          type="url"
-                          value={member.githubUrl || ''}
-                          onChange={(e) => updateTeamMember(member.id, { githubUrl: e.target.value })}
-                          className="w-full px-2 py-1 text-xs rounded bg-white dark:bg-[#1A2619] border border-[#243324]/15 dark:border-white/15"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] mb-0.5">
-                          Profile Portrait (Auto by ID)
-                        </label>
-                        <div className="flex items-center gap-2 p-1.5 rounded bg-emerald-500/10 border border-emerald-500/20 text-[11px]">
-                          <div className="w-6 h-6 rounded overflow-hidden shrink-0 bg-neutral-900 border border-neutral-700">
-                            <TeamEditorAvatar member={member} />
-                          </div>
-                          <div className="min-w-0">
-                            <span className="font-mono font-bold text-emerald-800 dark:text-emerald-300 block truncate text-[11px]">
-                              /public/team/{member.id}.*
-                            </span>
-                            <span className="text-[9.5px] text-[#526340] dark:text-[#A3B59E]">
-                              Auto-matched by ID (.webp, .jpg, .png, .svg)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end pt-1">
-                      <button
-                        type="button"
-                        onClick={() => setEditingId(null)}
-                        className="px-3 py-1 rounded bg-emerald-800 text-white text-xs font-semibold cursor-pointer"
-                      >
-                        Done Editing
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
             );
           })

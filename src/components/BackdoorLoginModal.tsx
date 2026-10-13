@@ -162,7 +162,7 @@ export const BackdoorLoginModal: React.FC = () => {
                     className="flex-1 py-2.5 px-4 rounded-xl bg-emerald-800 dark:bg-emerald-700 hover:bg-emerald-900 dark:hover:bg-emerald-600 text-white font-medium text-xs transition-colors shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Sparkles className="w-4 h-4" />
-                    <span>Open Content Editor</span>
+                    <span>Open CMS Dashboard</span>
                   </button>
                 ) : (
                   <button

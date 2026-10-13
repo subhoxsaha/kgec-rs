@@ -341,18 +341,36 @@ export function sanitizeTeamMembersList(members: any[]): TeamMember[] {
     return INITIAL_TEAM_MEMBERS;
   }
 
-  return members.map((m, idx) => ({
-    id: m.id || `member-${idx + 1}`,
-    category: (m.category || 'student') as 'teacher' | 'student' | 'lead' | 'alumni',
-    name: m.name || 'KGEC Member',
-    post: m.post || m.role || m.designation || 'Robotics Member',
-    departmentOrBatch: m.departmentOrBatch || m.department || m.batch || '',
-    avatarUrl: m.avatarUrl || m.image || '',
-    email: m.email || '',
-    linkedinUrl: m.linkedinUrl || m.linkedin || '',
-    scholarUrl: m.scholarUrl || '',
-    githubUrl: m.githubUrl || m.github || '',
-    bio: m.bio || '',
-    order: typeof m.order === 'number' ? m.order : idx + 1,
-  }));
+  const seenIds = new Set<string>();
+
+  return members.map((m, idx) => {
+    let id = typeof m.id === 'string' ? m.id.trim() : '';
+    if (!id || seenIds.has(id)) {
+      const cat = m.category || 'student';
+      const prefix = cat === 'teacher' ? 'tb' : cat === 'lead' ? 'ld' : cat === 'alumni' ? 'al' : 'sb';
+      let candidate = id ? `${id}-${idx + 1}` : `${prefix}-${idx + 1}`;
+      let counter = 1;
+      while (seenIds.has(candidate)) {
+        candidate = `${prefix}-${idx + 1 + counter}`;
+        counter++;
+      }
+      id = candidate;
+    }
+    seenIds.add(id);
+
+    return {
+      id,
+      category: (m.category || 'student') as 'teacher' | 'student' | 'lead' | 'alumni',
+      name: m.name || 'KGEC Member',
+      post: m.post || m.role || m.designation || 'Robotics Member',
+      departmentOrBatch: m.departmentOrBatch || m.department || m.batch || '',
+      avatarUrl: m.avatarUrl || m.image || '',
+      email: m.email || '',
+      linkedinUrl: m.linkedinUrl || m.linkedin || '',
+      scholarUrl: m.scholarUrl || '',
+      githubUrl: m.githubUrl || m.github || '',
+      bio: m.bio || '',
+      order: typeof m.order === 'number' ? m.order : idx + 1,
+    };
+  });
 }

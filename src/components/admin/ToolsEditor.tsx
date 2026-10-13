@@ -3,34 +3,29 @@ import {
   Download,
   Copy,
   Check,
-  RotateCcw,
   LogOut,
-  Upload,
-  AlertTriangle,
   Sparkles,
+  ShieldCheck,
+  FolderTree,
 } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
-import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { MongoDbStatusWidget } from './MongoDbStatusWidget';
 
 export const ToolsEditor: React.FC = () => {
   const {
     exportConfigAsJson,
-    importConfigFromJson,
-    resetAllToDefaults,
     logoutAdmin,
     showToast,
+    googleUser,
   } = useReportData();
 
   const [copied, setCopied] = useState(false);
-  const [importJson, setImportJson] = useState('');
-  const [showConfirmReset, setShowConfirmReset] = useState(false);
 
   const handleCopy = () => {
     const json = exportConfigAsJson();
     navigator.clipboard.writeText(json);
     setCopied(true);
-    showToast('Configuration copied to clipboard');
+    showToast('Configuration snapshot copied to clipboard');
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -46,62 +41,53 @@ export const ToolsEditor: React.FC = () => {
     showToast('Downloaded CMS snapshot');
   };
 
-  const handleImport = () => {
-    if (!importJson.trim()) return;
-    const ok = importConfigFromJson(importJson);
-    if (ok) {
-      setImportJson('');
-    }
-  };
-
   return (
     <div className="space-y-4 text-[#243324] dark:text-[#F4EFE6]">
-      {/* Delete/Reset Confirmation Dialog */}
-      <DeleteConfirmModal
-        isOpen={showConfirmReset}
-        title="Reset Entire CMS to Factory Defaults?"
-        itemName="All Custom Content & Telemetry"
-        itemType="CMS database"
-        confirmButtonText="Yes, Factory Reset All"
-        warningText="Are you sure you want to reset everything? All customized logos, custom robots, event photos, and modified narratives will be reverted back to initial factory defaults."
-        onConfirm={() => {
-          resetAllToDefaults();
-          setShowConfirmReset(false);
-        }}
-        onCancel={() => setShowConfirmReset(false)}
-      />
-
+      {/* Banner */}
       <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-start gap-2.5">
         <Sparkles className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-        <p className="text-emerald-950 dark:text-emerald-200">
-          MongoDB cloud persistence, JSON snapshots, and KGEC Robotics Society baseline telemetry controls.
-        </p>
+        <div>
+          <p className="font-semibold text-emerald-950 dark:text-emerald-200">
+            System Architecture, Export Tools &amp; Telemetry Status
+          </p>
+          <p className="text-emerald-900/80 dark:text-emerald-300/80 text-[11px] mt-0.5">
+            Download JSON snapshots, inspect MongoDB connection health, or manage active admin session.
+          </p>
+        </div>
       </div>
 
       {/* Live MongoDB Status & Sync Widget */}
       <MongoDbStatusWidget />
 
       {/* Export & Backup */}
-      <div className="p-3.5 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-2.5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white">
-          Export Configuration Snapshot
-        </h3>
-        <p className="text-xs text-[#657351] dark:text-[#9FB19A]">
-          Download or copy the full state (dual logos, photos, metrics, section texts, TECHTIX &amp; ZYRO events) in JSON.
+      <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-2.5">
+        <div className="flex items-center justify-between pb-1 border-b border-[#243324]/10 dark:border-white/10">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
+            <Download className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Export Configuration Snapshot</span>
+          </h3>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+            JSON Snapshot
+          </span>
+        </div>
+
+        <p className="text-xs text-[#657351] dark:text-[#9FB19A] leading-relaxed">
+          Download or copy the complete static configuration (bot fleet, mentors &amp; leadership directory, TECHTIX &amp; ZYRO events, media manifests) into a structured JSON payload for external analysis or archiving.
         </p>
-        <div className="flex flex-wrap gap-2 pt-1">
+
+        <div className="flex flex-wrap gap-2 pt-1.5">
           <button
             type="button"
             onClick={handleCopy}
-            className="px-3 py-1.5 rounded-lg bg-[#243324]/10 dark:bg-white/10 hover:bg-[#243324]/20 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-lg bg-[#243324]/10 dark:bg-white/10 hover:bg-[#243324]/20 text-xs font-medium flex items-center gap-1.5 cursor-pointer"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{copied ? 'Copied!' : 'Copy to Clipboard'}</span>
+            <span>{copied ? 'Copied to Clipboard!' : 'Copy to Clipboard'}</span>
           </button>
           <button
             type="button"
             onClick={handleDownload}
-            className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download .json File</span>
@@ -109,62 +95,42 @@ export const ToolsEditor: React.FC = () => {
         </div>
       </div>
 
-      {/* Import Configuration */}
-      <div className="p-3.5 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-2.5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white">
-          Import / Restore From JSON
+      {/* Hardcoded Data File Mapping Reference */}
+      <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-2.5 text-xs">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
+          <FolderTree className="w-3.5 h-3.5 text-emerald-600" />
+          <span>Hardcoded Asset Repository Mappings</span>
         </h3>
-        <p className="text-xs text-[#657351] dark:text-[#9FB19A]">
-          Paste a previously exported configuration JSON payload to restore all site telemetry and content.
-        </p>
-        <textarea
-          rows={3}
-          placeholder="Paste JSON configuration payload here..."
-          value={importJson}
-          onChange={(e) => setImportJson(e.target.value)}
-          className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-mono text-xs"
-        />
-        <button
-          type="button"
-          onClick={handleImport}
-          disabled={!importJson.trim()}
-          className="px-3 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white text-xs font-medium flex items-center gap-1.5 cursor-pointer"
-        >
-          <Upload className="w-3.5 h-3.5" />
-          <span>Import &amp; Apply JSON</span>
-        </button>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono pt-1">
+          <div className="p-2 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="text-[#526340] dark:text-[#A3B59E] block text-[9.5px]">Team Directory</span>
+            <span className="text-emerald-800 dark:text-emerald-300 font-bold">/public/data/team.json</span>
+          </div>
+          <div className="p-2 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="text-[#526340] dark:text-[#A3B59E] block text-[9.5px]">Bot Fleet</span>
+            <span className="text-emerald-800 dark:text-emerald-300 font-bold">/public/data/projects.json</span>
+          </div>
+          <div className="p-2 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="text-[#526340] dark:text-[#A3B59E] block text-[9.5px]">Fest Arenas</span>
+            <span className="text-emerald-800 dark:text-emerald-300 font-bold">/public/data/events.json</span>
+          </div>
+          <div className="p-2 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="text-[#526340] dark:text-[#A3B59E] block text-[9.5px]">Brand Logos</span>
+            <span className="text-emerald-800 dark:text-emerald-300 font-bold">/public/logos/</span>
+          </div>
+        </div>
       </div>
 
-      {/* Factory Reset & Admin Session */}
-      <div className="p-3.5 rounded-xl bg-white dark:bg-[#1A2619] border border-rose-500/20 shadow-2xs space-y-3">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
-          <AlertTriangle className="w-3.5 h-3.5" />
-          <span>Danger Zone: Reset &amp; Session</span>
-        </h3>
-
-        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+      {/* Admin Session Strip */}
+      <div className="p-3.5 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-2.5">
+        <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs font-semibold">Factory Reset All Content</p>
-            <p className="text-[11px] text-[#657351] dark:text-[#9FB19A]">
-              Clears browser local storage and restores all original default values.
+            <p className="text-xs font-bold text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Admin Authentication Session</span>
             </p>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setShowConfirmReset(true)}
-            className="px-3 py-1.5 rounded-lg border border-rose-500/40 text-rose-700 dark:text-rose-300 hover:bg-rose-500/10 text-xs font-medium flex items-center gap-1 cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset to Factory Defaults</span>
-          </button>
-        </div>
-
-        <div className="pt-2 border-t border-[#243324]/10 dark:border-white/10 flex items-center justify-between">
-          <div>
-            <p className="text-xs font-semibold">Admin Authentication Session</p>
-            <p className="text-[11px] text-[#657351] dark:text-[#9FB19A]">
-              Authorized as subhoxsaha@gmail.com
+            <p className="text-[11px] text-[#657351] dark:text-[#9FB19A] font-mono mt-0.5">
+              Authenticated as {googleUser?.email || 'subhoxsaha@gmail.com'}
             </p>
           </div>
 

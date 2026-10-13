@@ -468,7 +468,7 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
                 type="button"
                 onClick={() => openEditor('photos')}
                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-[#243324]/5 dark:bg-white/5 hover:bg-[#243324]/10 dark:hover:bg-white/10 text-[#243324] dark:text-white border border-[#243324]/10 dark:border-white/10 transition-colors cursor-pointer"
-                title="Edit Media via CMS"
+                title="View Media via CMS"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">CMS</span>

@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Mail, Linkedin, Github, GraduationCap, Edit3, Plus, User } from 'lucide-react';
+import { Mail, Linkedin, Github, GraduationCap, Users, User } from 'lucide-react';
 import { useReportData } from '../context/ReportDataContext';
 import { TeamMember } from '../types';
 import { getTeamMemberImageCandidates, subscribeToMediaManifest } from '../utils/teamUtils';
@@ -199,10 +199,10 @@ export const TeamDirectorySection: React.FC = () => {
                 type="button"
                 onClick={() => openEditor('team')}
                 className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-700 hover:bg-emerald-600 text-white shadow-xs transition-all cursor-pointer"
-                title="Edit Leadership & Mentorship Directory in CMS"
+                title="View Leadership & Mentorship Directory in CMS"
               >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>Edit Team &amp; Mentors</span>
+                <Users className="w-3.5 h-3.5" />
+                <span>View Team &amp; Mentors</span>
               </button>
             </div>
           )}
@@ -222,7 +222,7 @@ export const TeamDirectorySection: React.FC = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
               {teachers.map((member, idx) => (
-                <ProfileCard key={member.id} member={member} index={idx} />
+                <ProfileCard key={`${member.id || 'tb'}-${idx}`} member={member} index={idx} />
               ))}
             </div>
           </div>
@@ -242,7 +242,7 @@ export const TeamDirectorySection: React.FC = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
               {students.map((member, idx) => (
-                <ProfileCard key={member.id} member={member} index={idx} />
+                <ProfileCard key={`${member.id || 'sb'}-${idx}`} member={member} index={idx} />
               ))}
             </div>
           </div>
@@ -262,7 +262,7 @@ export const TeamDirectorySection: React.FC = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
               {leads.map((member, idx) => (
-                <ProfileCard key={member.id} member={member} index={idx} />
+                <ProfileCard key={`${member.id || 'ld'}-${idx}`} member={member} index={idx} />
               ))}
             </div>
           </div>
@@ -282,7 +282,7 @@ export const TeamDirectorySection: React.FC = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5 lg:gap-6">
               {alumni.map((member, idx) => (
-                <ProfileCard key={member.id} member={member} index={idx} />
+                <ProfileCard key={`${member.id || 'al'}-${idx}`} member={member} index={idx} />
               ))}
             </div>
           </div>
@@ -298,10 +298,10 @@ export const TeamDirectorySection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => openEditor('team')}
-                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-800 text-white text-xs font-semibold"
+                className="mt-3 inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-800 text-white text-xs font-semibold cursor-pointer"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Members in CMS</span>
+                <Users className="w-3.5 h-3.5" />
+                <span>View Directory in CMS</span>
               </button>
             )}
           </div>

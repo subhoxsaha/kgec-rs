@@ -196,7 +196,7 @@
     "order": 3
   },
   {
-    "id": "ld-3",
+    "id": "ld-4",
     "category": "lead",
     "name": "Subhrajit Saha",
     "post": "Lead",
@@ -207,10 +207,10 @@
     "scholarUrl": "",
     "githubUrl": "",
     "bio": "",
-    "order": 3
+    "order": 4
   },
   {
-    "id": "ld-3",
+    "id": "ld-5",
     "category": "lead",
     "name": "Saukarja Ghosh",
     "post": "Lead",
@@ -221,10 +221,10 @@
     "scholarUrl": "",
     "githubUrl": "",
     "bio": "",
-    "order": 3
+    "order": 5
   },
   {
-    "id": "ld-3",
+    "id": "ld-6",
     "category": "lead",
     "name": "Sayan Mandal",
     "post": "Lead",
@@ -235,22 +235,10 @@
     "scholarUrl": "",
     "githubUrl": "",
     "bio": "",
-    "order": 3
-  },{
-    "id": "ld-3",
-    "category": "lead",
-    "name": "Srijita Misra",
-    "post": "Lead",
-    "departmentOrBatch": "Technical Lead, KRS",
-    "avatarUrl": "",
-    "email": "",
-    "linkedinUrl": "",
-    "scholarUrl": "",
-    "githubUrl": "",
-    "bio": "",
-    "order": 3
-  },{
-    "id": "ld-3",
+    "order": 6
+  },
+  {
+    "id": "ld-7",
     "category": "lead",
     "name": "Jigisha Mondal",
     "post": "Lead",
@@ -261,9 +249,10 @@
     "scholarUrl": "",
     "githubUrl": "",
     "bio": "",
-    "order": 3
-  },{
-    "id": "ld-3",
+    "order": 7
+  },
+  {
+    "id": "ld-8",
     "category": "lead",
     "name": "Sristy Singh",
     "post": "Lead",
@@ -274,9 +263,10 @@
     "scholarUrl": "",
     "githubUrl": "",
     "bio": "",
-    "order": 3
-  },{
-    "id": "ld-3",
+    "order": 8
+  },
+  {
+    "id": "ld-9",
     "category": "lead",
     "name": "Swastik Sarkar",
     "post": "Lead",
@@ -287,9 +277,10 @@
     "scholarUrl": "",
     "githubUrl": "",
     "bio": "",
-    "order": 3
-  },{
-    "id": "ld-3",
+    "order": 9
+  },
+  {
+    "id": "ld-10",
     "category": "lead",
     "name": "Soumyadip Biswas",
     "post": "Lead",
@@ -300,6 +291,6 @@
     "scholarUrl": "",
     "githubUrl": "",
     "bio": "",
-    "order": 3
+    "order": 10
   }
 ]

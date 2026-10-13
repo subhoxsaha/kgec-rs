@@ -1,122 +1,94 @@
 import React from 'react';
-import { Type, Sparkles } from 'lucide-react';
+import { Type, Sparkles, FolderTree, BookOpen, Film, Quote } from 'lucide-react';
 import { useReportData } from '../../context/ReportDataContext';
 
 export const SectionTextsEditor: React.FC = () => {
-  const { sectionTexts, updateSectionTexts } = useReportData();
+  const { sectionTexts } = useReportData();
 
   return (
     <div className="space-y-4 text-[#243324] dark:text-[#F4EFE6]">
       {/* Banner */}
-      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-start gap-2.5">
-        <Sparkles className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
-        <p className="text-emerald-950 dark:text-emerald-200">
-          Modify live copy across all public sections of the report. Changes apply instantaneously.
-        </p>
+      <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs flex items-start justify-between gap-2.5">
+        <div className="flex items-start gap-2.5">
+          <Sparkles className="w-4 h-4 shrink-0 text-emerald-600 dark:text-emerald-400 mt-0.5" />
+          <div className="space-y-0.5">
+            <p className="font-semibold text-emerald-950 dark:text-emerald-200">
+              Section Narratives &amp; Editorial Copy (Read-Only)
+            </p>
+            <p className="text-emerald-900/80 dark:text-emerald-300/80 text-[11px]">
+              Review the hardcoded narrative headlines, philosophy statements, and interactive pills across all sections.
+            </p>
+          </div>
+        </div>
+
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-mono font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/20 shrink-0">
+          <FolderTree className="w-3.5 h-3.5" />
+          <span>Hardcoded Content</span>
+        </span>
       </div>
 
       {/* 1. Hero Section */}
-      <div className="p-3.5 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-2.5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
-          <Type className="w-3 h-3 text-emerald-600" />
-          <span>Hero Banner Copy</span>
-        </h3>
+      <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#243324]/10 dark:border-white/10">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
+            <Type className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Hero Banner &amp; Headline</span>
+          </h3>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+            Section 1
+          </span>
+        </div>
 
-        <div className="space-y-2 text-xs">
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
-              Hero Eyebrow Tagline
-            </label>
-            <input
-              type="text"
-              value={sectionTexts.heroTagline || ''}
-              onChange={(e) => updateSectionTexts({ heroTagline: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-            />
+        <div className="space-y-2.5 text-xs">
+          <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
+              Eyebrow Tagline
+            </span>
+            <p className="font-mono text-emerald-800 dark:text-emerald-400 font-semibold">
+              {sectionTexts.heroTagline || 'KALYANI GOVERNMENT ENGINEERING COLLEGE'}
+            </p>
           </div>
 
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
-              Hero Main Headline
-            </label>
-            <input
-              type="text"
-              value={sectionTexts.heroTitle || ''}
-              onChange={(e) => updateSectionTexts({ heroTitle: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-display font-medium"
-            />
+          <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
+              Main Display Headline
+            </span>
+            <p className="text-sm font-bold text-[#1F2B1D] dark:text-[#F4EFE6]">
+              {sectionTexts.heroTitle || 'KGEC ROBOTICS SOCIETY'}
+            </p>
           </div>
 
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
+          <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
               Hero Narrative Description
-            </label>
-            <textarea
-              rows={3}
-              value={sectionTexts.heroDescription || ''}
-              onChange={(e) => updateSectionTexts({ heroDescription: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 leading-relaxed"
-            />
+            </span>
+            <p className="text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
+              {sectionTexts.heroDescription}
+            </p>
           </div>
 
           {/* Hero Quick Highlight / Stats Pills */}
           <div className="pt-2 border-t border-[#243324]/10 dark:border-white/10 space-y-2">
-            <label className="block text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
-              Hero Interactive Highlight Pills
-            </label>
+            <span className="block text-[10px] font-bold text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
+              Hero Highlight Navigation Pills
+            </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <div className="space-y-1">
-                <span className="text-[9px] font-mono text-[#526340] dark:text-[#A3B59E]">Pill 1 (Trophy Icon)</span>
-                <input
-                  type="text"
-                  value={sectionTexts.heroPill1Text || ''}
-                  onChange={(e) => updateSectionTexts({ heroPill1Text: e.target.value })}
-                  placeholder="e.g. 48+ National Podiums"
-                  className="w-full px-2 py-1 text-xs rounded-md bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-                />
-                <input
-                  type="text"
-                  value={sectionTexts.heroPill1Target || ''}
-                  onChange={(e) => updateSectionTexts({ heroPill1Target: e.target.value })}
-                  placeholder="#overview-section"
-                  className="w-full px-2 py-0.5 text-[10px] font-mono rounded bg-white dark:bg-black/40 border border-[#243324]/10 dark:border-white/10"
-                />
+              <div className="p-2 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+                <span className="text-[9px] font-mono text-[#526340] dark:text-[#A3B59E] block">Pill 1 (Trophy)</span>
+                <p className="font-semibold text-xs mt-0.5">{sectionTexts.heroPill1Text || '48+ National Podiums'}</p>
+                <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 block mt-0.5">{sectionTexts.heroPill1Target || '#overview-section'}</span>
               </div>
 
-              <div className="space-y-1">
-                <span className="text-[9px] font-mono text-[#526340] dark:text-[#A3B59E]">Pill 2 (Users Icon)</span>
-                <input
-                  type="text"
-                  value={sectionTexts.heroPill2Text || ''}
-                  onChange={(e) => updateSectionTexts({ heroPill2Text: e.target.value })}
-                  placeholder="e.g. 180+ Active Engineers"
-                  className="w-full px-2 py-1 text-xs rounded-md bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-                />
-                <input
-                  type="text"
-                  value={sectionTexts.heroPill2Target || ''}
-                  onChange={(e) => updateSectionTexts({ heroPill2Target: e.target.value })}
-                  placeholder="#leadership-team-section"
-                  className="w-full px-2 py-0.5 text-[10px] font-mono rounded bg-white dark:bg-black/40 border border-[#243324]/10 dark:border-white/10"
-                />
+              <div className="p-2 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+                <span className="text-[9px] font-mono text-[#526340] dark:text-[#A3B59E] block">Pill 2 (Engineers)</span>
+                <p className="font-semibold text-xs mt-0.5">{sectionTexts.heroPill2Text || '180+ Active Engineers'}</p>
+                <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 block mt-0.5">{sectionTexts.heroPill2Target || '#leadership-team-section'}</span>
               </div>
 
-              <div className="space-y-1">
-                <span className="text-[9px] font-mono text-[#526340] dark:text-[#A3B59E]">Pill 3 (Bot Icon)</span>
-                <input
-                  type="text"
-                  value={sectionTexts.heroPill3Text || ''}
-                  onChange={(e) => updateSectionTexts({ heroPill3Text: e.target.value })}
-                  placeholder="e.g. 26 Flagship Bot Builds"
-                  className="w-full px-2 py-1 text-xs rounded-md bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-                />
-                <input
-                  type="text"
-                  value={sectionTexts.heroPill3Target || ''}
-                  onChange={(e) => updateSectionTexts({ heroPill3Target: e.target.value })}
-                  placeholder="#projects-section"
-                  className="w-full px-2 py-0.5 text-[10px] font-mono rounded bg-white dark:bg-black/40 border border-[#243324]/10 dark:border-white/10"
-                />
+              <div className="p-2 rounded bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+                <span className="text-[9px] font-mono text-[#526340] dark:text-[#A3B59E] block">Pill 3 (Bots)</span>
+                <p className="font-semibold text-xs mt-0.5">{sectionTexts.heroPill3Text || '26 Flagship Bot Builds'}</p>
+                <span className="text-[10px] font-mono text-emerald-700 dark:text-emerald-400 block mt-0.5">{sectionTexts.heroPill3Target || '#projects-section'}</span>
               </div>
             </div>
           </div>
@@ -124,129 +96,102 @@ export const SectionTextsEditor: React.FC = () => {
       </div>
 
       {/* 2. Overview & Motto Section */}
-      <div className="p-3.5 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-2.5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
-          <Type className="w-3 h-3 text-emerald-600" />
-          <span>Overview &amp; Action Video</span>
-        </h3>
+      <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#243324]/10 dark:border-white/10">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
+            <Film className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Overview &amp; Action Reel</span>
+          </h3>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+            Section 2
+          </span>
+        </div>
 
-        <div className="space-y-2 text-xs">
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
+        <div className="space-y-2.5 text-xs">
+          <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
               Overview Lead Heading
-            </label>
-            <input
-              type="text"
-              value={sectionTexts.overviewHeading || ''}
-              onChange={(e) => updateSectionTexts({ overviewHeading: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-medium"
-            />
+            </span>
+            <p className="font-semibold text-xs text-[#1F2B1D] dark:text-white">
+              {sectionTexts.overviewHeading || 'Engineering Tomorrow’s Autonomy Today'}
+            </p>
           </div>
 
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
-              Motto Heading
-            </label>
-            <input
-              type="text"
-              value={sectionTexts.mottoHeading || ''}
-              onChange={(e) => updateSectionTexts({ mottoHeading: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-            />
+          <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
+              Motto Heading &amp; Tagline
+            </span>
+            <p className="font-semibold text-xs text-emerald-800 dark:text-emerald-300">
+              {sectionTexts.mottoHeading || 'Innovation • Grit • Engineering Discipline'}
+            </p>
+            <p className="text-[11px] text-[#3F543C] dark:text-[#CBD7C7] mt-1 leading-relaxed">
+              {sectionTexts.mottoTagline}
+            </p>
           </div>
 
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
-              Motto Subtitle / Tagline
-            </label>
-            <textarea
-              rows={2}
-              value={sectionTexts.mottoTagline || ''}
-              onChange={(e) => updateSectionTexts({ mottoTagline: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
-              Action Video YouTube / Video Embed URL
-            </label>
-            <input
-              type="url"
-              value={sectionTexts.mottoVideoUrl || ''}
-              onChange={(e) => updateSectionTexts({ mottoVideoUrl: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-mono text-xs"
-            />
-          </div>
+          {sectionTexts.mottoVideoUrl && (
+            <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+              <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
+                Action Reel Video URL
+              </span>
+              <p className="font-mono text-[11px] text-emerald-800 dark:text-emerald-400 truncate">
+                {sectionTexts.mottoVideoUrl}
+              </p>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* 3. About Us & Quote */}
-      <div className="p-3.5 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-2.5">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
-          <Type className="w-3 h-3 text-emerald-600" />
-          <span>About Us &amp; Philosophy Quote</span>
-        </h3>
+      {/* 3. About Us & Philosophy Quote */}
+      <div className="p-4 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between pb-2 border-b border-[#243324]/10 dark:border-white/10">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
+            <BookOpen className="w-3.5 h-3.5 text-emerald-600" />
+            <span>About Us &amp; Philosophy Quote</span>
+          </h3>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+            Section 3
+          </span>
+        </div>
 
-        <div className="space-y-2 text-xs">
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
+        <div className="space-y-2.5 text-xs">
+          <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
               About Heading
-            </label>
-            <input
-              type="text"
-              value={sectionTexts.aboutTitle || ''}
-              onChange={(e) => updateSectionTexts({ aboutTitle: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15"
-            />
+            </span>
+            <p className="font-bold text-xs text-[#1F2B1D] dark:text-white">
+              {sectionTexts.aboutTitle || 'A Legacy of Mechatronics Excellence'}
+            </p>
           </div>
 
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
+          <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
               About Paragraph 1
-            </label>
-            <textarea
-              rows={3}
-              value={sectionTexts.aboutParagraph1 || ''}
-              onChange={(e) => updateSectionTexts({ aboutParagraph1: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 leading-relaxed"
-            />
+            </span>
+            <p className="text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
+              {sectionTexts.aboutParagraph1}
+            </p>
           </div>
 
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
+          <div className="p-2.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/10 dark:border-white/10">
+            <span className="block text-[10px] font-bold text-[#526340] dark:text-[#A3B59E] uppercase mb-0.5">
               About Paragraph 2
-            </label>
-            <textarea
-              rows={3}
-              value={sectionTexts.aboutParagraph2 || ''}
-              onChange={(e) => updateSectionTexts({ aboutParagraph2: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 leading-relaxed"
-            />
+            </span>
+            <p className="text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
+              {sectionTexts.aboutParagraph2}
+            </p>
           </div>
 
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
-              Philosophy Quote Text
-            </label>
-            <input
-              type="text"
-              value={sectionTexts.aboutQuote || ''}
-              onChange={(e) => updateSectionTexts({ aboutQuote: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 italic"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-semibold text-[#526340] dark:text-[#A3B59E] mb-1">
-              Philosophy Quote Author
-            </label>
-            <input
-              type="text"
-              value={sectionTexts.aboutQuoteAuthor || ''}
-              onChange={(e) => updateSectionTexts({ aboutQuoteAuthor: e.target.value })}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#FAF7F0] dark:bg-[#111910] border border-[#243324]/15 dark:border-white/15 font-mono"
-            />
+          <div className="p-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-500/30 flex items-start gap-2">
+            <Quote className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="italic text-[#1F2B1D] dark:text-[#F4EFE6] leading-relaxed">
+                &ldquo;{sectionTexts.aboutQuote}&rdquo;
+              </p>
+              <p className="font-mono text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 mt-1">
+                — {sectionTexts.aboutQuoteAuthor}
+              </p>
+            </div>
           </div>
         </div>
       </div>

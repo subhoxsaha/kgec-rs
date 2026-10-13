@@ -144,11 +144,11 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Unified Master CMS
+                Read-Only Master CMS
               </span>
               <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Live Sync Enabled
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                Hardcoded Content Catalog
               </span>
             </div>
 
@@ -156,9 +156,8 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               Welcome back, {googleUser?.name || 'Administrator'}
             </h2>
             <p className="text-xs sm:text-sm text-stone-300 max-w-2xl leading-relaxed">
-              Manage the entire KGEC Robotics Society web platform from this unified console. Select
-              any section below to open its dedicated edit window with real-time preview and safe
-              confirmation controls.
+              Explore and inspect all hardcoded website content, robot fleet blueprints, team directories,
+              fest programs, and telemetry specs in this streamlined read-only console.
             </p>
           </div>
 
@@ -177,7 +176,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               onClick={() => onNavigateTab('projects')}
               className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
             >
-              <span>Manage Bots</span>
+              <span>Explore Fleet</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -254,10 +253,10 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#526340] dark:text-[#A3B59E]">
-            Website Subsystems &bull; Select Section to Open Edit Window
+            Website Subsystems &bull; Select Section to Inspect Catalog
           </h3>
           <span className="text-[11px] text-[#657351] dark:text-[#8E9F89]">
-            Unified Architecture
+            Read-Only Architecture
           </span>
         </div>
 
@@ -295,7 +294,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 </div>
 
                 <div className="mt-3.5 pt-2.5 border-t border-[#243324]/10 dark:border-white/10 flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-400 font-medium">
-                  <span>Open Edit Window</span>
+                  <span>View Details</span>
                   <ArrowRight className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
@@ -309,8 +308,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         <div className="flex items-center gap-2.5">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span className="text-[#3D4F3B] dark:text-[#CBD5C8]">
-            All updates made in this CMS are instantly persisted to your local browser storage and
-            reflected live on the website.
+            All website sections and assets are strictly hardcoded for maximum stability and performance.
           </span>
         </div>
 
@@ -319,7 +317,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           onClick={() => onNavigateTab('tools')}
           className="text-emerald-700 dark:text-emerald-300 hover:underline font-semibold shrink-0 cursor-pointer"
         >
-          Export Database Backup (.JSON) &rarr;
+          View System Status &amp; Backup &rarr;
         </button>
       </div>
     </div>

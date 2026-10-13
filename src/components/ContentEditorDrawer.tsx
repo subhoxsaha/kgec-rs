@@ -222,7 +222,7 @@ export const ContentEditorDrawer: React.FC = () => {
           <div className="px-4 py-2.5 border-t border-[#243324]/10 dark:border-white/10 bg-white/80 dark:bg-[#182417]/90 backdrop-blur-md flex items-center justify-between text-xs shrink-0">
             <div className="flex items-center gap-2 text-[11px] text-[#526340] dark:text-[#A3B59E]">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Real-time persistence active</span>
+              <span>Read-Only Mode &bull; Hardcoded Content Catalog</span>
             </div>
 
             <button
