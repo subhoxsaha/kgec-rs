@@ -288,11 +288,9 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
     );
   }, [selectedProject, activeStageId]);
 
-  // Drawer Triggers
+  // Stage Actions Trigger
   const openSubmitDrawer = (phase: ProjectPhase) => {
-    setTargetPhaseForDrawer(phase);
-    setDrawerMode('submit');
-    setDrawerOpen(true);
+    setActiveStageId(phase.id);
   };
 
   const openReviewDrawer = (phase: ProjectPhase) => {

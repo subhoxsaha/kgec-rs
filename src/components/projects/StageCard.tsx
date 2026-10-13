@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Layers,
   Calendar,
@@ -18,6 +18,7 @@ import {
   Sparkles,
   AlertCircle,
   RefreshCw,
+  Upload,
 } from 'lucide-react';
 import { ProjectPhase, PhaseSubmission } from '../../types';
 import { FilePreviewCard } from './FilePreviewCard';
@@ -31,7 +32,7 @@ interface StageCardProps {
   isAdmin: boolean;
   isAssignedMentor: boolean;
   isAssignedMember: boolean;
-  onOpenSubmitDrawer: (phase: ProjectPhase) => void;
+  onOpenSubmitDrawer?: (phase: ProjectPhase) => void;
   onOpenReviewDrawer: (phase: ProjectPhase) => void;
   onOpenConfigureDrawer: (phase: ProjectPhase) => void;
   onSubmitWork?: (phaseId: string, form: { driveUrl: string; gitUrl: string; notes: string }) => Promise<void>;
@@ -46,17 +47,17 @@ export const StageCard: React.FC<StageCardProps> = ({
   isAdmin,
   isAssignedMentor,
   isAssignedMember,
-  onOpenSubmitDrawer,
   onOpenReviewDrawer,
   onOpenConfigureDrawer,
   onSubmitWork,
 }) => {
-  const [isInlineFormOpen, setIsInlineFormOpen] = useState(false);
+  const deliverableFormRef = useRef<HTMLDivElement>(null);
   const [driveUrlInput, setDriveUrlInput] = useState('');
   const [gitUrlInput, setGitUrlInput] = useState('');
   const [notesInput, setNotesInput] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [inlineError, setInlineError] = useState<string | null>(null);
+  const [submissionSuccessMsg, setSubmissionSuccessMsg] = useState<string | null>(null);
 
   const phaseMeta: Record<string, { title: string; subtitle: string; iconBg: string }> = {
     rd: {
@@ -93,19 +94,25 @@ export const StageCard: React.FC<StageCardProps> = ({
 
   const canSubmitWork = (isAdmin || isAssignedMentor || isAssignedMember) && (isInProgress || isChangesRequested);
 
+  const scrollToForm = () => {
+    if (deliverableFormRef.current) {
+      deliverableFormRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      const firstInput = deliverableFormRef.current.querySelector('input');
+      if (firstInput) firstInput.focus();
+    }
+  };
+
   const handleInlineSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setInlineError(null);
+    setSubmissionSuccessMsg(null);
 
     if (!driveUrlInput.trim() && !gitUrlInput.trim() && !notesInput.trim()) {
-      setInlineError('Please enter at least a Google Drive URL, GitHub Repository URL, or notes.');
+      setInlineError('Please enter at least a Google Drive link, GitHub Repository link, or submission notes.');
       return;
     }
 
-    if (!onSubmitWork) {
-      onOpenSubmitDrawer(phase);
-      return;
-    }
+    if (!onSubmitWork) return;
 
     try {
       setSubmitting(true);
@@ -117,7 +124,8 @@ export const StageCard: React.FC<StageCardProps> = ({
       setDriveUrlInput('');
       setGitUrlInput('');
       setNotesInput('');
-      setIsInlineFormOpen(false);
+      setSubmissionSuccessMsg('Deliverables submitted successfully and added to stage records!');
+      setTimeout(() => setSubmissionSuccessMsg(null), 5000);
     } catch (err: any) {
       setInlineError(err?.message || 'Submission failed. Please check your URLs and try again.');
     } finally {
@@ -135,7 +143,7 @@ export const StageCard: React.FC<StageCardProps> = ({
           : 'bg-white/80 dark:bg-[#141E13]/80 border-[#243324]/10 dark:border-white/10'
       }`}
     >
-      {/* Card Header */}
+      {/* Stage Card Header */}
       <div className="p-4 sm:p-5 flex flex-wrap items-start justify-between gap-3 border-b border-[#243324]/8 dark:border-white/8">
         <div className="flex items-start gap-3 min-w-0">
           <div className={`w-9 h-9 rounded-xl ${meta.iconBg} font-bold flex items-center justify-center shrink-0`}>
@@ -148,7 +156,7 @@ export const StageCard: React.FC<StageCardProps> = ({
                 {meta.title}
               </h3>
 
-              {/* Status Tag */}
+              {/* Status Badge */}
               <span
                 className={`px-2.5 py-0.5 rounded-md font-mono font-bold text-[10.5px] uppercase border tracking-wider shrink-0 ${
                   isApproved
@@ -172,7 +180,7 @@ export const StageCard: React.FC<StageCardProps> = ({
           </div>
         </div>
 
-        {/* Deadline Badge & Expand button */}
+        {/* Deadline Badge & Expand Button */}
         <div className="flex items-center gap-2 shrink-0">
           <div className="p-2 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10 dark:border-white/10 text-right text-xs">
             <span className="text-[10px] font-mono font-bold uppercase text-[#526340] dark:text-[#8E9F89] block">
@@ -200,7 +208,7 @@ export const StageCard: React.FC<StageCardProps> = ({
 
       {/* Main Body */}
       <div className="p-4 sm:p-5 pt-0 space-y-4">
-        {/* Requirements Box */}
+        {/* Requirements Checklist Box */}
         <div className="p-3.5 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/10 dark:border-white/10 space-y-1 text-xs">
           <span className="text-[10.5px] font-mono font-bold uppercase tracking-wider text-[#526340] dark:text-[#8E9F89]">
             Engineering Requirements Checklist:
@@ -210,7 +218,7 @@ export const StageCard: React.FC<StageCardProps> = ({
           </p>
         </div>
 
-        {/* Deadline warning banner */}
+        {/* Deadline Warning Banner */}
         {!isApproved && isDeadlinePassed && (
           <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-950 dark:text-amber-200 text-xs flex items-center gap-2 font-semibold">
             <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
@@ -218,7 +226,7 @@ export const StageCard: React.FC<StageCardProps> = ({
           </div>
         )}
 
-        {/* Approved signoff banner */}
+        {/* Approved Signoff Banner */}
         {isApproved && phase.approvedBy && (
           <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-950 dark:text-emerald-200 text-xs flex items-center gap-2 font-semibold">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -226,26 +234,34 @@ export const StageCard: React.FC<StageCardProps> = ({
           </div>
         )}
 
-        {/* DIRECT IN-STAGE SUBMISSION BOX */}
-        {canSubmitWork && (
-          <div className="p-4 rounded-xl bg-[#FAF8F3] dark:bg-[#0E160D] border border-emerald-500/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
-                <FolderGit2 className="w-4 h-4 text-emerald-600" />
-                <span>Submit Deliverable (Doc URL &amp; Git Repository Link)</span>
+        {/* SINGLE UNCOLLAPSED DELIVERABLE SECTION */}
+        <div className="p-4 rounded-xl bg-[#FAF8F3] dark:bg-[#0E160D] border border-emerald-500/35 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-[#243324]/10 dark:border-white/10">
+            <div className="flex items-center gap-2">
+              <Upload className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <span className="text-xs font-bold text-[#1F2B1D] dark:text-white uppercase tracking-wide">
+                Stage Deliverables &amp; Submissions
               </span>
-
-              <button
-                type="button"
-                onClick={() => setIsInlineFormOpen(!isInlineFormOpen)}
-                className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 hover:underline cursor-pointer flex items-center gap-1"
-              >
-                <span>{isInlineFormOpen ? 'Collapse Form' : '+ Direct Stage Upload'}</span>
-              </button>
             </div>
+            <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 font-mono font-bold text-[11px] border border-emerald-500/30">
+              {submissions.length} Upload{submissions.length === 1 ? '' : 's'}
+            </span>
+          </div>
 
-            {isInlineFormOpen && (
-              <form onSubmit={handleInlineSubmit} className="space-y-3 pt-2 text-xs border-t border-[#243324]/10 dark:border-white/10">
+          {/* Submission Form - UNCOLLAPSED when stage submission is allowed */}
+          {canSubmitWork && (
+            <div ref={deliverableFormRef} className="space-y-3 p-3.5 rounded-xl bg-white dark:bg-[#142013] border border-emerald-500/25">
+              <div className="flex items-center justify-between">
+                <span className="text-[11.5px] font-bold text-[#1F2B1D] dark:text-white flex items-center gap-1.5">
+                  <FolderGit2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Submit Stage Deliverable (Google Drive Doc &amp; GitHub Repo)</span>
+                </span>
+                <span className="text-[10px] font-mono text-[#526340] dark:text-[#8E9F89]">
+                  In-Stage Upload
+                </span>
+              </div>
+
+              <form onSubmit={handleInlineSubmit} className="space-y-3 text-xs">
                 {inlineError && (
                   <div className="p-2.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-900 dark:text-red-200 text-xs flex items-center gap-2 font-semibold">
                     <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
@@ -253,8 +269,15 @@ export const StageCard: React.FC<StageCardProps> = ({
                   </div>
                 )}
 
+                {submissionSuccessMsg && (
+                  <div className="p-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-900 dark:text-emerald-200 text-xs flex items-center gap-2 font-semibold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{submissionSuccessMsg}</span>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Google Drive Link Input */}
+                  {/* Google Drive Link */}
                   <div className="space-y-1">
                     <label className="font-semibold text-[#526340] dark:text-[#A3B59E] block flex items-center gap-1 text-[11px]">
                       <FolderGit2 className="w-3.5 h-3.5 text-blue-500" />
@@ -265,11 +288,11 @@ export const StageCard: React.FC<StageCardProps> = ({
                       placeholder="https://drive.google.com/drive/folders/... or docs.google.com"
                       value={driveUrlInput}
                       onChange={(e) => setDriveUrlInput(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#162114] border border-[#243324]/15 dark:border-white/15 text-xs"
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#162114] border border-[#243324]/15 dark:border-white/15 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
                     />
                   </div>
 
-                  {/* GitHub / Git Repository Input */}
+                  {/* GitHub Link */}
                   <div className="space-y-1">
                     <label className="font-semibold text-[#526340] dark:text-[#A3B59E] block flex items-center gap-1 text-[11px]">
                       <GitBranch className="w-3.5 h-3.5 text-purple-500" />
@@ -280,12 +303,12 @@ export const StageCard: React.FC<StageCardProps> = ({
                       placeholder="https://github.com/organization/kgec-robotics-bot"
                       value={gitUrlInput}
                       onChange={(e) => setGitUrlInput(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#162114] border border-[#243324]/15 dark:border-white/15 text-xs"
+                      className="w-full px-3 py-2 rounded-xl bg-white dark:bg-[#162114] border border-[#243324]/15 dark:border-white/15 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
                     />
                   </div>
                 </div>
 
-                {/* Notes Input */}
+                {/* Revision Notes */}
                 <div className="space-y-1">
                   <label className="font-semibold text-[#526340] dark:text-[#A3B59E] block flex items-center gap-1 text-[11px]">
                     <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
@@ -296,26 +319,15 @@ export const StageCard: React.FC<StageCardProps> = ({
                     placeholder="Brief description of CAD files, calculations, or code commit updates..."
                     value={notesInput}
                     onChange={(e) => setNotesInput(e.target.value)}
-                    className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-[#162114] border border-[#243324]/15 dark:border-white/15 text-xs"
+                    className="w-full px-3 py-1.5 rounded-xl bg-white dark:bg-[#162114] border border-[#243324]/15 dark:border-white/15 text-xs focus:ring-1 focus:ring-emerald-500 focus:outline-hidden"
                   />
                 </div>
 
                 <div className="flex items-center justify-end gap-2 pt-1">
                   <button
-                    type="button"
-                    onClick={() => {
-                      setIsInlineFormOpen(false);
-                      setInlineError(null);
-                    }}
-                    className="px-3 py-1.5 rounded-xl border border-[#243324]/15 hover:bg-[#243324]/10 text-xs font-semibold cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-
-                  <button
                     type="submit"
                     disabled={submitting}
-                    className="px-4 py-1.5 rounded-xl bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
                   >
                     {submitting ? (
                       <>
@@ -325,59 +337,60 @@ export const StageCard: React.FC<StageCardProps> = ({
                     ) : (
                       <>
                         <Send className="w-3.5 h-3.5" />
-                        <span>Submit Stage Deliverables</span>
+                        <span>Submit Deliverables</span>
                       </>
                     )}
                   </button>
                 </div>
               </form>
-            )}
-          </div>
-        )}
-
-        {/* Submissions List Section */}
-        <div className="space-y-3 pt-2 border-t border-[#243324]/8 dark:border-white/8">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-mono font-bold uppercase tracking-wider text-[#526340] dark:text-[#8E9F89]">
-              Stage Deliverables &amp; Uploads ({submissions.length})
-            </span>
-            {submissions.length > 0 && (
-              <span className="text-[11px] text-[#526340] dark:text-[#8E9F89]">
-                Showing latest revision on top
-              </span>
-            )}
-          </div>
-
-          {submissions.length === 0 ? (
-            <div className="p-5 text-center text-xs text-[#526340] dark:text-[#8E9F89] bg-[#FAF7F0] dark:bg-[#0E150D] rounded-xl border border-dashed border-[#243324]/15 dark:border-white/10 space-y-1">
-              <FileCode className="w-6 h-6 mx-auto text-emerald-600/40" />
-              <p className="font-semibold text-[#1F2B1D] dark:text-white">No deliverables uploaded yet</p>
-              <p className="text-[11px]">
-                {isInProgress || isChangesRequested
-                  ? 'Use the form above or the action bar to link your Google Drive docs or GitHub repository.'
-                  : 'Deliverables will be unlocked once preceding phases are approved.'}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {submissions.map((sub, sIdx) => (
-                <FilePreviewCard
-                  key={sub.id}
-                  submission={sub}
-                  resolveUserName={resolveUserName}
-                  revisionNumber={submissions.length - sIdx}
-                  isLatest={sIdx === 0}
-                />
-              ))}
             </div>
           )}
+
+          {/* Submissions List directly inside deliverable section */}
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-mono font-bold uppercase tracking-wider text-[#526340] dark:text-[#8E9F89] text-[11px]">
+                Uploaded Revisions &amp; History ({submissions.length})
+              </span>
+              {submissions.length > 0 && (
+                <span className="text-[10.5px] text-[#526340] dark:text-[#8E9F89]">
+                  Latest revision on top
+                </span>
+              )}
+            </div>
+
+            {submissions.length === 0 ? (
+              <div className="p-4 text-center text-xs text-[#526340] dark:text-[#8E9F89] bg-white dark:bg-[#142013] rounded-xl border border-dashed border-[#243324]/15 dark:border-white/10 space-y-1">
+                <FileCode className="w-5 h-5 mx-auto text-emerald-600/50" />
+                <p className="font-semibold text-[#1F2B1D] dark:text-white text-xs">No deliverables uploaded yet for this stage</p>
+                <p className="text-[11px]">
+                  {canSubmitWork
+                    ? 'Use the form above to submit your Google Drive document or GitHub repository links.'
+                    : 'Deliverable submissions will be enabled when preceding stages are completed.'}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {submissions.map((sub, sIdx) => (
+                  <FilePreviewCard
+                    key={sub.id}
+                    submission={sub}
+                    resolveUserName={resolveUserName}
+                    revisionNumber={submissions.length - sIdx}
+                    isLatest={sIdx === 0}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Action Controls Toolbar */}
+        {/* Stage Card Footer Action Toolbar */}
         <div className="pt-3 border-t border-[#243324]/8 dark:border-white/8 flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2 text-xs text-[#526340] dark:text-[#8E9F89]">
             {isLocked && <span>Stage Locked</span>}
-            {isApproved && <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Completed</span>}
+            {isApproved && <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Stage Approved &amp; Completed</span>}
+            {isSubmitted && <span className="text-blue-600 dark:text-blue-400 font-semibold">Under Mentor Review</span>}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -393,15 +406,15 @@ export const StageCard: React.FC<StageCardProps> = ({
               </button>
             )}
 
-            {/* Submit / Resubmit Button for Members */}
+            {/* Direct Focus/Submit Button for Members */}
             {canSubmitWork && (
               <button
                 type="button"
-                onClick={() => setIsInlineFormOpen(!isInlineFormOpen)}
+                onClick={scrollToForm}
                 className="px-4 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
               >
                 <Send className="w-3.5 h-3.5" />
-                <span>{isChangesRequested ? 'Resubmit Work' : 'Submit Work Deliverables'}</span>
+                <span>{isChangesRequested ? 'Resubmit Deliverable' : 'Submit Deliverable'}</span>
               </button>
             )}
 
