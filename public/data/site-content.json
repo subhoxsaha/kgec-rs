@@ -29,8 +29,9 @@
     "logo2Dark": "/logos/krs-logo.png",
     "footerLogoLight": "/logos/krs-logo.png",
     "footerLogoDark": "/logos/krs-logo.png",
-    "logo1Alt": "Kalyani Government Engineering College Emblem",
-    "logo2Alt": "KGEC Robotics Society Official Emblem"
+    "logo1Alt": "Kalyani Government Engineering College",
+    "logo2Alt": "KGEC Robotics Society Official Logo",
+    "favicon": "/logos/krs-logo.png"
   },
   "sectionTexts": {
     "heroBadge": "KGEC ROBOTICS SOCIETY // OFFICIAL ANNUAL REPORT 2025-26",
