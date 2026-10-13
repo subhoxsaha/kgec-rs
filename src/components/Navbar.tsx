@@ -466,17 +466,7 @@ export const Navbar: React.FC = () => {
                         <div className="p-1 rounded-md bg-emerald-700 text-white shadow-xs">
                           <FolderGit2 className="w-3.5 h-3.5" />
                         </div>
-                        <div className="text-left">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold leading-tight">Project Management</span>
-                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-semibold">
-                              Active
-                            </span>
-                          </div>
-                          <span className="block text-[9.5px] text-emerald-700 dark:text-emerald-400 font-mono font-normal">
-                            R&amp;D · Prototyping · Docs
-                          </span>
-                        </div>
+                        <span className="font-bold leading-tight">Project Management</span>
                       </div>
                       <ChevronRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
                     </button>

@@ -39,6 +39,14 @@ async function startServer() {
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+  // Pre-route path normalization for serverless and proxy rewrites
+  app.use((req, _res, next) => {
+    if (req.url && !req.url.startsWith('/api') && req.originalUrl?.startsWith('/api')) {
+      req.url = '/api' + (req.url.startsWith('/') ? req.url : '/' + req.url);
+    }
+    next();
+  });
+
   // --- API ROUTES ---
 
   // Health check
