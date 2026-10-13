@@ -1,109 +1,116 @@
-# Project Management Workspace Bug Removal & Stability Implementation Plan
+# Project Management Multi-Stage Uploads & Responsive Stage Workspace
 
-Enhance the Project Management module by eliminating existing runtime bugs, ensuring robust project creation stability without strict mentor/member prerequisites, introducing inline error banners for clear diagnostic feedback, and hardening API error handling across all full-lifecycle operations.
-
----
+Enhance the Project Management workspace to cleanly display, track, and manage stage deliverables across all project phases with rich upload cards, submission metadata (Drive/Git links, submitters, timestamps, review notes), and seamless desktop/mobile responsive action flows.
 
 ## User Review & Critical Decisions
 
-> [!IMPORTANT]
-> The following decisions were confirmed during Phase 1 clarification:
-> - **Primary Focus**: Project creation stability and API error handling.
-> - **Flexible Setup**: Admin can create projects without selecting mentors or members upfront. Team assignments can be adjusted anytime afterwards.
-> - **Error Presentation**: Inline banner alerts displayed directly above the workspace (with retry capabilities) rather than transient toasts or modals.
-> - **Scope Discipline**: Zero UI redesign. Retain existing workspace visual theme, tabs, modals, dark/light posture, and workflow structure.
+> [!IMPORTANT] All key visual and interactive choices have been confirmed through user clarification.
+
+- **Confirmed Decision 1 (Stage Upload Visualization)**: Dedicated stage cards showing file/link previews, status badges, submitter identity, timestamps, and mentor review feedback notes.
+- **Confirmed Decision 2 (Stage Upload Metadata)**: Google Drive links, GitHub repository URLs, submitter details, submission timestamp, approval status, and mentor notes.
+- **Confirmed Decision 3 (Responsive Controls)**: Desktop inline action bars for quick upload/review and a slide-up drawer interface on mobile devices for optimal screen real estate.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **What It Does**: Hardens the KGEC Robotics Project Management module to guarantee seamless project creation, phase progression tracking, deliverable submissions, and team management without unexpected 404/401 API failures or blocking modal validation.
-- **Target Audience / Persona**: Society Admins (full project control & creation), Mentors (project guidance, phase updates, work reviews), and Members (assigned task execution, deliverable submissions).
-- **Key Value**: Provides a smooth, error-resilient workspace experience with real-time inline status banners so members and admins can track and manage robotics projects with complete clarity.
+- **What It Does**: Upgrades the project detail workspace from a basic phase list to an industry-grade, multi-stage project delivery tracking suite. Teams and mentors can view deliverables for each phase (e.g., CAD/Design, Prototype, Testing, Final Docs), preview uploaded Drive/Git links, inspect review history, and submit or evaluate stage work seamlessly on any device.
+- **Target Audience**: Student robotics teams, project leads, assigned mentors, and workspace admins.
+- **Key Value**: Eliminates ambiguity around project progress and submission status by displaying all stage assets, feedback notes, and review state in clear, responsive stage cards.
 
 ---
 
 ## 2. User Experience & Visual Design
 
-- **Inline Banner Alert Area**:
-  - Positioned directly below the Project Management workspace header and above the main content tabs/cards.
-  - *Types*:
-    - **Error Banner**: Soft red background (`bg-red-500/10 border-red-500/20 text-red-400`), warning icon, descriptive message, and an inline "Retry" button.
-    - **Warning / Auth Banner**: Amber background (`bg-amber-500/10 border-amber-500/20 text-amber-400`), lock/shield icon, explaining missing role permissions or session expiration with a direct action button.
-    - **Success Banner**: Emerald background (`bg-emerald-500/10 border-emerald-500/20 text-emerald-400`), check icon, auto-dismissible after 5 seconds.
+### Desktop & Mobile Workspace Layout
+- **Phase Roadmap Bar**: Clean horizontal step-indicator showing overall project stages with progress percentages and stage status tags (`Approved`, `Under Review`, `Needs Revision`, `Pending`).
+- **Dedicated Stage Deliverable Cards**:
+  - **Stage Header**: Stage title, required deliverable guidelines, deadline, and current status.
+  - **Uploaded Deliverable Assets**: Direct Drive & Git preview cards with favicon/type icons, full truncated URL text, submitter user avatar + name, and precise formatted timestamps (`font-mono tabular-nums`).
+  - **Mentor Evaluation Block**: Highlighted feedback box displaying mentor/admin review notes, score/rating (if applicable), and decision status.
+- **Responsive Stage Action Controls**:
+  - **Desktop (>= 1024px)**: Integrated inline action bar on each stage card containing `"Submit Work"` and `"Review Deliverable"` buttons.
+  - **Mobile (< 1024px)**: Sticky bottom action bar that triggers a smooth slide-up mobile drawer with tabbed forms for uploading Drive/Git links and submitting mentor reviews.
 
-- **Flexible Project Creation Modal**:
-  - Modal title remains "Create New Robotics Project".
-  - Mentor and Member multi-select dropdowns become optional fields with helpful micro-copy ("Optional: You can assign mentors and members now or later from project settings").
-  - Submit button enables as long as "Project Title" is non-empty.
-
-- **Workspace Continuity & Theme**:
-  - Preserves exact existing dark (`#0B0F19`) / light UI styling, status pill badges (Active, Completed, In Progress, Locked), phase progression bars, and tab panels.
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ PROJECT MANAGEMENT WORKSPACE (1440px Desktop / Mobile Responsive)          │
+├─────────────────────────────────────────────────────────────────────────────┤
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │ Phase 1: CAD & Design [75% Complete]  │  Phase 2: Prototype [In Progress]│ │
+│ └─────────────────────────────────────────────────────────────────────────┘ │
+│                                                                             │
+│ ┌─────────────────────────────────────────────────────────────────────────┐ │
+│ │ STAGE DELIVERABLE CARD: Phase 1 - CAD Schematics                        │ │
+│ │ Status: [ Approved ] · Submitted Oct 12, 2026 by Alex Rivera            │ │
+│ │                                                                         │ │
+│ │ 📁 Google Drive: drive.google.com/folder/cad-v2-final                    │ │
+│ │ 🔗 GitHub Repo: github.com/team-robotics/chassis-cad                     │ │
+│ │                                                                         │ │
+│ │ 💬 Mentor Review Notes (Dr. Sarah Chen):                                │ │
+│ │ "Chassis load analysis is solid. Clear clearance for motor mounts."     │ │
+│ │                                                                         │ │
+│ │ [ Edit Submission ]  [ View Details ]                (Desktop Inline Bar)│ │
+│ └─────────────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Decision 1: Flexible Team Assignments at Creation**
-  - *Chosen Approach*: Allow Admins to create a project with only a Title and optional Description. Mentors and Members can be assigned later.
-  - *Why*: Admins frequently initiate new R&D or competition project shells before final team allocation. Requiring upfront assignments blocked workflow execution.
-  - *Alternatives Considered*: Requiring at least one mentor. Passed over because it causes creation failures when member lists are loading or empty.
-
-- **Decision 2: Inline Error Banners vs. Toast Notifications**
-  - *Chosen Approach*: Persistent inline banners above the workspace with explicit error messages and retry actions.
-  - *Why*: Inline banners keep context visible while the user troubleshoots or retries an action, unlike transient toasts that disappear quickly.
-
-- **Decision 3: Server & Client Header Synchronization**
-  - *Chosen Approach*: Explicitly pass `x-user-id`, `x-user-role`, and `x-user-name` headers on all client-side `fetch` calls to `/api/pm/*`, backed by defensive fallbacks in `server.ts`.
-  - *Why*: Fixes intermittent 401/404 errors caused by missing actor context during serverless or proxy rewrites.
+- **Decision 1: Stage Cards with Embedded Feedback vs Modal Only**
+  - *Chosen Approach*: Embed submission links, submitter info, and mentor feedback directly inside the stage card on the main page, using modals/drawers strictly for action inputs.
+  - *Why*: Gives instant visual feedback without forcing users to open dialogs just to check links or read mentor notes.
+- **Decision 2: Adaptive Mobile Drawer vs Standard Modals**
+  - *Chosen Approach*: Slide-up drawer on mobile devices with touch-friendly input fields and sticky action buttons.
+  - *Why*: Standard modals can overflow small mobile screens when entering URLs and long review notes; drawers maximize screen space.
 
 ---
 
 ## 4. Technical Architecture & Data Strategy
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        ProjectManagementPage                           │
-│                                                                        │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │                    Inline Banner Alert System                    │  │
-│  │  [Icon] Error / Status Message            [Retry]  [Dismiss X]   │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-│                                                                        │
-│  ┌────────────────────────┐         ┌───────────────────────────────┐  │
-│  │  Project List / Search │         │  Project Detail & Phase Tabs  │  │
-│  │  - Active Filter       │         │  - Phase Tracker (R&D, Proto) │  │
-│  │  - Admin Create Modal  │         │  - Deliverables & Submissions │  │
-│  └───────────┬────────────┘         └───────────────┬───────────────┘  │
-└──────────────┼──────────────────────────────────────┼──────────────────┘
-               │                                      │
-               │ HTTP GET / POST / PUT / DELETE        │
-               │ Headers: x-user-id, x-user-role       │
-               ▼                                      ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                          Express App (server.ts)                       │
-│  - /api/pm/projects             (GET all, POST create)               │
-│  - /api/pm/projects/:id         (GET single, PUT details, DELETE)    │
-│  - /api/pm/projects/:id/team    (PUT team assignments)               │
-│  - /api/pm/projects/:id/phases  (PUT phase requirements)            │
-│  - /api/pm/projects/:id/submit  (POST submission)                    │
-│  - /api/pm/projects/:id/review  (POST review)                        │
-└──────────────────────────────────┬─────────────────────────────────────┘
-                                   │
-                                   ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                      Project Management Store                          │
-│                      (src/server/projectsDb.ts)                        │
-│  - inMemoryProjects / projects_pm.json                                 │
-│  - inMemoryPhases   / phases_pm.json                                   │
-│  - inMemoryActivities / activities_pm.json                            │
-└────────────────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────────────┐
+│ ProjectManagementPage.tsx (State Controller)                                │
+├─────────────────────────────────────────────────────────────────────────────┤
+│  │                                                                          │
+│  ├── Selected Project & Active Phase State                                  │
+│  ├── Submission Payload ({ driveUrl, gitUrl, notes, phaseId })             │
+│  ├── Review Payload ({ status, feedback, score, phaseId })                  │
+│  │                                                                          │
+│  ▼                                                                          │
+│ StageDeliverableCard.tsx                                                    │
+│  ├── Submitter User Avatar + Identity                                       │
+│  ├── Drive & Git Asset Cards with Open Link Actions                         │
+│  ├── Mentor Notes & Approval Status Banner                                  │
+│  └── Desktop Inline Action Bar                                              │
+│                                                                             │
+│  ▼ (Mobile Viewport < 1024px)                                               │
+│ MobileStageActionDrawer.tsx                                                 │
+│  ├── Slide-up Touch Sheet                                                   │
+│  ├── Submit Work Tab (Drive / Git / Notes Inputs)                           │
+│  └── Mentor Review Tab (Status Select / Feedback Textarea)                  │
+└─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Data Model & State Updates
-- **Client State**:
-  - `bannerAlert`: `{ type: 'error' | 'warning' | 'success'; message: string; action?: { label: string; onClick: () => void } } | null`
-  - `isCreatingProject`: boolean loader state during POST.
-  - `projects`: `RoboticsProject[]` state with optimistic UI updates and server fallback reconciliation.
-- **Server Store (`projectsDb.ts`)**:
-  - `createProject`: Accepts `title` (required), `description` (optional), `mentorIds` (defaults to `[]`), `memberIds` (defaults to `[]`). Automatically initializes standard 3 phases (R&D, Prototyping, Documentation).
+### Component & State Changes
+1. **`src/components/projects/ProjectManagementPage.tsx`**:
+   - Enhance the main workspace rendering to incorporate structured stage cards for all phases.
+   - Integrate `MobileStageActionDrawer` for mobile interaction and inline action bars for desktop.
+   - Refine error handling and status badge displays using clean typography (no pill clutter).
+2. **`src/components/projects/StageDeliverableCard.tsx`** *(New component)*:
+   - Formats uploaded Drive and Git URLs into readable deliverable tiles with click-to-open capability.
+   - Renders submitter metadata (name, timestamp, role).
+   - Renders mentor review status and feedback notes in an unboxed, clean card layout.
+3. **`src/components/projects/MobileStageActionDrawer.tsx`** *(New component)*:
+   - Responsive bottom sheet container for mobile devices.
+   - Provides form inputs for submitting links or conducting mentor reviews without mobile keyboard overlap.
+
+---
+
+## Verification Plan
+
+- **Compilation Check**: Run `compile_applet` to verify zero TypeScript or Vite syntax errors.
+- **Responsive Layout Verification**: Verify stage cards rendered on desktop full-width layout and mobile drawer triggers properly.
+- **Data Integrity**: Confirm Drive URLs, GitHub URLs, timestamps, submitter identity, and mentor feedback persist and display correctly.
