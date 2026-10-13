@@ -150,10 +150,7 @@ export function getTeamMemberImageUrl(id: string): string {
 }
 
 /**
- * Computes candidate image URLs for events / fest items across the 3 separate folders:
- * - /events/hackathon/
- * - /events/techfest/
- * - /events/workshop/
+ * Computes candidate image URLs for events / fest items in single /events/ folder
  */
 export function getEventImageCandidates(id: string, defaultUrl?: string): string[] {
   const candidates: string[] = [];
@@ -161,60 +158,28 @@ export function getEventImageCandidates(id: string, defaultUrl?: string): string
 
   const knownEventsFiles = cachedMediaManifest.events || [];
 
-  // 1. Check manifest first (matches either "hackathon/zr-1.jpg" or "zr-1.jpg")
+  // 1. If defaultUrl is provided and valid, prioritize it first
+  if (defaultUrl) {
+    candidates.push(defaultUrl);
+  }
+
+  // 2. Direct single /events/ folder path matches by ID stem
   if (cleanId) {
+    // Check known files from media manifest under /events/
     const matchedFiles = knownEventsFiles.filter((f) => {
       const stem = f.substring(0, f.lastIndexOf('.')).toLowerCase();
       const baseStem = stem.split('/').pop() || stem;
       return baseStem === cleanId;
     });
     matchedFiles.forEach((file) => {
-      candidates.push(`/events/${file}`);
+      candidates.push(`/events/${file.split('/').pop()}`);
     });
-  }
 
-  // 2. If defaultUrl is a local asset path (starts with /), prioritize it
-  if (defaultUrl && defaultUrl.startsWith('/')) {
-    candidates.push(defaultUrl);
-  }
-
-  // 3. Subfolder prospective paths based on event ID convention
-  if (cleanId) {
-    if (cleanId.startsWith('zr-')) {
-      candidates.push(`/events/hackathon/${cleanId}.jpg`);
-      candidates.push(`/events/hackathon/${cleanId}.webp`);
-      candidates.push(`/events/hackathon/${cleanId}.png`);
-      candidates.push(`/events/hackathon/${cleanId}.jpeg`);
-    } else if (cleanId.startsWith('tt-')) {
-      candidates.push(`/events/techfest/${cleanId}.jpg`);
-      candidates.push(`/events/techfest/${cleanId}.webp`);
-      candidates.push(`/events/techfest/${cleanId}.png`);
-      candidates.push(`/events/techfest/${cleanId}.jpeg`);
-    } else if (cleanId.startsWith('ot-')) {
-      candidates.push(`/events/workshop/${cleanId}.jpg`);
-      candidates.push(`/events/workshop/${cleanId}.webp`);
-      candidates.push(`/events/workshop/${cleanId}.png`);
-      candidates.push(`/events/workshop/${cleanId}.jpeg`);
-    }
-
-    // Also check all 3 dedicated folders
-    candidates.push(`/events/hackathon/${cleanId}.jpg`);
-    candidates.push(`/events/hackathon/${cleanId}.webp`);
-    candidates.push(`/events/hackathon/${cleanId}.png`);
-    candidates.push(`/events/techfest/${cleanId}.jpg`);
-    candidates.push(`/events/techfest/${cleanId}.webp`);
-    candidates.push(`/events/techfest/${cleanId}.png`);
-    candidates.push(`/events/workshop/${cleanId}.jpg`);
-    candidates.push(`/events/workshop/${cleanId}.webp`);
-    candidates.push(`/events/workshop/${cleanId}.png`);
+    // Single /events/ folder prospective extensions
     candidates.push(`/events/${cleanId}.jpg`);
     candidates.push(`/events/${cleanId}.webp`);
     candidates.push(`/events/${cleanId}.png`);
-  }
-
-  // 4. Remote default / fallback URL
-  if (defaultUrl) {
-    candidates.push(defaultUrl);
+    candidates.push(`/events/${cleanId}.jpeg`);
   }
 
   return Array.from(new Set(candidates.filter(Boolean)));

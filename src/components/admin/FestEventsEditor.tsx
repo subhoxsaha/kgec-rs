@@ -99,7 +99,7 @@ export const FestEventsEditor: React.FC = () => {
           <FolderTree className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
             <p className="font-bold">
-              Hardcoded Events Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/events.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/events/(hackathon|techfest|workshop)/</code>
+              Hardcoded Events Architecture: <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/data/events.json</code> &amp; <code className="font-mono bg-emerald-500/20 px-1.5 py-0.5 rounded text-[11px]">public/events/</code>
             </p>
             <p className="text-[11px] text-[#3F543C] dark:text-[#CBD7C7] leading-relaxed">
               All events, arenas, sprint tracks, and workshop timelines are loaded from hardcoded data.

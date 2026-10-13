@@ -895,19 +895,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                   </div>
                 </div>
 
-                {/* Desktop Focus Action Bar */}
-                {activeFocusPhase && (
-                  <StageActionBar
-                    phase={activeFocusPhase}
-                    latestSubmission={(activeFocusPhase.submissions || [])[0] || null}
-                    isAdmin={isAdmin}
-                    isAssignedMentor={isAssignedMentor}
-                    isAssignedMember={isAssignedMember}
-                    onOpenSubmitDrawer={() => openSubmitDrawer(activeFocusPhase)}
-                    onOpenReviewDrawer={() => openReviewDrawer(activeFocusPhase)}
-                    onOpenConfigureDrawer={() => openConfigureDrawer(activeFocusPhase)}
-                  />
-                )}
+
 
                 {/* 3 DEDICATED STAGE CARDS */}
                 <div className="space-y-4">

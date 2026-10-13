@@ -317,7 +317,7 @@ export const Navbar: React.FC = () => {
                   <div className="p-2 rounded-xl bg-white dark:bg-[#1A2619] border border-[#243324]/10 dark:border-white/10 shadow-2xs space-y-1.5">
                     <div className="flex items-center gap-2">
                       <img
-                        src={getUserAvatarUrl(googleUser)}
+                        src={getUserAvatarUrl(googleUser) || undefined}
                         alt={googleUser.name}
                         referrerPolicy="no-referrer"
                         className={`w-8 h-8 rounded-full object-cover shrink-0 border ${

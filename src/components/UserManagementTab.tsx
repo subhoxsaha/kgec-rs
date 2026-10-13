@@ -386,7 +386,7 @@ export const UserManagementTab: React.FC = () => {
                     <div className="flex items-start justify-between gap-2.5">
                       <div className="flex items-center gap-3 min-w-0">
                         <img
-                          src={getUserAvatarUrl(user)}
+                          src={getUserAvatarUrl(user) || undefined}
                           alt={user.name}
                           className="w-11 h-11 rounded-full object-cover border-2 border-emerald-500/25 shrink-0 shadow-2xs"
                           referrerPolicy="no-referrer"
@@ -557,7 +557,7 @@ export const UserManagementTab: React.FC = () => {
                           <td className="py-3.5 px-4">
                             <div className="flex items-center gap-3">
                               <img
-                                src={getUserAvatarUrl(user)}
+                                src={getUserAvatarUrl(user) || undefined}
                                 alt={user.name}
                                 className="w-9 h-9 rounded-full object-cover border border-[#243324]/15 dark:border-white/15 shrink-0 shadow-2xs"
                                 referrerPolicy="no-referrer"
@@ -928,7 +928,7 @@ export const UserManagementTab: React.FC = () => {
             <div className="flex items-center justify-between border-b border-[#243324]/10 dark:border-white/10 pb-4 shrink-0">
               <div className="flex items-center gap-3 min-w-0">
                 <img
-                  src={getUserAvatarUrl(selectedUser)}
+                  src={getUserAvatarUrl(selectedUser) || undefined}
                   alt={selectedUser.name}
                   className="w-12 h-12 rounded-xl object-cover border border-[#243324]/15 dark:border-white/15 shadow-2xs shrink-0"
                   referrerPolicy="no-referrer"

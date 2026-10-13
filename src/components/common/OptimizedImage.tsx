@@ -124,7 +124,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   return (
     <img
-      src={currentSrc}
+      src={currentSrc || undefined}
       alt={alt}
       loading={priority ? 'eager' : loading}
       decoding="async"

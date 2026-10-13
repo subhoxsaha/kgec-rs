@@ -103,7 +103,7 @@ export const BackdoorLoginModal: React.FC = () => {
                 <div className="flex items-center gap-3">
                   {googleUser.picture ? (
                     <img
-                      src={googleUser.picture}
+                      src={googleUser.picture || undefined}
                       alt={googleUser.name}
                       referrerPolicy="no-referrer"
                       className="w-12 h-12 rounded-full border-2 border-emerald-600/50 shadow-xs object-cover shrink-0"

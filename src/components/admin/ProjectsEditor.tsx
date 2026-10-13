@@ -165,7 +165,7 @@ export const ProjectsEditor: React.FC = () => {
                 <div className="flex items-center gap-2.5 min-w-0">
                   <div className="w-12 h-10 rounded-lg overflow-hidden bg-black/10 shrink-0 border border-black/10">
                     <img
-                      src={project.imageUrl}
+                      src={project.imageUrl || undefined}
                       alt={project.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {

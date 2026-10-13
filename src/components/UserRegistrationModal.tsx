@@ -250,7 +250,7 @@ export const UserRegistrationModal: React.FC = () => {
           <div className="flex items-center gap-3">
             {googleUser?.picture ? (
               <img
-                src={googleUser.picture}
+                src={googleUser.picture || undefined}
                 alt={googleUser.name}
                 referrerPolicy="no-referrer"
                 className="w-9 h-9 rounded-xl object-cover border border-emerald-500/40 shrink-0 shadow-xs"
@@ -383,7 +383,7 @@ export const UserRegistrationModal: React.FC = () => {
                 <div className="flex items-center gap-2.5 min-w-0">
                   {googleUser.picture ? (
                     <img
-                      src={googleUser.picture}
+                      src={googleUser.picture || undefined}
                       alt={googleUser.name}
                       referrerPolicy="no-referrer"
                       className="w-7 h-7 rounded-lg object-cover border border-slate-200 dark:border-slate-700 shrink-0"

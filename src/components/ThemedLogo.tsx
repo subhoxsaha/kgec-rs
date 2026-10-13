@@ -32,7 +32,7 @@ export const ThemedLogo: React.FC<ThemedLogoProps> = ({
 
   return (
     <img
-      src={currentSrc}
+      src={currentSrc || undefined}
       alt={alt}
       className={className}
       onError={handleError}

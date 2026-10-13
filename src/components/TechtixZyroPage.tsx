@@ -36,6 +36,7 @@ import {
   DEFAULT_KRS_LOGO_LIGHT,
 } from '../data/reportData';
 import {
+  ALL_EVENT_PHOTOS,
   DEFAULT_TECHFEST_PHOTOS,
   DEFAULT_HACKATHON_PHOTOS,
   DEFAULT_OTHER_ACTIVITIES_PHOTOS,
@@ -105,7 +106,7 @@ const AutoScrollPhotoWindow: React.FC<AutoScrollPhotoWindowProps> = ({
         <AnimatePresence mode="wait">
           <motion.img
             key={currentPhoto.id || currentIndex}
-            src={currentPhoto.imageUrl}
+            src={currentPhoto.imageUrl || undefined}
             alt={currentPhoto.title}
             referrerPolicy="no-referrer"
             decoding="async"
@@ -317,12 +318,14 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
   const zyroGallery = hackathonPhotos && hackathonPhotos.length > 0 ? hackathonPhotos : DEFAULT_HACKATHON_PHOTOS;
   const outreachGallery = activityPhotos && activityPhotos.length > 0 ? activityPhotos : DEFAULT_OTHER_ACTIVITIES_PHOTOS;
 
-  // Unified seamless album without gaps
-  const unifiedAlbum: EventPhoto[] = [
-    ...techtixGallery,
-    ...zyroGallery,
-    ...outreachGallery,
-  ];
+  // Unified album loaded directly from single event.json dataset for stream and static Championship Field Album
+  const unifiedAlbum: EventPhoto[] = ALL_EVENT_PHOTOS && ALL_EVENT_PHOTOS.length > 0
+    ? ALL_EVENT_PHOTOS
+    : [
+        ...techtixGallery,
+        ...outreachGallery,
+        ...zyroGallery,
+      ];
 
   const scrollToAnchor = (id: string) => {
     const el = document.getElementById(id);
@@ -617,7 +620,7 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
                           className="w-full h-full shrink-0 snap-center relative overflow-hidden"
                         >
                           <img
-                            src={imgUrl}
+                            src={imgUrl || undefined}
                             alt={`${selectedTechtixEvent.title} shot ${imgIdx + 1}`}
                             className="w-full h-full object-cover object-center cursor-pointer transition-transform duration-700 hover:scale-103"
                             onClick={() => setSelectedGalleryPhoto(imgUrl)}
@@ -872,7 +875,7 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
                   className="group relative aspect-4/3 overflow-hidden cursor-pointer bg-neutral-900 border-r border-b border-white/10"
                 >
                   <img
-                    src={photo.imageUrl}
+                    src={photo.imageUrl || undefined}
                     alt={photo.title}
                     referrerPolicy="no-referrer"
                     loading="lazy"
@@ -931,7 +934,7 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
               className="relative z-10 max-w-4xl max-h-[85vh] rounded-xl overflow-hidden bg-black/95 border border-white/20 p-2 shadow-2xl"
             >
               <img
-                src={selectedGalleryPhoto}
+                src={selectedGalleryPhoto || undefined}
                 alt="Championship capture"
                 className="w-full h-full object-contain max-h-[80vh] rounded-lg"
               />

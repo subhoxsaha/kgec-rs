@@ -120,7 +120,7 @@ export const PhotosMediaEditor: React.FC = () => {
             <div className="space-y-2">
               <div className="relative h-44 rounded-lg overflow-hidden bg-black/10 border border-[#243324]/10">
                 <img
-                  src={item.imageUrl}
+                  src={item.imageUrl || undefined}
                   alt={item.title}
                   className="w-full h-full object-cover"
                   loading="lazy"

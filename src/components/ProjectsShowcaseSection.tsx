@@ -315,7 +315,7 @@ export const ProjectsShowcaseSection: React.FC = () => {
               {/* Modal Project Image */}
               <div className="relative w-full h-52 sm:h-72 overflow-hidden rounded-2xl bg-neutral-900 shadow-md">
                 <OptimizedImage
-                  src={getProjectImageCandidates(selectedProject.id, selectedProject.imageUrl)[0]}
+                  src={getProjectImageCandidates(selectedProject.id, selectedProject.imageUrl)[0] || undefined}
                   candidates={getProjectImageCandidates(selectedProject.id, selectedProject.imageUrl)}
                   fallbackSrc={selectedProject.imageUrl}
                   alt={selectedProject.imageAlt || selectedProject.name}
