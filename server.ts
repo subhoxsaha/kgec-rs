@@ -15,6 +15,17 @@ import {
   updateUserRoleStatusInDb,
   deleteUserFromDb,
 } from './src/server/db.js';
+import {
+  getProjectsForUser,
+  getProjectById,
+  createProject,
+  updateProjectDetails,
+  updateProjectTeam,
+  updatePhaseConfig,
+  submitPhaseWork,
+  reviewPhaseSubmission,
+  deleteProject,
+} from './src/server/projectsDb.js';
 
 dotenv.config();
 
@@ -210,6 +221,185 @@ async function startServer() {
       res.json(result);
     } catch (err: any) {
       res.status(500).json({ error: err?.message || 'Failed to delete user' });
+    }
+  });
+
+  // --- PROJECT MANAGEMENT MODULE ROUTES ---
+
+  function getActorFromReq(req: express.Request) {
+    const userId = (req.headers['x-user-id'] as string) || (req.query.userId as string) || (req.body?.userId as string);
+    const userRole = (req.headers['x-user-role'] as string) || (req.query.userRole as string) || (req.body?.userRole as string);
+    const userName = (req.headers['x-user-name'] as string) || (req.query.userName as string) || (req.body?.userName as string);
+    if (!userId || !userRole || userRole === 'guest') {
+      return { id: '', role: 'guest', name: 'Guest' };
+    }
+    return { id: userId, role: userRole, name: userName || 'User' };
+  }
+
+  // Get projects for current user context (Admin sees all, mentor/member sees assigned)
+  app.get('/api/pm/projects', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const projects = getProjectsForUser(actor);
+      res.json({ projects });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to fetch projects' });
+    }
+  });
+
+  // Get single project details
+  app.get('/api/pm/projects/:id', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const project = getProjectById(req.params.id, actor);
+      if (!project) {
+        res.status(404).json({ error: 'Project not found or not authorized' });
+        return;
+      }
+      res.json({ project });
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to fetch project' });
+    }
+  });
+
+  // Create new project (Admin only)
+  app.post('/api/pm/projects', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const result = createProject(req.body, actor);
+      if (!result.success) {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      res.status(201).json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to create project' });
+    }
+  });
+
+  // Edit project details (Mentor only)
+  app.put('/api/pm/projects/:id', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const result = updateProjectDetails(req.params.id, req.body, actor);
+      if (!result.success) {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to update project details' });
+    }
+  });
+
+  // Edit project team members (Mentor only)
+  app.put('/api/pm/projects/:id/team', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const result = updateProjectTeam(req.params.id, req.body, actor);
+      if (!result.success) {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to update team members' });
+    }
+  });
+
+  // Update phase deadline and requirements (Mentor only)
+  app.put('/api/pm/projects/:id/phases/:phaseId', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const result = updatePhaseConfig(req.params.id, req.params.phaseId, req.body, actor);
+      if (!result.success) {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to update phase settings' });
+    }
+  });
+
+  // Submit phase deliverables (Member only)
+  app.post('/api/pm/projects/:id/phases/:phaseId/submissions', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const result = submitPhaseWork(req.params.id, req.params.phaseId, req.body, actor);
+      if (!result.success) {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      res.status(201).json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to submit phase deliverables' });
+    }
+  });
+
+  // Review submission (Mentor only: Approve / Request Changes)
+  app.post('/api/pm/projects/:id/phases/:phaseId/submissions/:submissionId/review', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const result = reviewPhaseSubmission(req.params.id, req.params.phaseId, req.params.submissionId, req.body, actor);
+      if (!result.success) {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to review submission' });
+    }
+  });
+
+  // Permanently delete project (Admin only with confirmation)
+  app.delete('/api/pm/projects/:id', async (req, res) => {
+    try {
+      const actor = getActorFromReq(req);
+      if (!actor.id || actor.role === 'guest') {
+        res.status(401).json({ error: 'Unauthorized: Project Management is accessible only to accepted KGEC Robotics society members.' });
+        return;
+      }
+      const result = deleteProject(req.params.id, actor);
+      if (!result.success) {
+        res.status(400).json({ error: result.error });
+        return;
+      }
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ error: err?.message || 'Failed to delete project' });
     }
   });
 

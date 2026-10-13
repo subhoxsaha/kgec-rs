@@ -19,6 +19,8 @@ import {
   Flame,
   Zap,
   UserPlus,
+  FolderGit2,
+  Lock,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useReportData } from '../context/ReportDataContext';
@@ -44,6 +46,7 @@ export const Navbar: React.FC = () => {
     logoutAdmin,
     openBackdoorModal,
     openEditor,
+    openProjectPortal,
     currentUserProfile,
     setIsApplicationFormOpen,
   } = useReportData();
@@ -439,6 +442,47 @@ export const Navbar: React.FC = () => {
                   </div>
                 )}
               </div>
+
+              {/* KGEC Robotics Project Management Module Access Button (Only for Logged-In Accepted Members) */}
+              {(() => {
+                const isAcceptedUser = Boolean(
+                  isAdminLoggedIn ||
+                  (currentUserProfile && currentUserProfile.status === 'approved') ||
+                  (googleUser && googleUser.status === 'approved')
+                );
+                if (!isAcceptedUser) return null;
+
+                return (
+                  <div className="pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        window.location.hash = '#project-management';
+                      }}
+                      className="w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-emerald-600/15 via-teal-600/15 to-emerald-600/10 hover:from-emerald-600/25 hover:to-emerald-600/20 text-emerald-950 dark:text-emerald-200 border border-emerald-500/30 text-xs font-semibold transition-all shadow-2xs flex items-center justify-between cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="p-1 rounded-md bg-emerald-700 text-white shadow-xs">
+                          <FolderGit2 className="w-3.5 h-3.5" />
+                        </div>
+                        <div className="text-left">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-bold leading-tight">Project Management</span>
+                            <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-semibold">
+                              Active
+                            </span>
+                          </div>
+                          <span className="block text-[9.5px] text-emerald-700 dark:text-emerald-400 font-mono font-normal">
+                            R&amp;D · Prototyping · Docs
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-0.5 transition-transform" />
+                    </button>
+                  </div>
+                );
+              })()}
 
               {/* Compact Navigation Links */}
               <nav className="space-y-0.5 pt-0.5">

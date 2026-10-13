@@ -233,12 +233,16 @@ export interface ReportDataState {
   isEditorOpen: boolean;
   activeEditorTab: EditorTab;
   toastMessage: string | null;
+  isProjectPortalOpen: boolean;
+  activeProjectPortalId: string | null;
 
   // Actions
   loginWithGoogleUser: (user: GoogleUserProfile) => void;
   logoutAdmin: () => void;
   openBackdoorModal: () => void;
   closeBackdoorModal: () => void;
+  openProjectPortal: (projectId?: string) => void;
+  closeProjectPortal: () => void;
   openApplicationForm: () => void;
   closeApplicationForm: () => void;
   setIsApplicationFormOpen: (open: boolean) => void;
@@ -527,6 +531,8 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
   isEditorOpen: false,
   activeEditorTab: 'overview',
   toastMessage: null,
+  isProjectPortalOpen: false,
+  activeProjectPortalId: null,
 
   showToast: (msg: string) => {
     if (toastTimeout) clearTimeout(toastTimeout);
@@ -995,6 +1001,17 @@ export const useReportDataStore = create<ReportDataState>((set, get) => ({
 
   openBackdoorModal: () => set({ isBackdoorModalOpen: true }),
   closeBackdoorModal: () => set({ isBackdoorModalOpen: false }),
+
+  openProjectPortal: (projectId?: string) => {
+    window.location.hash = projectId ? `#project-management?id=${projectId}` : '#project-management';
+    set({ isProjectPortalOpen: true, activeProjectPortalId: projectId || null });
+  },
+  closeProjectPortal: () => {
+    if (window.location.hash.startsWith('#project-management')) {
+      window.location.hash = '';
+    }
+    set({ isProjectPortalOpen: false, activeProjectPortalId: null });
+  },
 
   openEditor: (tab?: EditorTab) => {
     const { isAdminLoggedIn, showToast } = get();

@@ -19,6 +19,8 @@ import { ContentEditorDrawer } from './components/ContentEditorDrawer';
 import { UserRegistrationModal } from './components/UserRegistrationModal';
 import { AdminFloatingBar } from './components/AdminFloatingBar';
 import { TechtixZyroPage } from './components/TechtixZyroPage';
+import { ProjectManagementPage } from './components/projects/ProjectManagementPage';
+import { useReportData } from './context/ReportDataContext';
 
 function MainContent() {
   const { scrollYProgress } = useScroll();
@@ -28,7 +30,7 @@ function MainContent() {
     restDelta: 0.001,
   });
 
-  const [currentView, setCurrentView] = useState<'home' | 'techtix-zyro'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'techtix-zyro' | 'project-management'>('home');
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -50,6 +52,14 @@ function MainContent() {
             document.getElementById('techtix-section')?.scrollIntoView({ behavior: 'smooth' });
           }, 100);
         }
+      } else if (
+        hash === '#project-management' ||
+        hash === '#projects-management' ||
+        hash === '#pm' ||
+        hash === '#projects-portal'
+      ) {
+        setCurrentView('project-management');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setCurrentView('home');
       }
@@ -66,12 +76,21 @@ function MainContent() {
   };
 
   const handleBackToHome = () => {
-    window.location.hash = '#events-section';
+    window.location.hash = '';
     setCurrentView('home');
-    setTimeout(() => {
-      document.getElementById('events-section')?.scrollIntoView({ behavior: 'smooth' });
-    }, 50);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  if (currentView === 'project-management') {
+    return (
+      <>
+        <ProjectManagementPage onBack={handleBackToHome} />
+        <BackdoorLoginModal />
+        <ContentEditorDrawer />
+        <UserRegistrationModal />
+      </>
+    );
+  }
 
   if (currentView === 'techtix-zyro') {
     return (

@@ -361,4 +361,81 @@ export const ROLE_CONFIG: Record<
   },
 };
 
+// ==========================================
+// PROJECT MANAGEMENT MODULE TYPES & SCHEMAS
+// ==========================================
+
+export type ProjectPhaseType = 'rd' | 'prototyping' | 'documentation';
+
+export type ProjectPhaseStatus =
+  | 'locked'
+  | 'in_progress'
+  | 'submitted'
+  | 'changes_requested'
+  | 'approved';
+
+export type ProjectOverallStatus = 'active' | 'completed' | 'archived';
+
+export interface ProjectPhase {
+  id: string;
+  projectId: string;
+  phaseType: ProjectPhaseType;
+  deadline: string; // ISO date string in UTC
+  requirements: string;
+  status: ProjectPhaseStatus;
+  approvedAt?: string;
+  approvedBy?: string; // User ID
+  submissions?: PhaseSubmission[];
+}
+
+export interface PhaseSubmission {
+  id: string;
+  phaseId: string;
+  projectId: string;
+  submittedBy: string; // User ID
+  submittedByName?: string;
+  driveUrl?: string; // Google Drive URL
+  gitUrl?: string; // GitHub Repository URL
+  notes?: string;
+  submittedAt: string; // ISO date string
+  isLate: boolean;
+  reviews?: SubmissionReview[];
+}
+
+export interface SubmissionReview {
+  id: string;
+  submissionId: string;
+  phaseId: string;
+  projectId: string;
+  reviewedBy: string; // User ID (Mentor)
+  reviewedByName?: string;
+  decision: 'approved' | 'changes_requested';
+  feedback: string;
+  reviewedAt: string; // ISO date string
+}
+
+export interface ProjectActivity {
+  id: string;
+  projectId: string;
+  actorId: string;
+  actorName?: string;
+  action: string;
+  details: string;
+  createdAt: string;
+}
+
+export interface RoboticsProject {
+  id: string;
+  title: string;
+  description: string;
+  createdBy: string; // Admin User ID
+  mentorIds: string[]; // Mentor User IDs
+  memberIds: string[]; // Member User IDs
+  status: ProjectOverallStatus;
+  createdAt: string;
+  updatedAt: string;
+  phases?: ProjectPhase[];
+  activities?: ProjectActivity[];
+}
+
 
