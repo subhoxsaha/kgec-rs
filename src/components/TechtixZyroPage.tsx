@@ -36,7 +36,6 @@ import {
   DEFAULT_KRS_LOGO_LIGHT,
 } from '../data/reportData';
 import {
-  ALL_EVENT_PHOTOS,
   DEFAULT_TECHFEST_PHOTOS,
   DEFAULT_HACKATHON_PHOTOS,
   DEFAULT_OTHER_ACTIVITIES_PHOTOS,
@@ -318,14 +317,12 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
   const zyroGallery = hackathonPhotos && hackathonPhotos.length > 0 ? hackathonPhotos : DEFAULT_HACKATHON_PHOTOS;
   const outreachGallery = activityPhotos && activityPhotos.length > 0 ? activityPhotos : DEFAULT_OTHER_ACTIVITIES_PHOTOS;
 
-  // Unified album loaded directly from single event.json dataset for stream and static Championship Field Album
-  const unifiedAlbum: EventPhoto[] = ALL_EVENT_PHOTOS && ALL_EVENT_PHOTOS.length > 0
-    ? ALL_EVENT_PHOTOS
-    : [
-        ...techtixGallery,
-        ...outreachGallery,
-        ...zyroGallery,
-      ];
+  // Unified seamless album matching the exact order of the 3 horizontal train streams
+  const unifiedAlbum: EventPhoto[] = [
+    ...techtixGallery,
+    ...outreachGallery,
+    ...zyroGallery,
+  ];
 
   const scrollToAnchor = (id: string) => {
     const el = document.getElementById(id);
@@ -377,10 +374,10 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
               type="button"
               onClick={onBack}
               className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#243324] dark:text-[#F4EFE6] hover:bg-[#243324]/5 dark:hover:bg-white/5 border border-[#243324]/10 dark:border-white/10 transition-colors cursor-pointer shrink-0"
-              title="Return to Annual Report"
+              title="Return to Home"
             >
               <ArrowLeft className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>Report</span>
+              <span>Home</span>
             </button>
             <span className="hidden sm:inline-block text-xs text-[#243324]/30 dark:text-white/20">/</span>
             <span className="hidden sm:inline-flex items-center gap-1 text-xs text-[#243324]/80 dark:text-white/80 font-mono font-medium truncate">
@@ -907,7 +904,7 @@ export const TechtixZyroPage: React.FC<TechtixZyroPageProps> = ({ onBack }) => {
               className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg border border-[#243324]/15 dark:border-white/15 bg-white dark:bg-[#162215] hover:bg-[#243324]/5 dark:hover:bg-white/5 text-xs font-semibold text-[#243324] dark:text-white transition-colors cursor-pointer"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Return to Society Annual Report</span>
+              <span>Return to Home</span>
             </button>
           </div>
           <p className="text-[10px] text-[#243324]/50 dark:text-white/40 font-mono">

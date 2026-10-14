@@ -134,3 +134,9 @@ export const DEFAULT_HACKATHON_PHOTOS: EventPhoto[] = [
     description: 'Compiling TensorFlow Lite and TensorRT models for real-time edge obstacle avoidance.',
   },
 ];
+
+export const ALL_EVENT_PHOTOS: EventPhoto[] = [
+  ...DEFAULT_TECHFEST_PHOTOS,
+  ...DEFAULT_OTHER_ACTIVITIES_PHOTOS,
+  ...DEFAULT_HACKATHON_PHOTOS,
+];
