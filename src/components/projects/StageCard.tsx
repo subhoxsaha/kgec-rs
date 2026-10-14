@@ -386,23 +386,24 @@ export const StageCard: React.FC<StageCardProps> = ({
         </div>
 
         {/* Stage Card Footer Action Toolbar */}
-        <div className="pt-3 border-t border-[#243324]/8 dark:border-white/8 flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2 text-xs text-[#526340] dark:text-[#8E9F89]">
+        <div className="pt-3 border-t border-[#243324]/8 dark:border-white/8 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-[11px] sm:text-xs text-[#526340] dark:text-[#8E9F89]">
             {isLocked && <span>Stage Locked</span>}
             {isApproved && <span className="text-emerald-700 dark:text-emerald-400 font-semibold">Stage Approved &amp; Completed</span>}
             {isSubmitted && <span className="text-blue-600 dark:text-blue-400 font-semibold">Under Mentor Review</span>}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             {/* Configure Button for Mentors/Admins */}
             {(isAdmin || isAssignedMentor) && !isApproved && (
               <button
                 type="button"
                 onClick={() => onOpenConfigureDrawer(phase)}
-                className="px-3 py-1.5 rounded-lg border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-xs font-semibold text-[#526340] dark:text-[#CBD7C7] transition-colors cursor-pointer flex items-center gap-1.5"
+                className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-[11px] sm:text-xs font-semibold text-[#526340] dark:text-[#CBD7C7] transition-colors cursor-pointer flex items-center gap-1 whitespace-nowrap"
               >
-                <Edit3 className="w-3.5 h-3.5 text-purple-500" />
-                <span>Configure Settings</span>
+                <Edit3 className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+                <span className="hidden xs:inline">Configure Settings</span>
+                <span className="xs:hidden">Configure</span>
               </button>
             )}
 
@@ -411,10 +412,22 @@ export const StageCard: React.FC<StageCardProps> = ({
               <button
                 type="button"
                 onClick={scrollToForm}
-                className="px-4 py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                className="px-3 py-1 sm:px-4 sm:py-1.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-semibold text-[11px] sm:text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1 whitespace-nowrap"
               >
-                <Send className="w-3.5 h-3.5" />
-                <span>{isChangesRequested ? 'Resubmit Deliverable' : 'Submit Deliverable'}</span>
+                <Send className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  {isChangesRequested ? (
+                    <>
+                      <span className="hidden xs:inline">Resubmit Deliverable</span>
+                      <span className="xs:hidden">Resubmit</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden xs:inline">Submit Deliverable</span>
+                      <span className="xs:hidden">Submit</span>
+                    </>
+                  )}
+                </span>
               </button>
             )}
 
@@ -423,10 +436,11 @@ export const StageCard: React.FC<StageCardProps> = ({
               <button
                 type="button"
                 onClick={() => onOpenReviewDrawer(phase)}
-                className="px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1.5"
+                className="px-3 py-1 sm:px-4 sm:py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-semibold text-[11px] sm:text-xs transition-colors cursor-pointer shadow-xs flex items-center gap-1 whitespace-nowrap"
               >
-                <UserCheck className="w-3.5 h-3.5" />
-                <span>Review Deliverables</span>
+                <UserCheck className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden xs:inline">Review Deliverables</span>
+                <span className="xs:hidden">Review</span>
               </button>
             )}
           </div>

@@ -570,46 +570,50 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
   return (
     <div className="min-h-screen bg-[#FBF9F5] dark:bg-[#111A10] text-[#1F2B1D] dark:text-[#F4EFE6] flex flex-col antialiased transition-colors duration-300 pb-12">
       {/* Top Navigation Bar */}
-      <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#152014]/95 backdrop-blur-md border-b border-[#243324]/10 dark:border-white/10 px-4 sm:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
-        <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-white/95 dark:bg-[#152014]/95 backdrop-blur-md border-b border-[#243324]/10 dark:border-white/10 px-3 sm:px-6 py-2.5 sm:py-3.5 flex flex-wrap items-center justify-between gap-2 sm:gap-3 shadow-xs">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-xs font-semibold text-[#3A4B37] dark:text-[#CBD7C7] transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-xs font-semibold text-[#3A4B37] dark:text-[#CBD7C7] transition-colors cursor-pointer shrink-0"
           >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to Portal</span>
+            <ArrowLeft className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden xs:inline">Return to Portal</span>
+            <span className="xs:hidden">Back</span>
           </button>
 
           <span className="text-[#243324]/20 dark:text-white/20 hidden sm:inline" aria-hidden="true">/</span>
 
-          <div>
-            <h1 className="text-sm sm:text-base font-bold text-[#1F2B1D] dark:text-white flex items-center gap-2">
-              <FolderGit2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Project Management Workspace</span>
+          <div className="min-w-0">
+            <h1 className="text-xs sm:text-base font-bold text-[#1F2B1D] dark:text-white flex items-center gap-1.5 sm:gap-2 truncate">
+              <FolderGit2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="truncate">
+                <span className="hidden md:inline">Project Management Workspace</span>
+                <span className="md:hidden">Project Workspace</span>
+              </span>
             </h1>
           </div>
         </div>
 
         {/* Real User Identity & Theme Toggle */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/15 dark:border-white/15 text-xs">
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-[#FAF7F0] dark:bg-[#0E150D] border border-[#243324]/15 dark:border-white/15 text-xs max-w-[150px] sm:max-w-none">
             <div className="w-6 h-6 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-[10px] shrink-0">
               {activeActor.name.slice(0, 1).toUpperCase()}
             </div>
-            <div className="text-left">
-              <span className="block font-bold text-xs text-[#1F2B1D] dark:text-white leading-tight">
+            <div className="text-left min-w-0 hidden xs:block">
+              <span className="block font-bold text-xs text-[#1F2B1D] dark:text-white leading-tight truncate">
                 {activeActor.name}
               </span>
-              <span className="block text-[10px] font-mono text-[#526340] dark:text-[#A3B59E] capitalize">
-                {activeActor.role === 'teacherBody' ? 'Faculty Advisor' : activeActor.role}
+              <span className="block text-[10px] font-mono text-[#526340] dark:text-[#A3B59E] capitalize truncate">
+                {activeActor.role === 'teacherBody' ? 'Faculty' : activeActor.role}
               </span>
             </div>
 
             <button
               type="button"
               onClick={logoutAdmin}
-              className="ml-1 p-1 rounded-md text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer"
+              className="p-1 rounded-md text-red-600 dark:text-red-400 hover:bg-red-500/10 cursor-pointer shrink-0"
               title="Sign Out"
             >
               <LogOut className="w-3.5 h-3.5" />
@@ -619,7 +623,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
           <button
             type="button"
             onClick={toggleTheme}
-            className="p-2 rounded-lg border border-[#243324]/15 dark:border-white/15 text-[#3A4B37] dark:text-[#CBD7C7] hover:bg-[#243324]/8 dark:hover:bg-white/8 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-lg border border-[#243324]/15 dark:border-white/15 text-[#3A4B37] dark:text-[#CBD7C7] hover:bg-[#243324]/8 dark:hover:bg-white/8 transition-colors cursor-pointer shrink-0"
             aria-label="Toggle theme"
           >
             {isDark ? <Sun className="w-4 h-4 text-amber-300" /> : <Moon className="w-4 h-4 text-[#3A4B37]" />}
@@ -809,7 +813,7 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 shrink-0">
                       {(isAdmin || isCreator || isAssignedMentor) && (
                         <>
                           <button
@@ -822,18 +826,18 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                               setModalError(null);
                               setIsEditingDetails(true);
                             }}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-xs font-semibold cursor-pointer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-[11px] sm:text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors"
                           >
-                            <Edit3 className="w-3.5 h-3.5 text-blue-500" />
+                            <Edit3 className="w-3.5 h-3.5 text-blue-500 shrink-0" />
                             <span>Edit Details</span>
                           </button>
 
                           <button
                             type="button"
                             onClick={handleOpenManageTeamModal}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-xs font-semibold cursor-pointer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-[#243324]/15 dark:border-white/15 hover:bg-[#243324]/8 dark:hover:bg-white/8 text-[11px] sm:text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors"
                           >
-                            <Users className="w-3.5 h-3.5 text-purple-500" />
+                            <Users className="w-3.5 h-3.5 text-purple-500 shrink-0" />
                             <span>Manage Team</span>
                           </button>
                         </>
@@ -846,9 +850,9 @@ export const ProjectManagementPage: React.FC<ProjectManagementPageProps> = ({
                             setProjectToDelete(selectedProject);
                             setDeleteConfirmationInput('');
                           }}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-600 dark:text-red-400 border border-red-500/30 text-xs font-semibold cursor-pointer"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-red-600/10 hover:bg-red-600/20 text-red-600 dark:text-red-400 border border-red-500/30 text-[11px] sm:text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors"
                         >
-                          <Trash2 className="w-3.5 h-3.5" />
+                          <Trash2 className="w-3.5 h-3.5 shrink-0" />
                           <span>Delete</span>
                         </button>
                       )}
